@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Buyer Protection: Why You Should Never Pay a Freelancer Without It | Kreddlo Blog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color:  rgba(255,255,255,0.25);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,
+        0 -1px 0  0   rgba(255,255,255,0.20) inset,
+        0 8px 32px    rgba(13,33,69,0.10),
+        0 1px 2px     rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.08) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    .tag-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(45,138,94,0.10);
+      color: #2d8a5e;
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .hero-bar {
+      background: linear-gradient(135deg, #0d2145 0%, #162f5e 60%, #1a3a6e 100%);
+    }
+
+    .article-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1e2d4a;
+    }
+    .article-body h2 {
+      font-size: clamp(1.2rem, 3vw, 1.45rem);
+      font-weight: 800;
+      color: #0d2145;
+      margin-top: 2.4rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.3;
+    }
+    .article-body h3 {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      color: #0d2145;
+      margin-top: 1.8rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul li {
+      padding-left: 1.4rem;
+      position: relative;
+      margin-bottom: 0.55rem;
+    }
+    .article-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2d8a5e;
+      flex-shrink: 0;
+    }
+    .article-body strong {
+      font-weight: 700;
+      color: #0d2145;
+    }
+    .article-body a {
+      color: #2d8a5e;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-body a:hover { color: #1a6040; }
+
+    .callout {
+      background: rgba(45,138,94,0.07);
+      border-left: 4px solid #2d8a5e;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout strong { color: #2d8a5e; }
+
+    .callout-warning {
+      background: rgba(220, 53, 69, 0.06);
+      border-left: 4px solid #dc3545;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout-warning strong { color: #b02a37; }
+
+    /* Scenario comparison */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 1.4rem 0;
+    }
+    @media (min-width: 640px) {
+      .scenario-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .scenario-card {
+      border-radius: 16px;
+      padding: 18px 20px;
+    }
+    .scenario-bad {
+      background: rgba(220, 53, 69, 0.06);
+      border: 1px solid rgba(220, 53, 69, 0.18);
+    }
+    .scenario-good {
+      background: rgba(45,138,94,0.07);
+      border: 1px solid rgba(45,138,94,0.20);
+    }
+    .scenario-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .scenario-bad .scenario-label { color: #b02a37; }
+    .scenario-good .scenario-label { color: #2d8a5e; }
+    .scenario-text {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #1e2d4a;
+    }
+
+    /* Step cards */
+    .step-card {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: rgba(255,255,255,0.70);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #0d2145;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-body { flex: 1; }
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0d2145;
+      margin-bottom: 4px;
+    }
+    .step-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #4a5568;
+    }
+
+    .related-card {
+      text-decoration: none;
+      display: block;
+      transition: transform .2s ease;
+    }
+    .related-card:hover { transform: translateY(-3px); }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .5s ease both; }
+  </style>
+
+  <meta name="description" content="Written for the buyer. Why paying a freelancer without escrow or buyer protection is the single biggest risk in online hiring, and what to do instead." />
+  <meta property="og:title"       content="Buyer Protection: Why You Should Never Pay a Freelancer Without It" />
+  <meta property="og:description" content="Written for the buyer. Why paying a freelancer without escrow or buyer protection is the single biggest risk in online hiring, and what to do instead." />
+  <meta property="og:url"         content="https://kreddlo.space/blog/buyer-protection-paying-freelancers-safely" />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type"        content="article" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Buyer Protection: Why You Should Never Pay a Freelancer Without It" />
+  <meta name="twitter:description" content="Written for the buyer. Paying without escrow is the single biggest risk in online freelance hiring. Here's why that matters." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <link rel="canonical" href="https://kreddlo.space/blog/buyer-protection-paying-freelancers-safely" />
+  <script src="/assets/shared.js" defer></script>
+</head>
+
+<body class="overflow-x-hidden">
+
+<div id="navbar-placeholder"></div>
+
+<!-- Hero -->
+<section class="hero-bar relative overflow-hidden px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14">
+  <div class="blob w-64 h-64 sm:w-96 sm:h-96 opacity-10" style="background:#3dbd7a;top:-60px;right:-60px;"></div>
+  <div class="blob w-40 h-40 sm:w-64 sm:h-64 opacity-[0.07]" style="background:#fff;bottom:-30px;left:-20px;"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto fade-up">
+    <nav class="flex items-center gap-2 text-white/50 text-xs font-medium mb-5" aria-label="Breadcrumb">
+      <a href="/blog" class="hover:text-white/80 transition-colors">Blog</a>
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      <span class="text-white/70">Buyers</span>
+    </nav>
+
+    <span class="tag-pill mb-4 inline-block" style="background:rgba(61,189,122,0.18);color:#3dbd7a;">Buyers</span>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+      Buyer Protection: Why You Should Never Pay a Freelancer Without It
+    </h1>
+    <p class="text-white/70 text-base sm:text-lg leading-relaxed">
+      Most advice about online freelancing is written for the seller. This one is for you, the buyer. Here is what actually happens when there is no protection on your payment, and what changes when there is.
+    </p>
+    <p class="text-white/40 text-xs mt-5 font-medium">Published June 25, 2026 · 7 min read</p>
+  </div>
+</section>
+
+<!-- Article -->
+<section class="px-4 sm:px-6 py-10 sm:py-14">
+  <div class="max-w-3xl mx-auto">
+
+    <article class="article-body">
+
+      <p>
+        You need a logo. Or a website. Or a video editor for your product launch. You find someone on Twitter or through a referral, their work looks good, their rates are reasonable, and you're ready to move. They ask for payment upfront or a deposit to get started.
+      </p>
+      <p>
+        So you send the money. And then you wait.
+      </p>
+      <p>
+        Most of the time, it works out fine. But enough times it doesn't. They go quiet, deliver something completely different from what was discussed, miss the deadline by weeks, or disappear entirely. Either way, the question of whether your payment is protected should be part of every hiring decision you make online.
+      </p>
+      <p>
+        This post is not about distrusting freelancers. Most are professional and do exactly what they say they will. It is about the fact that without a protection mechanism in place, you have no real recourse if something goes wrong.
+      </p>
+
+      <h2>What "no protection" actually looks like in practice</h2>
+      <p>
+        Here is the standard way most people pay freelancers online in Nigeria and across Africa: bank transfer, mobile money, or a direct Paystack/Flutterwave link. Money goes from you to them the moment you hit send. At that point, it is theirs.
+      </p>
+      <p>
+        That is not a flaw in those payment tools. They are designed to move money quickly and reliably. The flaw is that there is nothing between "I paid" and "I hope I get what I paid for."
+      </p>
+
+      <div class="callout-warning">
+        <strong>The core problem:</strong> Once money is sent directly to a freelancer with no escrow or protection layer, you have no leverage. You cannot pause the payment if the work is wrong. You cannot recover it if the freelancer stops responding. Your only options are to hope, chase, or accept the loss.
+      </div>
+
+      <p>
+        Compare this to how you pay for physical goods on a reputable e-commerce platform. You don't send money directly to the seller's bank account and trust they'll ship. The platform holds the money until the order is fulfilled. That's a basic protection that most people take for granted when buying products, but somehow skip entirely when hiring services.
+      </p>
+
+      <h2>The three ways unprotected payments go wrong</h2>
+
+      <h3>1. Incomplete or wrong delivery</h3>
+      <p>
+        The freelancer delivers something, just not what was agreed. Maybe the scope was interpreted differently, maybe corners were cut, maybe the revisions you asked for were never made. Without a formal delivery confirmation step, the money is already gone and you're negotiating for something you already paid for.
+      </p>
+
+      <h3>2. Missed deadlines with no resolution</h3>
+      <p>
+        The work takes three times as long as agreed and the freelancer goes quiet whenever you ask for updates. You can't cancel and get your money back because there's nothing to cancel. You're stuck waiting for something that may or may not ever arrive.
+      </p>
+
+      <h3>3. Partial work or abandonment</h3>
+      <p>
+        You paid in full or paid a deposit. The freelancer starts, does some initial work, and then goes unresponsive. You have part of what you need, none of your money, and no way to get either resolved without going through a time-consuming dispute process that may go nowhere.
+      </p>
+
+      <div class="scenario-grid">
+        <div class="scenario-card scenario-bad">
+          <div class="scenario-label">Without protection</div>
+          <div class="scenario-text">You send payment directly. Work is late and not what was discussed. You have no formal recourse. You either accept it or lose both the money and the time chasing a refund.</div>
+        </div>
+        <div class="scenario-card scenario-good">
+          <div class="scenario-label">With buyer protection</div>
+          <div class="scenario-text">Payment is held in escrow. Work is delivered and you review it. You confirm if satisfied, or raise a dispute if not. Funds are only released when the outcome is agreed.</div>
+        </div>
+      </div>
+
+      <h2>What buyer protection actually means</h2>
+      <p>
+        Buyer protection is not a guarantee that everything will go perfectly. It is a structured mechanism that keeps you in control of your money until you have confirmed the work meets the agreed terms.
+      </p>
+      <p>
+        On Kreddlo, this works through escrow. When you fund a project, the payment goes into a secure escrow account, not directly to the freelancer. The freelancer knows the money is there and confirmed, so they are motivated to deliver. But they only receive it once you have reviewed the work and confirmed delivery.
+      </p>
+      <p>
+        If something goes wrong before delivery is confirmed, there is a formal dispute process. This gives both sides a proper channel to resolve the issue rather than just trading messages on WhatsApp. You can read more about how the escrow flow works in detail in our post on <a href="/blog/what-is-escrow-freelancer-protection">what escrow is and how it protects freelancers from non-payment</a>.
+      </p>
+
+      <h2>How the Kreddlo buyer flow works</h2>
+
+      <div class="my-6">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Find a verified seller</div>
+            <div class="step-desc">Browse profiles on Kreddlo. KYC-verified freelancers carry a badge confirming their identity has been checked, which adds an extra layer of accountability before you hire.</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Fund the project into escrow</div>
+            <div class="step-desc">You pay for the project upfront, but the money goes into escrow, not straight to the freelancer. The freelancer sees it's there and confirmed, so they can start with confidence.</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Review the delivery</div>
+            <div class="step-desc">When the freelancer submits the work, you get a notification to review it. You check it against what was agreed before anything is released.</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Confirm or dispute</div>
+            <div class="step-desc">If you're satisfied, you confirm delivery and the funds are released to the freelancer. If something is wrong, you raise a dispute and the issue is handled through the platform's resolution process, not through WhatsApp back-and-forth.</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Why this is better for both sides</h2>
+      <p>
+        Buyer protection gets positioned as something that only benefits buyers, but that's not quite right. Professional freelancers actually prefer working through escrow-backed platforms because it removes the awkward upfront payment negotiation entirely.
+      </p>
+      <p>
+        When there is no protection mechanism, buyers are rightly hesitant to pay the full amount upfront to someone they have never worked with. Freelancers end up negotiating for deposits, chasing balances, and sometimes not getting paid at all when clients decide they're unhappy after delivery. Escrow solves both problems at once: the buyer knows their money is protected, and the freelancer knows the money is already secured before they start work.
+      </p>
+
+      <div class="callout">
+        <strong>The key insight:</strong> Escrow does not create distrust between buyer and seller. It removes the need for trust as the only thing standing between a project and its outcome. Both sides can proceed confidently because the mechanism protects both of them.
+      </div>
+
+      <h2>The KYC piece: why verified profiles matter</h2>
+      <p>
+        Escrow protects your payment during a project. But it doesn't tell you anything about who you're hiring before you begin. That's where identity verification matters.
+      </p>
+      <p>
+        Kreddlo's KYC-verified freelancers have had their identity confirmed through the platform's verification process. This doesn't mean their work is guaranteed to be good. Reviews and portfolio matter for that. But it does mean there is a real, accountable person behind the profile, which meaningfully reduces the risk of outright fraud or disappearing acts.
+      </p>
+      <p>
+        When you hire on a platform where profiles are anonymous and unverified, you are taking a different kind of risk than when you hire someone whose identity has been checked. For larger or longer projects, that difference matters.
+      </p>
+
+      <h2>What to look for before you pay any freelancer online</h2>
+      <p>
+        Regardless of which platform you use, here are the minimum things worth checking before you send money:
+      </p>
+      <ul>
+        <li><strong>Is there an escrow or payment protection layer?</strong> If you're paying directly to a bank account or personal payment link with no platform involvement, your payment has no protection.</li>
+        <li><strong>Is there a formal delivery confirmation step?</strong> Some platforms let sellers mark their own work as delivered without buyer confirmation. That's not protection. That's just a notification.</li>
+        <li><strong>Is there a real dispute process?</strong> If the platform's dispute resolution is "contact us by email and we'll look into it," that's much weaker than a structured in-platform process with defined outcomes.</li>
+        <li><strong>Is the freelancer's identity verified?</strong> Reviews help, but verified identity is a stronger accountability signal, especially for new profiles without much work history.</li>
+        <li><strong>Are the project terms documented somewhere?</strong> Scope, deliverables, timeline, and price should be on record in a way both sides agreed to. Not just in a WhatsApp thread.</li>
+      </ul>
+
+      <h2>The honest framing</h2>
+      <p>
+        Most freelancers are good at what they do and will deliver exactly what they promised. Buyer protection is not about assuming the worst. It is about making sure that if something does go wrong, whether it's a miscommunication, a missed deadline, or a delivery that doesn't match the brief, you have a structured way to resolve it rather than just hoping the freelancer does the right thing.
+      </p>
+      <p>
+        The risk is low enough with most freelancers that you might never need the protection. But the cost of having it is essentially zero, and the cost of not having it, the one time something goes wrong on a significant project, is real.
+      </p>
+      <p>
+        For more on what the escrow-backed project flow looks like from start to finish, see our guide on <a href="/blog/escrow-backed-custom-freelance-projects">escrow-backed custom freelance projects on Kreddlo</a>.
+      </p>
+
+      <h2>Where to start</h2>
+      <p>
+        If you need to hire a freelancer for a project and want your payment protected from the start, Kreddlo's browse page lets you find verified sellers across categories. You can review their profiles, check their work, and fund the project into escrow. All in one place.
+      </p>
+      <p>
+        You don't have to change how you find freelancers. You just have to change where the money sits until the work is done.
+      </p>
+
+    </article>
+
+    <!-- CTA -->
+    <div class="glass p-6 sm:p-8 mt-10 text-center relative overflow-hidden">
+      <div class="blob w-40 h-40 opacity-[0.06]" style="background:#2d8a5e;top:-20px;right:-20px;"></div>
+      <h2 class="text-navy font-extrabold text-lg sm:text-xl mb-2 relative z-10">Hire with confidence</h2>
+      <p class="text-navy/60 text-sm leading-relaxed mb-5 relative z-10">
+        Browse verified sellers and pay through escrow. Your money is protected until the work is done.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
+        <a href="/browse.html" class="btn-green w-full sm:w-auto">Browse Verified Sellers</a>
+        <a href="/how-it-works.html" class="btn-secondary w-full sm:w-auto">How Kreddlo Works</a>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    <div class="mt-12">
+      <p class="text-navy/50 text-xs font-semibold uppercase tracking-widest mb-5">Related Articles</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <a href="/blog/what-is-escrow-freelancer-protection" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Safety</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">What Is Escrow and How Does It Protect You?</p>
+          <p class="text-navy/50 text-xs leading-relaxed">A plain-language explanation of how escrow works and why it matters for every online project.</p>
+        </a>
+
+        <a href="/blog/escrow-backed-custom-freelance-projects" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Projects</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Escrow-Backed Custom Freelance Projects</p>
+          <p class="text-navy/50 text-xs leading-relaxed">A closer look at the contract, milestone, and dispute flow for custom work on Kreddlo.</p>
+        </a>
+
+        <a href="/blog/kyc-verified-freelancers-why-it-matters" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Trust</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">KYC-Verified Freelancers: Why It Matters</p>
+          <p class="text-navy/50 text-xs leading-relaxed">What identity verification actually checks and why it reduces fraud risk when hiring online.</p>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Back to blog -->
+    <div class="mt-10 pt-6 border-t border-border">
+      <a href="/blog" class="inline-flex items-center gap-2 text-navy/60 hover:text-navy font-medium text-sm transition-colors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to Blog
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+<style>
+  #mobile-menu { display: none; }
+  #mobile-menu.open { display: block; }
+</style>
+
+<nav class="glass sticky top-0 z-50 mx-4 mt-3 rounded-2xl px-5 py-3">
+  <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+
+    <!-- Logo -->
+    <a href="/index.html" class="flex-shrink-0" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;line-height:36px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+    <!-- Desktop nav links -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="/index.html#features"     class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">Features</a>
+      <a href="/index.html#how-it-works" class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">How It Works</a>
+      <a href="/browse.html"             class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">Browse</a>
+      <a href="/pricing.html"            class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">Pricing</a>
+      <a href="/blog/index.html"         class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">Blog</a>
+    </div>
+
+    <!-- Desktop CTA — public vs auth -->
+    <div class="hidden md:flex items-center gap-3">
+      <div id="nav-public-desktop" style="display:flex;gap:8px;align-items:center;">
+        <a href="/login.html"  class="btn-secondary" style="padding:10px 22px;font-size:14px;">Log In</a>
+        <a href="/signup.html" class="btn-green"     style="padding:10px 22px;font-size:14px;">Get Started</a>
+      </div>
+      <div id="nav-auth-desktop" style="display:none;align-items:center;gap:10px;">
+        <a id="nav-dash-desktop" href="/dashboard.html" class="btn-secondary" style="padding:10px 22px;font-size:14px;font-weight:600;">Dashboard</a>
+        <div id="nav-avatar" style="width:34px;height:34px;border-radius:50%;background:#2d8a5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;"></div>
+      </div>
+    </div>
+
+    <!-- Hamburger -->
+    <button id="hamburger" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+      <span class="block w-5 h-0.5 bg-navy rounded transition-all"></span>
+      <span class="block w-5 h-0.5 bg-navy rounded transition-all"></span>
+      <span class="block w-5 h-0.5 bg-navy rounded transition-all"></span>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="glass mt-3 rounded-xl px-5 py-5 flex flex-col gap-4">
+    <a href="/index.html#features"     class="text-navy font-medium text-sm">Features</a>
+    <a href="/index.html#how-it-works" class="text-navy font-medium text-sm">How It Works</a>
+    <a href="/browse.html"             class="text-navy font-medium text-sm">Browse</a>
+    <a href="/pricing.html"            class="text-navy font-medium text-sm">Pricing</a>
+    <a href="/blog/index.html"         class="text-navy font-medium text-sm">Blog</a>
+    <div id="nav-public-mobile" class="flex flex-col gap-3 pt-2 border-t border-border">
+      <a href="/login.html"  class="btn-secondary text-center">Log In</a>
+      <a href="/signup.html" class="btn-green text-center">Get Started</a>
+    </div>
+    <div id="nav-auth-mobile" style="display:none;flex-direction:column;gap:10px;padding-top:8px;border-top:1px solid rgba(13,33,69,0.10);">
+      <a id="nav-dash-mobile" href="/dashboard.html" class="btn-green text-center">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<script>
+(function () {
+  /* ── Hamburger toggle ── */
+  var burger = document.getElementById('hamburger');
+  var mMenu  = document.getElementById('mobile-menu');
+  if (burger && mMenu) {
+    burger.addEventListener('click', function () {
+      mMenu.classList.toggle('open');
+    });
+  }
+
+  /* ── Auth-aware nav state ── */
+  function applyAuthState(user) {
+    var pubD  = document.getElementById('nav-public-desktop');
+    var authD = document.getElementById('nav-auth-desktop');
+    var pubM  = document.getElementById('nav-public-mobile');
+    var authM = document.getElementById('nav-auth-mobile');
+
+    if (!user) {
+      if (pubD)  pubD.style.display  = 'flex';
+      if (authD) authD.style.display = 'none';
+      if (pubM)  pubM.style.display  = 'flex';
+      if (authM) authM.style.display = 'none';
+      return;
+    }
+
+    /* Signed-in state */
+    if (pubD)  pubD.style.display  = 'none';
+    if (authD) authD.style.display = 'flex';
+    if (pubM)  pubM.style.display  = 'none';
+    if (authM) authM.style.display = 'flex';
+
+    /* Avatar initial */
+    var avatarEl = document.getElementById('nav-avatar');
+    if (avatarEl) {
+      avatarEl.textContent = (user.displayName || user.email || '?')[0].toUpperCase();
+    }
+
+    /* Resolve correct dashboard link (buyer vs freelancer) */
+    if (window.auth && window.db && window.onAuthStateChanged) {
+      (async function () {
+        try {
+          var fsModule = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+          var snap = await fsModule.getDoc(fsModule.doc(window.db, 'users', user.uid));
+          var dashHref = (snap.exists() && snap.data().role === 'buyer')
+            ? '/buyer-dashboard.html'
+            : '/dashboard.html';
+          var dashD = document.getElementById('nav-dash-desktop');
+          var dashM = document.getElementById('nav-dash-mobile');
+          if (dashD) dashD.href = dashHref;
+          if (dashM) dashM.href = dashHref;
+        } catch (e) { /* silent — links already default to /dashboard.html */ }
+      })();
+    }
+  }
+
+  /* Run immediately if Firebase is already initialised */
+  function listenAuth() {
+    if (window.auth && window.onAuthStateChanged) {
+      window.onAuthStateChanged(window.auth, applyAuthState);
+    } else {
+      /* Wait for the page to initialise Firebase */
+      window.addEventListener('kreddlo-firebase-ready', function () {
+        if (window.auth && window.onAuthStateChanged) {
+          window.onAuthStateChanged(window.auth, applyAuthState);
+        }
+      }, { once: true });
+    }
+  }
+
+  listenAuth();
+})();
+</script>

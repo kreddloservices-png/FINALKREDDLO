@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>How to Sell an Ebook or Digital Product Online in Nigeria (Step-by-Step) | Kreddlo Blog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color:  rgba(255,255,255,0.25);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,
+        0 -1px 0  0   rgba(255,255,255,0.20) inset,
+        0 8px 32px    rgba(13,33,69,0.10),
+        0 1px 2px     rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.08) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    .tag-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(45,138,94,0.10);
+      color: #2d8a5e;
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .hero-bar {
+      background: linear-gradient(135deg, #0d2145 0%, #162f5e 60%, #1a3a6e 100%);
+    }
+
+    .article-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1e2d4a;
+    }
+    .article-body h2 {
+      font-size: clamp(1.2rem, 3vw, 1.45rem);
+      font-weight: 800;
+      color: #0d2145;
+      margin-top: 2.4rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.3;
+    }
+    .article-body h3 {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      color: #0d2145;
+      margin-top: 1.8rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul li {
+      padding-left: 1.4rem;
+      position: relative;
+      margin-bottom: 0.65rem;
+    }
+    .article-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2d8a5e;
+      flex-shrink: 0;
+    }
+    .article-body strong {
+      font-weight: 700;
+      color: #0d2145;
+    }
+    .article-body a {
+      color: #2d8a5e;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-body a:hover { color: #1a6040; }
+
+    .callout {
+      background: rgba(45,138,94,0.07);
+      border-left: 4px solid #2d8a5e;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout strong { color: #2d8a5e; }
+
+    .callout-warn {
+      background: rgba(192,57,43,0.06);
+      border-left: 4px solid #c0392b;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout-warn strong { color: #c0392b; }
+
+    /* Numbered steps */
+    .steps-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.4rem 0;
+    }
+    .steps-list li {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding: 0;
+    }
+    .steps-list li::before { display: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0d2145;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .step-body {
+      flex: 1;
+    }
+    .step-body strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: #0d2145;
+      margin-bottom: 4px;
+    }
+    .step-body p {
+      font-size: 14.5px;
+      color: #3a4a60;
+      line-height: 1.65;
+      margin: 0;
+    }
+    .step-body p + p {
+      margin-top: 8px;
+    }
+
+    /* Product type cards */
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 1.6rem 0;
+    }
+    @media (min-width: 480px) {
+      .product-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .product-card {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .product-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0d2145;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .product-card p {
+      font-size: 13px;
+      color: #4a5568;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Pricing psychology box */
+    .price-box {
+      background: rgba(13,33,69,0.04);
+      border: 1.5px solid rgba(13,33,69,0.10);
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin: 1.6rem 0;
+    }
+    .price-box-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0d2145;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(13,33,69,0.07);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .price-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .price-row-label { font-size: 14px; color: #1e2d4a; font-weight: 500; }
+    .price-row-val { font-size: 14px; font-weight: 700; color: #2d8a5e; white-space: nowrap; }
+
+    /* Comparison table */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      margin: 1.6rem 0;
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      min-width: 480px;
+    }
+    .compare-table thead tr {
+      background: #0d2145;
+      color: #fff;
+    }
+    .compare-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .compare-table tbody tr:nth-child(even) {
+      background: rgba(13,33,69,0.03);
+    }
+    .compare-table tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+      color: #1e2d4a;
+    }
+    .compare-table tbody td:first-child {
+      font-weight: 600;
+      color: #0d2145;
+    }
+    .check { color: #2d8a5e; font-weight: 700; }
+    .cross { color: #c0392b; font-weight: 700; }
+
+    .related-card {
+      text-decoration: none;
+      display: block;
+      transition: transform .18s, box-shadow .18s;
+    }
+    .related-card:hover { transform: translateY(-2px); }
+  </style>
+
+  <!-- OG / Twitter Card -->
+  <meta id="meta-description" name="description" content="How to sell an ebook or digital product online in Nigeria, step by step. What to create, how to price it, where to list it, and how to collect payment without the usual friction." />
+  <meta property="og:type"        content="article" />
+  <meta property="og:title"       content="How to Sell an Ebook or Digital Product Online in Nigeria (Step-by-Step)" />
+  <meta property="og:description" content="How to sell an ebook or digital product online in Nigeria, step by step. What to create, how to price it, where to list it, and how to collect payment without the usual friction." />
+  <meta property="og:url"         content="https://kreddlo.space/blog/how-to-sell-ebook-digital-product-nigeria" />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og.png" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="How to Sell an Ebook or Digital Product Online in Nigeria (Step-by-Step)" />
+  <meta name="twitter:description" content="How to sell an ebook or digital product online in Nigeria, step by step. What to create, how to price it, where to list it, and how to collect payment without the usual friction." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og.png" />
+
+  <link id="canonical" rel="canonical" href="https://kreddlo.space/blog/how-to-sell-ebook-digital-product-nigeria" />
+  <script src="/assets/shared.js" defer></script>
+</head>
+
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<!-- Hero -->
+<section class="hero-bar py-10 px-4 sm:px-6 relative overflow-hidden">
+  <div class="blob w-72 h-72 opacity-[0.08]" style="background:#2d8a5e;top:-60px;right:-60px;"></div>
+  <div class="blob w-48 h-48 opacity-[0.06]" style="background:#3dbd7a;bottom:-30px;left:-20px;"></div>
+  <div class="max-w-2xl mx-auto relative z-10">
+    <a href="/blog" class="inline-flex items-center gap-1.5 text-white/50 hover:text-white/80 text-xs font-medium mb-5 transition-colors" style="text-decoration:none;">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Blog
+    </a>
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <span class="tag-pill" style="background:rgba(61,189,122,0.18);color:#3dbd7a;">Digital Products</span>
+      <span class="tag-pill" style="background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.60);">Nigeria</span>
+      <span class="tag-pill" style="background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.60);">Step-by-Step</span>
+    </div>
+    <h1 class="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl leading-tight mb-4">
+      How to Sell an Ebook or Digital Product Online in Nigeria (Step-by-Step)
+    </h1>
+    <p class="text-white/65 text-base sm:text-lg leading-relaxed max-w-xl">
+      You made the thing. You packaged the knowledge, the template, the course. The hard part is supposed to be over. Here is why selling it online in Nigeria is still surprisingly tricky, and how to do it right from the first sale.
+    </p>
+    <div class="flex flex-wrap items-center gap-4 mt-6 text-white/40 text-xs">
+      <span>By the Kreddlo Team</span>
+      <span>8 min read</span>
+    </div>
+  </div>
+</section>
+
+<!-- Article -->
+<section class="py-10 px-4 sm:px-6">
+  <div class="max-w-2xl mx-auto">
+
+    <article class="article-body">
+
+      <p>
+        Somewhere in your phone's notes app, or in a Google Doc you have not opened in three months, there is an idea for a digital product. An ebook on a skill you have spent years learning. A template you built for yourself that other people ask about constantly. A short course on the thing you are genuinely better at than most people you know.
+      </p>
+
+      <p>
+        You have not sold it yet because it does not feel finished. Or because you are not sure anyone would pay for it. Or because you looked into the process once and it felt complicated, and you went back to doing client work instead.
+      </p>
+
+      <p>
+        All of that is real. But the people selling digital products in Nigeria right now are not waiting until things feel perfect. They are learning as they go, adjusting prices after the first ten sales, improving their product description after the first few questions from buyers. The difference between them and you is not product quality. It is that they shipped something.
+      </p>
+
+      <p>
+        This guide covers exactly how to do that. Not as a theory, but as a sequence of actual steps you can complete this week.
+      </p>
+
+      <h2>First, what counts as a digital product?</h2>
+
+      <p>
+        The category is wider than people think. If you can describe it, create it once, and send it to a buyer without it costing you anything extra each time, it is a digital product.
+      </p>
+
+      <div class="product-grid">
+        <div class="product-card">
+          <div class="product-card-title">
+            <svg width="15" height="15" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Ebooks and guides
+          </div>
+          <p>PDF files covering a topic in depth. "How I got my first 10 freelance clients," "The HR Manager's Quick Reference," "Cooking for One on 5k a Week." Simple format, high perceived value if the content actually delivers.</p>
+        </div>
+        <div class="product-card">
+          <div class="product-card-title">
+            <svg width="15" height="15" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Templates and tools
+          </div>
+          <p>Spreadsheets, Notion pages, Canva templates, Word documents. Things people would spend hours building themselves and would rather pay NGN 2,000 to get in five minutes. These consistently outperform ebooks for repeat buyers.</p>
+        </div>
+        <div class="product-card">
+          <div class="product-card-title">
+            <svg width="15" height="15" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            Short video courses
+          </div>
+          <p>Recorded lessons teaching a specific skill. Does not need a production studio. A phone camera, decent lighting, and content that actually teaches something is enough. Loom recordings work perfectly.</p>
+        </div>
+        <div class="product-card">
+          <div class="product-card-title">
+            <svg width="15" height="15" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Swipe files and scripts
+          </div>
+          <p>Email sequences, sales scripts, proposal templates, cold outreach scripts. Professionals will pay for frameworks that save them hours of thinking. The more specific the use case, the higher the price you can charge.</p>
+        </div>
+        <div class="product-card">
+          <div class="product-card-title">
+            <svg width="15" height="15" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            Presets and assets
+          </div>
+          <p>Lightroom presets, Photoshop brushes, After Effects templates, font packs. If you are already creating these for your own work, selling them is essentially free money since they already exist.</p>
+        </div>
+        <div class="product-card">
+          <div class="product-card-title">
+            <svg width="15" height="15" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            Mini courses and workshops
+          </div>
+          <p>Not a full course, just a focused 60 to 90 minute training on one specific outcome. "Write your first CV in an hour." "Pitch your first client." Small scope, fast result, lower price point, easier to sell.</p>
+        </div>
+      </div>
+
+      <p>
+        The simplest rule: if someone in your audience has a problem, and you have already solved it, you have a product. You just need to package the solution and price it.
+      </p>
+
+      <h2>Step 1: Create the product (and actually finish it)</h2>
+
+      <p>
+        Most digital products die in the creation phase not because the creator runs out of ideas, but because they keep expanding the scope. The ebook becomes a course. The course becomes a membership. The membership never launches.
+      </p>
+
+      <p>
+        Set a scope limit before you start. A useful ebook does not need to be 80 pages. Twenty pages of dense, specific, actionable content on a narrow topic is more valuable than 80 pages of everything you know about a broad subject. A useful template does not need ten tabs and a dashboard. It needs to solve the one problem clearly.
+      </p>
+
+      <div class="callout">
+        <strong>The minimum viable product principle:</strong> Build the smallest version that fully solves the stated problem. You can always release a "volume 2" or a premium edition later. You cannot release anything if you never finish version 1.
+      </div>
+
+      <p>
+        Tools you need to create most digital products: Google Docs or Microsoft Word for writing (export to PDF when done). Canva for covers, slides, or template design. Loom for recording short video lessons. Notion for building template pages. That is genuinely all of it for most formats. No expensive software required.
+      </p>
+
+      <p>
+        When the product is done, sit on it for 48 hours and then read it again as if you are a buyer who has just paid for it. Ask one question honestly: did this deliver on what the title promised? If the answer is yes, you are ready. If the answer is partly, fix the gap. If the answer is not yet, you already know what to do.
+      </p>
+
+      <h2>Step 2: Price it properly (most people undercharge)</h2>
+
+      <p>
+        Pricing a digital product is one of the few places where human psychology works very differently from what you might expect. When something is too cheap, people assume it is not worth much. This is not a theory. It is a documented pattern that plays out in every market.
+      </p>
+
+      <p>
+        A practical starting framework for Nigerian digital products in 2026:
+      </p>
+
+      <div class="price-box">
+        <div class="price-box-title">Suggested starting price ranges</div>
+        <div class="price-row">
+          <span class="price-row-label">Short ebook or guide (10 to 30 pages)</span>
+          <span class="price-row-val">NGN 2,000 to 7,000</span>
+        </div>
+        <div class="price-row">
+          <span class="price-row-label">Template or tool (spreadsheet, Notion, Canva)</span>
+          <span class="price-row-val">NGN 3,000 to 15,000</span>
+        </div>
+        <div class="price-row">
+          <span class="price-row-label">Swipe file or script pack</span>
+          <span class="price-row-val">NGN 5,000 to 20,000</span>
+        </div>
+        <div class="price-row">
+          <span class="price-row-label">Mini course or recorded workshop</span>
+          <span class="price-row-val">NGN 10,000 to 35,000</span>
+        </div>
+        <div class="price-row">
+          <span class="price-row-label">Full video course (5+ hours, structured)</span>
+          <span class="price-row-val">NGN 25,000 to 80,000+</span>
+        </div>
+      </div>
+
+      <p>
+        These are starting points, not ceilings. The right price for your product depends on the specificity of the outcome it delivers and the size and trust level of your existing audience. If you have an audience of 5,000 people who follow you because of a specific skill, your product is worth more than if you are selling cold to strangers.
+      </p>
+
+      <p>
+        Start at the mid-point of the range for your format. If you sell 20 copies in the first two weeks with zero refund requests, your price is probably too low. Raise it. If you sell nothing in two weeks despite promotion, the price might not be the problem at all, but the description probably is.
+      </p>
+
+      <div class="callout-warn">
+        <strong>The NGN 500 trap:</strong> Pricing at NGN 500 to attract volume almost never works for creators with small to medium audiences. It signals low value, attracts buyers who are not serious, and means you need to sell 300 copies to make what 15 buyers would pay at a fair price. Price for the value you deliver, not for the number of sales you wish you had.
+      </div>
+
+      <h2>Step 3: Write a product description that actually sells</h2>
+
+      <p>
+        Most product listings in Nigeria describe what the product is. The ones that sell describe what the buyer will be able to do after they have it.
+      </p>
+
+      <p>
+        There is a meaningful difference between "A 25-page guide to freelancing in Nigeria" and "After reading this, you will know how to find your first paying client, what to charge without underselling yourself, and how to write a proposal that actually gets a response."
+      </p>
+
+      <p>
+        The first version describes the container. The second describes the outcome. People pay for outcomes.
+      </p>
+
+      <p>
+        A good product description has four parts, in this order:
+      </p>
+
+      <ul>
+        <li><strong>The problem</strong> you are solving, stated in the exact language your buyer uses when they talk about it.</li>
+        <li><strong>What is inside</strong> the product, described specifically (number of pages, number of templates, number of modules).</li>
+        <li><strong>What they will be able to do</strong> after buying it, framed as outcomes not features.</li>
+        <li><strong>Who it is for</strong> (and honestly, who it is not for). Saying "this is not for complete beginners, you need at least one year of freelancing experience" actually increases conversions because it makes the right buyers trust the specificity.</li>
+      </ul>
+
+      <p>
+        Spend as much time on this description as you spent on the last section of your product. The product can be brilliant. If the description is flat, no one who should buy it will.
+      </p>
+
+      <h2>Step 4: Choose where to sell it</h2>
+
+      <p>
+        You have a few real options. The right one depends on what else you want to do with your creator business beyond this one product.
+      </p>
+
+      <div class="table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Good fit if</th>
+              <th>Worth knowing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Selar</td>
+              <td>You only sell digital products and want to be up in 10 minutes</td>
+              <td>Limited to product sales. No custom orders, no invoicing, no escrow for projects.</td>
+            </tr>
+            <tr>
+              <td>Gumroad</td>
+              <td>You have an international audience paying in USD</td>
+              <td>Naira payouts are indirect. Payment friction for Nigerian buyers is real.</td>
+            </tr>
+            <tr>
+              <td>Kreddlo</td>
+              <td>You sell products now but also take custom work or invoice clients</td>
+              <td>One profile handles products, custom projects, and invoicing. Paystack, Flutterwave, and crypto supported natively.</td>
+            </tr>
+            <tr>
+              <td>Your own website</td>
+              <td>You already have traffic and want zero platform fees</td>
+              <td>You handle payment integration, delivery, and support yourself. High setup cost for a first product.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The honest recommendation: if you are selling your first product and you also do any kind of client work or freelancing alongside it, a platform that handles both makes more sense than one built only for product listings. The reason is simple. Your buyer today might want to hire you tomorrow. If your product listing, your custom order page, and your invoicing all live on the same profile, that transition is frictionless. If they are on three separate tools, you are managing three separate relationships for the same person.
+      </p>
+
+      <p>
+        We compare the major Nigerian creator platforms in more depth in the guide on <a href="/blog/kreddlo-vs-selar-vs-nestuge">Kreddlo vs Selar vs Nestuge</a> if you want the full breakdown before you decide.
+      </p>
+
+      <h2>Step 5: Set up your store and test the buyer journey yourself</h2>
+
+      <p>
+        This step takes less than an hour on most platforms. But the part people skip is testing the full purchase journey themselves before they announce anything. Go through every single step as if you are a complete stranger who found your product for the first time.
+      </p>
+
+      <ol class="steps-list">
+        <li>
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Create your account and complete your profile</strong>
+            <p>A profile photo, a one-line bio, and a real name or brand name. Buyers who are about to hand over money want to see a real person or brand behind the product. A blank profile is a reason to leave.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Upload your product and set the price</strong>
+            <p>Upload the actual file (PDF, ZIP, video link, Notion link, whatever format applies). Set your price. Add a product cover image. Canva has free templates for digital product covers that look genuinely professional in under 20 minutes.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Write the description (do not skip this)</strong>
+            <p>Use the four-part framework above. Problem, what is inside, what they can do after, who it is for. Two to four paragraphs is enough. Write it the way you would explain it to someone at an event if they asked what you sell.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Connect your payment details</strong>
+            <p>Bank account for naira withdrawals, or whatever payout method the platform supports. Do this before you go live. You do not want to make your first sales and then discover you cannot withdraw because verification is pending.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <strong>Do a test purchase</strong>
+            <p>Buy your own product using a different email address or ask a trusted friend to do it. Go through the entire flow. Did the payment work? Did the download link arrive? Did it arrive quickly? Did the file open correctly? Fix anything that is broken before you send anyone else through it.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <strong>Share your store link, not just the product link</strong>
+            <p>Your store page shows everything you offer. A buyer who just bought your ebook can see that you also offer consulting, custom templates, or a related course. That second purchase costs you nothing to close, and it happens because they can see what else you have without having to ask.</p>
+          </div>
+        </li>
+      </ol>
+
+      <h2>Step 6: Get your first sales without spending money on ads</h2>
+
+      <p>
+        The first ten sales of a digital product almost never come from advertising. They come from the people who already know you, trust you, and have been quietly waiting for you to sell something.
+      </p>
+
+      <p>
+        Start with a personal announcement. Not a formal marketing post. A direct, honest message on your platform of choice that says: I made this thing, here is what it solves, here is who it is for, here is the link. Write it the way you talk, not the way a marketing template sounds. People can tell the difference, and the personal version converts better.
+      </p>
+
+      <p>
+        Then ask three to five people who fit the description of your ideal buyer to look at it and give you honest feedback. Offer them a free or discounted copy in exchange. Their feedback will tell you what the description is missing, what questions a buyer has that you did not answer, and what would make them more confident about the purchase. That feedback is worth ten times the cost of the free copy.
+      </p>
+
+      <div class="callout">
+        <strong>Something that actually works:</strong> Post the problem your product solves, not the product itself. "Has anyone else spent hours every month reformatting client reports from scratch? I built a template that does the hard part automatically." That post generates curiosity. The product link comes in the replies. This approach gets engagement because people respond to problems they recognize, not product announcements they scroll past.
+      </div>
+
+      <p>
+        After your first 10 to 20 sales, you have something more valuable than a product listing. You have real buyer language from the people who bought it. Their testimonials, their review language, the specific phrases they use to describe what it helped them with. Use that language to rewrite your product description. It will outperform anything you wrote from your own perspective, because it comes from people who have already been convinced.
+      </p>
+
+      <h2>The part most guides leave out: what happens when you also do custom work</h2>
+
+      <p>
+        Here is a conversation that happens constantly for Nigerian creators who sell digital products.
+      </p>
+
+      <p>
+        Someone buys your ebook on social media strategy. They read it. They like it. They send you a DM: "Can you do this for my brand?" Now you are in a different kind of conversation. It is not a product sale anymore. It is a consulting inquiry, a project scope discussion, a rate negotiation.
+      </p>
+
+      <p>
+        Most platforms built for digital product sales stop here. They have no way to take that inquiry and turn it into a formal project with an agreed scope, a payment structure, and delivery tracking. You are back to WhatsApp and bank transfers and hoping the client pays when the work is done.
+      </p>
+
+      <p>
+        This is exactly what the guide on <a href="/blog/one-link-three-ways-to-get-paid">one link and three ways to get paid</a> covers. Products, custom projects, and invoicing from a single profile, so when someone goes from buyer to client, the whole thing stays organised and protected instead of falling into your DMs.
+      </p>
+
+      <p>
+        That transition from product buyer to custom client is where a lot of Nigerian creator revenue lives. Products bring people in the door. Custom work is often where the bigger money actually is. A platform that handles both means you are not losing revenue every time someone asks "can you do this for me specifically?"
+      </p>
+
+      <h2>A word on the "I will launch later" feeling</h2>
+
+      <p>
+        There is a very specific kind of procrastination that targets creative people who are about to sell something for the first time. It does not feel like avoidance. It feels like responsibility. The product needs one more pass. The cover needs to be redesigned. You want to build a better landing page first. You will launch after you have grown your audience a bit more.
+      </p>
+
+      <p>
+        None of that is the actual reason. The actual reason is that launching means finding out whether people will pay for what you made. And that is a vulnerable position to be in. What if they do not?
+      </p>
+
+      <p>
+        What actually happens when you launch an imperfect product: buyers tell you what is missing. You update it. You tell existing buyers they get the updated version. They share it because the update was responsive to real feedback. The product gets better faster than it ever would have in your drafts folder.
+      </p>
+
+      <p>
+        What happens when you wait: the product sits there. The market moves. You add more slides. You wait a bit more. Twelve months later you have a more polished product that is still not launched, and someone else has already carved out that space.
+      </p>
+
+      <div class="callout">
+        <strong>The honest truth:</strong> Done and imperfect beats perfect and unseen, every single time. Ship it. Improve it. Sell the improved version to the same people.
+      </div>
+
+    </article>
+
+    <!-- CTA -->
+    <div class="glass p-6 sm:p-8 mt-10 text-center relative overflow-hidden">
+      <div class="blob w-40 h-40 opacity-[0.06]" style="background:#2d8a5e;top:-20px;right:-20px;"></div>
+      <h2 class="text-navy font-extrabold text-lg sm:text-xl mb-2 relative z-10">Create your store and start selling</h2>
+      <p class="text-navy/60 text-sm leading-relaxed mb-5 relative z-10">
+        List your ebook, template, or course on Kreddlo and get paid through Flutterwave, Paystack, or crypto. Same profile handles custom orders and invoicing too, so when a buyer becomes a client, you are already set up.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
+        <a href="/signup.html"   class="btn-green w-full sm:w-auto">Create Free Account</a>
+        <a href="/pricing.html"  class="btn-secondary w-full sm:w-auto">See Pricing</a>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    <div class="mt-12">
+      <p class="text-navy/50 text-xs font-semibold uppercase tracking-widest mb-5">Related Articles</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <a href="/blog/kreddlo-vs-selar-vs-nestuge" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Comparison</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Kreddlo vs Selar vs Nestuge: Which Platform Should You Use?</p>
+          <p class="text-navy/50 text-xs leading-relaxed">A fair breakdown of fees, features, and which platform fits which type of creator.</p>
+        </a>
+
+        <a href="/blog/one-link-three-ways-to-get-paid" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Platform</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">One Link, Three Ways to Get Paid</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Products, custom orders, and invoicing from one profile. What it looks like when a buyer becomes a client.</p>
+        </a>
+
+        <a href="/blog/how-to-invoice-clients-nigeria" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Invoicing</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">How to Invoice Clients as a Freelancer in Nigeria</p>
+          <p class="text-navy/50 text-xs leading-relaxed">When a buyer wants custom work, this is how you collect payment without losing money to delays.</p>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Back to blog -->
+    <div class="mt-10 pt-6 border-t border-border">
+      <a href="/blog" class="inline-flex items-center gap-2 text-navy/60 hover:text-navy font-medium text-sm transition-colors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to Blog
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+</body>
+</html>

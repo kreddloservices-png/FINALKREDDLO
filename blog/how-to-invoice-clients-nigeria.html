@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>How to Invoice Clients as a Freelancer in Nigeria (Free Template + Tools) | Kreddlo Blog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color:  rgba(255,255,255,0.25);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,
+        0 -1px 0  0   rgba(255,255,255,0.20) inset,
+        0 8px 32px    rgba(13,33,69,0.10),
+        0 1px 2px     rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.08) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    .tag-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(45,138,94,0.10);
+      color: #2d8a5e;
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .hero-bar {
+      background: linear-gradient(135deg, #0d2145 0%, #162f5e 60%, #1a3a6e 100%);
+    }
+
+    /* Article body typography */
+    .article-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1e2d4a;
+    }
+    .article-body h2 {
+      font-size: clamp(1.2rem, 3vw, 1.45rem);
+      font-weight: 800;
+      color: #0d2145;
+      margin-top: 2.4rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.3;
+    }
+    .article-body h3 {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      color: #0d2145;
+      margin-top: 1.8rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul li {
+      padding-left: 1.4rem;
+      position: relative;
+      margin-bottom: 0.65rem;
+    }
+    .article-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2d8a5e;
+      flex-shrink: 0;
+    }
+    .article-body strong {
+      font-weight: 700;
+      color: #0d2145;
+    }
+    .article-body a {
+      color: #2d8a5e;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-body a:hover { color: #1a6040; }
+
+    /* Callout box */
+    .callout {
+      background: rgba(45,138,94,0.07);
+      border-left: 4px solid #2d8a5e;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout strong { color: #2d8a5e; }
+
+    /* Warning callout */
+    .callout-warn {
+      background: rgba(192,57,43,0.06);
+      border-left: 4px solid #c0392b;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout-warn strong { color: #c0392b; }
+
+    /* Template box */
+    .template-box {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin: 1.6rem 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #1e2d4a;
+    }
+    .template-box .template-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #2d8a5e;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .template-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .template-key {
+      font-weight: 700;
+      color: #0d2145;
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+    .template-val {
+      color: #4a5568;
+    }
+    .template-divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 14px 0;
+    }
+
+    /* Numbered steps */
+    .steps-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.4rem 0;
+      counter-reset: steps;
+    }
+    .steps-list li {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+      padding: 0;
+    }
+    .steps-list li::before { display: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0d2145;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .step-body {
+      flex: 1;
+    }
+    .step-body strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: #0d2145;
+      margin-bottom: 3px;
+    }
+    .step-body p {
+      font-size: 14px;
+      color: #3a4a60;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Comparison table */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 1.6rem 0;
+    }
+    .compare-table thead tr {
+      background: #0d2145;
+      color: #fff;
+    }
+    .compare-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .compare-table tbody tr:nth-child(even) {
+      background: rgba(13,33,69,0.03);
+    }
+    .compare-table tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+      color: #1e2d4a;
+    }
+    .compare-table tbody td:first-child {
+      font-weight: 600;
+      color: #0d2145;
+    }
+    .check { color: #2d8a5e; font-weight: 700; }
+    .cross { color: #c0392b; font-weight: 700; }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .related-card {
+      text-decoration: none;
+      display: block;
+      transition: transform .18s, box-shadow .18s;
+    }
+    .related-card:hover { transform: translateY(-2px); }
+
+    @media (max-width: 480px) {
+      .compare-table thead th,
+      .compare-table tbody td { padding: 10px 10px; font-size: 13px; }
+    }
+  </style>
+
+  <!-- OG / Twitter Card -->
+  <meta id="meta-description" name="description" content="How to invoice clients as a freelancer in Nigeria. What every invoice needs, how to track payment status, and how Kreddlo protects you when clients stall." />
+  <meta property="og:type"        content="article" />
+  <meta property="og:title"       content="How to Invoice Clients as a Freelancer in Nigeria (Free Template + Tools)" />
+  <meta property="og:description" content="How to invoice clients as a freelancer in Nigeria. What every invoice needs, how to track payment status, and how Kreddlo protects you when clients stall." />
+  <meta property="og:url"         content="https://kreddlo.space/blog/how-to-invoice-clients-nigeria" />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og.png" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="How to Invoice Clients as a Freelancer in Nigeria (Free Template + Tools)" />
+  <meta name="twitter:description" content="How to invoice clients as a freelancer in Nigeria. What every invoice needs, how to track payment status, and how Kreddlo protects you when clients stall." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og.png" />
+
+  <link id="canonical" rel="canonical" href="https://kreddlo.space/blog/how-to-invoice-clients-nigeria" />
+  <script src="/assets/shared.js" defer></script>
+</head>
+
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<!-- Hero -->
+<section class="hero-bar py-10 px-4 sm:px-6 relative overflow-hidden">
+  <div class="blob w-72 h-72 opacity-[0.08]" style="background:#2d8a5e;top:-60px;right:-60px;"></div>
+  <div class="blob w-48 h-48 opacity-[0.06]" style="background:#3dbd7a;bottom:-30px;left:-20px;"></div>
+  <div class="max-w-2xl mx-auto relative z-10">
+    <a href="/blog" class="inline-flex items-center gap-1.5 text-white/50 hover:text-white/80 text-xs font-medium mb-5 transition-colors" style="text-decoration:none;">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Blog
+    </a>
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <span class="tag-pill" style="background:rgba(61,189,122,0.18);color:#3dbd7a;">Invoicing</span>
+      <span class="tag-pill" style="background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.60);">Nigeria</span>
+      <span class="tag-pill" style="background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.60);">Getting Paid</span>
+    </div>
+    <h1 class="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl leading-tight mb-4">
+      How to Invoice Clients as a Freelancer in Nigeria (Free Template + Tools)
+    </h1>
+    <p class="text-white/65 text-base sm:text-lg leading-relaxed max-w-xl">
+      Most freelancers in Nigeria lose money not because their work is bad, but because their paperwork is. Here is what a proper invoice needs, what happens when you leave things out, and how to make clients pay on time.
+    </p>
+    <div class="flex flex-wrap items-center gap-4 mt-6 text-white/40 text-xs">
+      <span>By the Kreddlo Team</span>
+      <span>7 min read</span>
+    </div>
+  </div>
+</section>
+
+<!-- Article -->
+<section class="py-10 px-4 sm:px-6">
+  <div class="max-w-2xl mx-auto">
+
+    <article class="article-body">
+
+      <p>
+        You finished the job. It went well. The client was happy, or at least they said they were. You sent a figure over WhatsApp. They said "send the details." You typed a rough amount, maybe on a Google Doc, maybe in a note app, maybe just in the chat itself. They said "okay." Then nothing. A week passed. Two weeks. You sent a follow-up. They "just checked in with their team." Another week. You started wondering whether you were going to see that money at all.
+      </p>
+
+      <p>
+        That story is so common it barely feels like a story anymore. It is just Tuesday. And the part most people miss is that the problem did not start when the client went quiet. It started when there was nothing in writing that made silence uncomfortable for them.
+      </p>
+
+      <p>
+        An invoice is not just a payment request. It is a document that makes the expectation of payment feel real, formal, and overdue. When you send a well-structured invoice with a due date and a reference number, the client is no longer deciding whether to pay you. They are deciding how long to delay. That is a completely different psychological position for you to negotiate from.
+      </p>
+
+      <div class="callout">
+        <strong>The short version:</strong> A proper invoice makes chasing payment your client's embarrassment, not your problem.
+      </div>
+
+      <h2>What must be on a freelance invoice in Nigeria</h2>
+
+      <p>
+        There is no single law in Nigeria that prescribes exactly what a freelance invoice must contain. But there is a practical standard that experienced freelancers, accountants, and clients all recognize, and deviating from it creates confusion that almost always costs you money.
+      </p>
+
+      <p>
+        Here is what every invoice you send should have:
+      </p>
+
+      <ol class="steps-list">
+        <li>
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Your name and contact information</strong>
+            <p>Full name or business name, email address, phone number, and your bank details or payment link. If you have a business address, include it. If you do not, your city is enough. The point is that you are identifiable and reachable.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Client name and contact information</strong>
+            <p>Who you are billing. Full name or company name, and ideally an email address so the invoice can be forwarded to whoever handles payments on their end. Many freelancers skip this and then wonder why the invoice gets ignored when the contact person changes.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>A unique invoice number</strong>
+            <p>INV-001, INV-2024-07, whatever system you choose. The number matters because it gives both of you a reference point for every future conversation about this payment. Without it, "the invoice I sent last month" becomes an argument about which invoice you mean.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Invoice date and payment due date</strong>
+            <p>The date you sent it, and the date by which you expect payment. Common terms are Net 7 (7 days), Net 14, or Net 30. For Nigerian freelancers working with local clients, Net 7 is usually the most realistic. Net 30 gives people an excuse to forget about you for a month.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <strong>A clear description of the work done</strong>
+            <p>"Design work" is not a description. "Brand identity package: logo (3 concepts, 2 revisions), business card design, letterhead design, brand guideline document" is a description. Be specific enough that the person reading the invoice knows exactly what they are paying for and cannot reasonably dispute that the work was delivered.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <strong>Amount, currency, and total</strong>
+            <p>State the currency clearly, especially if you work with international clients or charge in USD but accept naira equivalents. If you are charging multiple items, list them separately with subtotals. Then show the total at the bottom so there is no arithmetic for the client to do, and no room for "I thought it was a different amount."</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">7</div>
+          <div class="step-body">
+            <strong>Payment instructions</strong>
+            <p>Bank name, account name, account number. Or a direct payment link if you are using a platform that supports it. Do not make them ask how to pay. Every extra step between them and the payment button is a reason to do it later.</p>
+          </div>
+        </li>
+      </ol>
+
+      <h2>A free invoice template you can use today</h2>
+
+      <p>
+        Here is a plain-language template you can adapt. It is not fancy but it covers every field that matters:
+      </p>
+
+      <div class="template-box">
+        <span class="template-label">Invoice Template</span>
+        <div class="template-row"><span class="template-key">From:</span><span class="template-val">Your Full Name / Business Name<br>your@email.com | 080X XXX XXXX<br>City, Nigeria</span></div>
+        <hr class="template-divider" />
+        <div class="template-row"><span class="template-key">To:</span><span class="template-val">Client Name / Company Name<br>client@email.com</span></div>
+        <hr class="template-divider" />
+        <div class="template-row"><span class="template-key">Invoice Number:</span><span class="template-val">INV-001</span></div>
+        <div class="template-row"><span class="template-key">Invoice Date:</span><span class="template-val">25 June 2026</span></div>
+        <div class="template-row"><span class="template-key">Payment Due:</span><span class="template-val">2 July 2026 (Net 7)</span></div>
+        <hr class="template-divider" />
+        <div class="template-row"><span class="template-key">Description:</span><span class="template-val">Website copywriting: 5 pages (Home, About, Services, Blog, Contact). Delivered via Google Drive on 24 June 2026.</span></div>
+        <hr class="template-divider" />
+        <div class="template-row"><span class="template-key">Amount:</span><span class="template-val">NGN 150,000</span></div>
+        <div class="template-row"><span class="template-key">Total Due:</span><span class="template-val" style="font-weight:700;color:#0d2145;">NGN 150,000</span></div>
+        <hr class="template-divider" />
+        <div class="template-row"><span class="template-key">Pay to:</span><span class="template-val">Bank: First Bank Nigeria<br>Account Name: Your Full Name<br>Account Number: 0000000000</span></div>
+        <hr class="template-divider" />
+        <div class="template-row"><span class="template-key">Notes:</span><span class="template-val">Thank you for working with me. Please confirm payment by replying to this email with a transfer receipt.</span></div>
+      </div>
+
+      <p>
+        That is it. You can format it in a Word document, a PDF, or a dedicated invoicing tool. What matters is that the information is there, it is clear, and it reaches the client by email (not just WhatsApp, because email creates a paper trail they cannot easily deny seeing).
+      </p>
+
+      <h2>What happens when you leave things out</h2>
+
+      <p>
+        Missing fields are not just sloppy. They create specific, predictable problems.
+      </p>
+
+      <p>
+        No invoice number means you cannot distinguish between invoices in a payment dispute. No due date means the client never technically owes you by any particular time. No description means they can claim the deliverable was not what they expected. No payment instructions means they will "sort it out" when they get a chance, which is never.
+      </p>
+
+      <div class="callout-warn">
+        <strong>The hardest conversation to have:</strong> "I never got an invoice." A client who wants to delay will use every ambiguity you gave them. A clear, numbered, dated invoice takes most of that ammunition away.
+      </div>
+
+      <p>
+        The other thing missing fields cost you is professionalism. Clients who might otherwise respect your rates and timeline will start to wonder whether you are serious about your work. An invoice says, quietly but clearly, that this is a business transaction, not a favor.
+      </p>
+
+      <h2>The Nigerian invoicing reality: why timing matters</h2>
+
+      <p>
+        Many Nigerian freelancers invoice after delivery. That is understandable, but it creates a dynamic where the client has already received what they wanted and now faces a decision, rather than an obligation. If you can, send the invoice at the same time as the final deliverable or even slightly before. Frame it as part of the handover, not an afterthought.
+      </p>
+
+      <p>
+        For larger projects, break the invoice into milestones. A 50% upfront payment before you start, and 50% on delivery, is the standard for a reason. It aligns incentives on both sides. You are not doing three months of work on the hope that they will pay at the end. They are not paying for work they have not seen yet. Both of you have something at stake.
+      </p>
+
+      <p>
+        For clients who have paid late before, the invoice alone is not enough. This is where platform-based invoicing changes the equation entirely.
+      </p>
+
+      <h2>How Kreddlo's invoicing feature changes the payment dynamic</h2>
+
+      <p>
+        Sending a PDF by email is better than nothing. But it still depends on the client choosing to act. Kreddlo's invoicing tool changes the structure of that choice.
+      </p>
+
+      <p>
+        When you send an invoice through Kreddlo, the client receives a link, not a file. They click through to a payment page. The amount is pre-filled. The due date is visible. They can pay directly with Paystack, Flutterwave, crypto, or any of the gateways Kreddlo supports. There is no friction between "I should pay this" and actually doing it.
+      </p>
+
+      <p>
+        More importantly, the invoice tracks its own status. You can see whether it has been viewed. You know when it is due. If it goes unpaid, you follow up from within the platform and the client can see the history of the conversation attached to the invoice. That is a very different feeling from chasing someone over WhatsApp where they can read your message, feel guilty, and close the app.
+      </p>
+
+      <div class="callout">
+        <strong>The status track matters:</strong> Knowing that your client has seen an invoice changes how confident you can be in a follow-up conversation. "Did you get my invoice?" hits differently when you already know they opened it.
+      </div>
+
+      <p>
+        For clients who keep stalling, Kreddlo's escrow option adds another layer. Instead of paying you directly at the end, the client deposits funds into escrow at the start of the project. The money is held securely. When you deliver, you request release. The client confirms. The funds reach you. If there is a dispute, there is a resolution process rather than a shrug and silence.
+      </p>
+
+      <p>
+        That is not just a payment tool. It is a structure that makes ghosting impractical. The money is already there. They cannot not pay you. They can only delay releasing funds they have already committed to the transaction, and that becomes a documented dispute rather than a vanishing act.
+      </p>
+
+      <h2>The tools question: what should Nigerian freelancers actually use?</h2>
+
+      <p>
+        You have several options, and they are not equally suited to every situation.
+      </p>
+
+      <div class="table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>Good for</th>
+              <th>The problem</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>WhatsApp / chat</td>
+              <td>Quick informal jobs</td>
+              <td>No record, easy to dismiss</td>
+            </tr>
+            <tr>
+              <td>Word / PDF invoice</td>
+              <td>Local clients who prefer email</td>
+              <td>No payment link, no tracking</td>
+            </tr>
+            <tr>
+              <td>Wave / FreshBooks</td>
+              <td>Invoicing only, USD focus</td>
+              <td>Payment collection weak in Nigeria</td>
+            </tr>
+            <tr>
+              <td>Kreddlo</td>
+              <td>Full invoicing + payment collection + escrow for custom work</td>
+              <td>Requires both parties to use the link (takes 30 seconds)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The honest answer is that most Nigerian freelancers need a tool that handles the Nigerian payment infrastructure, not tools built for North American or European freelancers that technically work in Nigeria but make the process awkward. Kreddlo is built specifically for this market, which means Flutterwave, Paystack, crypto, and naira pricing are not afterthoughts. They are the default.
+      </p>
+
+      <h2>When the client still does not pay after the invoice</h2>
+
+      <p>
+        If you have sent a clear, well-formatted invoice with a due date and payment link and the client still has not paid after seven to ten days, here is how to escalate without burning the relationship.
+      </p>
+
+      <p>
+        First follow-up: Reference the invoice number and due date. Keep it factual and brief. "Hi, checking in on Invoice INV-001 which was due on [date]. Please let me know if there is anything you need from me to process this." That is it. No apologies. No aggression. Just professional and factual.
+      </p>
+
+      <p>
+        Second follow-up (if no response after three to five more days): Same tone, slightly more direct. Mention that you will need to pause any ongoing or upcoming work until the outstanding invoice is settled. This is not a threat. It is a reasonable business position.
+      </p>
+
+      <p>
+        Third follow-up: If you are still being ignored at this point, the relationship is either broken or the client has a serious cashflow problem they have not been honest with you about. Either way, this is the moment where having an escrow-backed platform becomes the difference between a lesson and a loss. If the funds were in escrow, you have options. If they were not, you are now negotiating from zero leverage.
+      </p>
+
+      <div class="callout">
+        <strong>Practical advice:</strong> For any project over NGN 50,000 or any client you have not worked with before, require escrow or at minimum a 50% upfront payment before work begins. The invoice is for the back half. The deposit is what guarantees the invoice gets paid.
+      </div>
+
+      <p>
+        If you want a deeper look at what happens when a client gets paid money upfront and still tries to disappear, read about <a href="/blog/get-paid-freelance-work-without-scam">how to get paid for freelance work without getting scammed in Nigeria</a>. And if you are running custom projects, client management through a platform that supports escrow milestones makes an enormous difference. We walk through that in detail in the guide on <a href="/blog/escrow-backed-custom-freelance-projects">how escrow-backed freelance projects work on Kreddlo</a>.
+      </p>
+
+    </article>
+
+    <!-- CTA -->
+    <div class="glass p-6 sm:p-8 mt-10 text-center relative overflow-hidden">
+      <div class="blob w-40 h-40 opacity-[0.06]" style="background:#2d8a5e;top:-20px;right:-20px;"></div>
+      <h2 class="text-navy font-extrabold text-lg sm:text-xl mb-2 relative z-10">Send your first invoice free</h2>
+      <p class="text-navy/60 text-sm leading-relaxed mb-5 relative z-10">
+        Create your Kreddlo account, set up your invoicing, and start getting paid with a real payment link instead of a prayer. Works with Flutterwave, Paystack, and crypto out of the box.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
+        <a href="/signup.html"       class="btn-green w-full sm:w-auto">Create Free Account</a>
+        <a href="/pricing.html"      class="btn-secondary w-full sm:w-auto">See Pricing</a>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    <div class="mt-12">
+      <p class="text-navy/50 text-xs font-semibold uppercase tracking-widest mb-5">Related Articles</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <a href="/blog/get-paid-freelance-work-without-scam" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Payments</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Get Paid Without Getting Scammed</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Red flags, practical steps, and why the invoice alone is not always enough to protect your money.</p>
+        </a>
+
+        <a href="/blog/escrow-backed-custom-freelance-projects" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Contracts</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Custom Work, Real Protection</p>
+          <p class="text-navy/50 text-xs leading-relaxed">How escrow-backed projects on Kreddlo keep both sides accountable from brief to final payment.</p>
+        </a>
+
+        <a href="/blog/one-link-three-ways-to-get-paid" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Platform</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">One Link, Three Ways to Get Paid</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Products, custom orders, and invoicing from a single Kreddlo profile. No three apps, no three logins.</p>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Back to blog -->
+    <div class="mt-10 pt-6 border-t border-border">
+      <a href="/blog" class="inline-flex items-center gap-2 text-navy/60 hover:text-navy font-medium text-sm transition-colors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to Blog
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+</body>
+</html>

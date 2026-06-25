@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Creator Platform Fees Compared: What Selar, Nestuge, and Kreddlo Actually Take From Your Sales | Kreddlo Blog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color:  rgba(255,255,255,0.25);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,
+        0 -1px 0  0   rgba(255,255,255,0.20) inset,
+        0 8px 32px    rgba(13,33,69,0.10),
+        0 1px 2px     rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.08) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    /* Tag pill */
+    .tag-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(45,138,94,0.10);
+      color: #2d8a5e;
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    /* Hero gradient bar */
+    .hero-bar {
+      background: linear-gradient(135deg, #0d2145 0%, #162f5e 60%, #1a3a6e 100%);
+    }
+
+    /* Article body typography */
+    .article-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1e2d4a;
+    }
+    .article-body h2 {
+      font-size: clamp(1.2rem, 3vw, 1.45rem);
+      font-weight: 800;
+      color: #0d2145;
+      margin-top: 2.4rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.3;
+    }
+    .article-body h3 {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      color: #0d2145;
+      margin-top: 1.8rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul li {
+      padding-left: 1.4rem;
+      position: relative;
+      margin-bottom: 0.55rem;
+    }
+    .article-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2d8a5e;
+      flex-shrink: 0;
+    }
+    .article-body strong {
+      font-weight: 700;
+      color: #0d2145;
+    }
+    .article-body a {
+      color: #2d8a5e;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-body a:hover { color: #1a6040; }
+
+    /* Fees table */
+    .fees-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .fees-table th {
+      background: #0d2145;
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 13px;
+    }
+    .fees-table th:first-child { border-radius: 10px 0 0 0; }
+    .fees-table th:last-child  { border-radius: 0 10px 0 0; }
+    .fees-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+      color: #1e2d4a;
+    }
+    .fees-table tr:last-child td { border-bottom: none; }
+    .fees-table tr:nth-child(even) td { background: rgba(45,138,94,0.04); }
+    .fees-table td:first-child { font-weight: 600; color: #0d2145; }
+
+    /* Fee highlight cells */
+    .fee-low  { color: #2d8a5e; font-weight: 700; }
+    .fee-mid  { color: #b7800a; font-weight: 700; }
+    .fee-note { color: #64748b; font-size: 12px; }
+
+    /* Table scroll wrapper for mobile */
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(13,33,69,0.08);
+    }
+
+    /* Example earnings box */
+    .earnings-box {
+      background: #0d2145;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin: 1.6rem 0;
+      color: #fff;
+    }
+    .earnings-box .label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+    }
+    .earnings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-size: 15px;
+    }
+    .earnings-row:last-child { border-bottom: none; }
+    .earnings-row .platform { font-weight: 600; }
+    .earnings-row .amount   { font-weight: 800; font-size: 16px; }
+    .earnings-row .amount.best { color: #3dbd7a; }
+
+    /* Callout box */
+    .callout {
+      background: rgba(45,138,94,0.07);
+      border-left: 4px solid #2d8a5e;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout strong { color: #2d8a5e; }
+
+    /* Related posts */
+    .related-card {
+      text-decoration: none;
+      display: block;
+      transition: transform .2s ease;
+    }
+    .related-card:hover { transform: translateY(-3px); }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .5s ease both; }
+  </style>
+
+  <meta name="description" content="An honest, numbers-first breakdown of what Selar, Nestuge, and Kreddlo actually deduct from every sale. Know your real earnings before picking a platform." />
+  <meta property="og:title"       content="Creator Platform Fees Compared: What Selar, Nestuge, and Kreddlo Actually Take From Your Sales" />
+  <meta property="og:description" content="An honest, numbers-first breakdown of what Selar, Nestuge, and Kreddlo actually deduct from every sale. Know your real earnings before picking a platform." />
+  <meta property="og:url"         content="https://kreddlo.space/blog/creator-platform-fees-compared" />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type"        content="article" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Creator Platform Fees Compared: What Selar, Nestuge, and Kreddlo Actually Take From Your Sales" />
+  <meta name="twitter:description" content="An honest, numbers-first breakdown of what Selar, Nestuge, and Kreddlo actually deduct from every sale." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <link rel="canonical" href="https://kreddlo.space/blog/creator-platform-fees-compared" />
+  <script src="/assets/shared.js" defer></script>
+</head>
+
+<body class="overflow-x-hidden">
+
+<div id="navbar-placeholder"></div>
+
+<!-- Hero -->
+<section class="hero-bar relative overflow-hidden px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14">
+  <div class="blob w-64 h-64 sm:w-96 sm:h-96 opacity-10" style="background:#3dbd7a;top:-60px;right:-60px;"></div>
+  <div class="blob w-40 h-40 sm:w-64 sm:h-64 opacity-[0.07]" style="background:#fff;bottom:-30px;left:-20px;"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto fade-up">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-white/50 text-xs font-medium mb-5" aria-label="Breadcrumb">
+      <a href="/blog" class="hover:text-white/80 transition-colors">Blog</a>
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      <span class="text-white/70">Fees</span>
+    </nav>
+
+    <span class="tag-pill mb-4 inline-block" style="background:rgba(61,189,122,0.18);color:#3dbd7a;">Fees</span>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+      Creator Platform Fees Compared:<br class="hidden sm:block" /> What Selar, Nestuge, and Kreddlo Actually Take
+    </h1>
+    <p class="text-white/70 text-base sm:text-lg leading-relaxed">
+      Before you pick a platform, find out what you actually keep from every sale. The numbers might surprise you.
+    </p>
+    <p class="text-white/40 text-xs mt-5 font-medium">Published June 25, 2026 · 6 min read</p>
+  </div>
+</section>
+
+<!-- Article -->
+<section class="px-4 sm:px-6 py-10 sm:py-14">
+  <div class="max-w-3xl mx-auto">
+
+    <article class="article-body">
+
+      <p>
+        Fee comparisons are one of the most-shared topics in Nigerian creator WhatsApp groups, and for good reason. A 2% difference in platform fees sounds small until you multiply it across a year of sales. Then it starts to look like a month of earnings you gave away without realising it.
+      </p>
+      <p>
+        This post lays out what Selar, Nestuge, and Kreddlo actually charge, in plain numbers, so you can make an informed choice before you commit to a platform.
+      </p>
+
+      <h2>How platform fees work</h2>
+      <p>
+        Most creator platforms charge a percentage of each transaction. Some also charge a flat fee on top. What gets confusing is that the platform fee is often separate from the payment processor fee (Paystack, Flutterwave, Stripe), which also takes a cut before money reaches you.
+      </p>
+      <p>
+        When comparing platforms, you need to look at the total deduction, not just the headline platform fee. That is the only number that tells you what you actually receive.
+      </p>
+
+      <h2>Fee comparison table</h2>
+      <p>Here is a side-by-side breakdown based on publicly available information at the time of writing:</p>
+
+      <div class="table-scroll my-6">
+        <table class="fees-table">
+          <thead>
+            <tr>
+              <th style="min-width:140px;">Platform</th>
+              <th style="min-width:110px;">Platform fee</th>
+              <th style="min-width:130px;">Payment processor fee</th>
+              <th style="min-width:130px;">Escrow / protection</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Selar</td>
+              <td class="fee-mid">5% per sale</td>
+              <td>Included</td>
+              <td class="fee-note">None</td>
+            </tr>
+            <tr>
+              <td>Nestuge</td>
+              <td class="fee-low">3% per sale</td>
+              <td>Included</td>
+              <td class="fee-note">None</td>
+            </tr>
+            <tr>
+              <td>Kreddlo</td>
+              <td class="fee-low">Competitive % per transaction</td>
+              <td>Included</td>
+              <td class="fee-low">Built in</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="fee-note" style="font-size:13px;color:#64748b;margin-top:-8px;">
+        Note: Platform fees change over time. Always verify current rates directly on each platform before making a decision. Kreddlo's exact fee is shown clearly on the <a href="/pricing.html">pricing page</a>.
+      </p>
+
+      <h2>What your earnings actually look like</h2>
+      <p>
+        Here is what a creator selling a product at 10,000 NGN would receive after fees, assuming each platform's standard rate and no additional payment gateway costs:
+      </p>
+
+      <div class="earnings-box">
+        <div class="label">Example: 10,000 NGN sale, after platform fees</div>
+        <div class="earnings-row">
+          <span class="platform">Selar (5%)</span>
+          <span class="amount">9,500 NGN</span>
+        </div>
+        <div class="earnings-row">
+          <span class="platform">Nestuge (3%)</span>
+          <span class="amount">9,700 NGN</span>
+        </div>
+        <div class="earnings-row">
+          <span class="platform">Kreddlo</span>
+          <span class="amount best">See pricing page</span>
+        </div>
+      </div>
+
+      <p>
+        The difference between Selar and Nestuge on a single 10,000 NGN sale is 200 NGN. Across 100 sales, that is 20,000 NGN. Across a year of consistent selling, the gap compounds into a meaningful sum.
+      </p>
+
+      <h2>The fee you are not seeing on other platforms</h2>
+      <p>
+        Here is what the fee comparison tables in WhatsApp groups usually miss: <strong>what does the fee actually buy you?</strong>
+      </p>
+      <p>
+        On Selar and Nestuge, the platform fee covers the infrastructure for listing and selling digital products. That is it. There is no escrow, no buyer protection, no dispute resolution, and no contract system.
+      </p>
+      <p>
+        On Kreddlo, the fee covers all of that plus escrow-backed payment protection, formal dispute resolution, <a href="/blog/kyc-verified-freelancers-why-it-matters">KYC-verified profiles</a>, and the ability to take custom orders and send invoices from the same account.
+      </p>
+
+      <div class="callout">
+        <strong>The real comparison is not platform A vs platform B.</strong> It is "what happens if something goes wrong?" On Selar or Nestuge, a non-paying client or a disputed delivery is your problem to handle alone. On Kreddlo, there is a process for it.
+      </div>
+
+      <h2>When lower fees are not actually cheaper</h2>
+      <p>
+        Imagine you deliver a custom design project through a bank transfer or Paystack link because your product platform does not support custom orders. Your client ghosts you after delivery. You have no escrow, no contract, no recourse.
+      </p>
+      <p>
+        You saved 2% in platform fees. You lost 100% of the payment.
+      </p>
+      <p>
+        This is not a hypothetical. It is the most common complaint in Nigerian freelancer communities. The "cheaper" platform ends up costing more when it cannot handle the full transaction safely.
+      </p>
+
+      <h2>Free plans: what you can do without paying</h2>
+      <p>
+        All three platforms let you get started for free. There are no monthly subscription fees to list products or create an account. You only pay when you make a sale, as a percentage of each transaction.
+      </p>
+      <p>
+        This makes all three accessible to creators who are just starting out. The fee question only becomes critical once you are making regular sales and the cumulative cost starts to show up.
+      </p>
+
+      <h2>Which platform gives you the best value?</h2>
+      <p>
+        If you sell only digital products and have no interest in taking custom client work, Nestuge's lower rate makes it worth considering over Selar, all else being equal.
+      </p>
+      <p>
+        If you do any custom work, invoicing, or project-based client payments, the only relevant question is whether the platform can handle your full income safely. Selar and Nestuge cannot. Kreddlo can.
+      </p>
+      <p>
+        For a full comparison of what each platform supports beyond fees, see <a href="/blog/kreddlo-vs-selar-vs-nestuge">Kreddlo vs Selar vs Nestuge</a>. For a look at how the unified approach works in practice, read <a href="/blog/one-link-three-ways-to-get-paid">One Link, Three Ways to Get Paid</a>.
+      </p>
+
+      <h2>Bottom line</h2>
+      <p>
+        Know what you are paying and know what you are getting for it. A fee comparison that only looks at percentages misses the most important variable: what protection does that fee buy you when something goes wrong?
+      </p>
+      <p>
+        See exactly what Kreddlo charges and what is included on the <a href="/pricing.html">pricing page</a>.
+      </p>
+
+    </article>
+
+    <!-- CTA -->
+    <div class="glass p-6 sm:p-8 mt-10 text-center relative overflow-hidden">
+      <div class="blob w-40 h-40 opacity-[0.06]" style="background:#2d8a5e;top:-20px;right:-20px;"></div>
+      <h2 class="text-navy font-extrabold text-lg sm:text-xl mb-2 relative z-10">See what you actually keep</h2>
+      <p class="text-navy/60 text-sm leading-relaxed mb-5 relative z-10">
+        Transparent fees. No hidden charges. See exactly what Kreddlo takes and what you keep from every sale, project, and invoice.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
+        <a href="/pricing.html" class="btn-green w-full sm:w-auto">See Kreddlo Pricing</a>
+        <a href="/signup.html"  class="btn-secondary w-full sm:w-auto">Create Free Account</a>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    <div class="mt-12">
+      <p class="text-navy/50 text-xs font-semibold uppercase tracking-widest mb-5">Related Articles</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <a href="/blog/kreddlo-vs-selar-vs-nestuge" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Comparison</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Kreddlo vs Selar vs Nestuge</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Which platform should you actually use in 2026? A full feature comparison.</p>
+        </a>
+
+        <a href="/blog/one-link-three-ways-to-get-paid" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Platform</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">One Link, Three Ways to Get Paid</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Products, custom orders, and invoices, all from one Kreddlo profile.</p>
+        </a>
+
+        <a href="/blog/kyc-verified-freelancers-why-it-matters" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Trust &amp; Safety</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">KYC-Verified Freelancers: Why Identity Verification Matters</p>
+          <p class="text-navy/50 text-xs leading-relaxed">What the verified badge actually means, and why it changes how buyers decide who to hire.</p>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Back to blog -->
+    <div class="mt-10 pt-6 border-t border-border">
+      <a href="/blog" class="inline-flex items-center gap-2 text-navy/60 hover:text-navy font-medium text-sm transition-colors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to Blog
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>One Link, Three Ways to Get Paid: Products, Custom Orders, and Invoices | Kreddlo Blog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color:  rgba(255,255,255,0.25);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,
+        0 -1px 0  0   rgba(255,255,255,0.20) inset,
+        0 8px 32px    rgba(13,33,69,0.10),
+        0 1px 2px     rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.08) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    .tag-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(45,138,94,0.10);
+      color: #2d8a5e;
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .hero-bar {
+      background: linear-gradient(135deg, #0d2145 0%, #162f5e 60%, #1a3a6e 100%);
+    }
+
+    .article-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1e2d4a;
+    }
+    .article-body h2 {
+      font-size: clamp(1.2rem, 3vw, 1.45rem);
+      font-weight: 800;
+      color: #0d2145;
+      margin-top: 2.4rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.3;
+    }
+    .article-body h3 {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      color: #0d2145;
+      margin-top: 1.8rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul li {
+      padding-left: 1.4rem;
+      position: relative;
+      margin-bottom: 0.55rem;
+    }
+    .article-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2d8a5e;
+      flex-shrink: 0;
+    }
+    .article-body strong {
+      font-weight: 700;
+      color: #0d2145;
+    }
+    .article-body a {
+      color: #2d8a5e;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-body a:hover { color: #1a6040; }
+
+    .callout {
+      background: rgba(45,138,94,0.07);
+      border-left: 4px solid #2d8a5e;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout strong { color: #2d8a5e; }
+
+    /* Step card */
+    .step-card {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: rgba(255,255,255,0.70);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #0d2145;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-body { flex: 1; }
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0d2145;
+      margin-bottom: 4px;
+    }
+    .step-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #4a5568;
+    }
+
+    /* Stream cards */
+    .stream-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 1.4rem 0;
+    }
+    @media (min-width: 640px) {
+      .stream-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .stream-card {
+      background: rgba(255,255,255,0.80);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+    }
+    .stream-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 20px;
+    }
+    .stream-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0d2145;
+      margin-bottom: 6px;
+    }
+    .stream-desc {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #64748b;
+    }
+
+    .related-card {
+      text-decoration: none;
+      display: block;
+      transition: transform .2s ease;
+    }
+    .related-card:hover { transform: translateY(-3px); }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .5s ease both; }
+  </style>
+
+  <meta name="description" content="Stop juggling three tools and three logins. How a single Kreddlo profile covers digital product sales, custom client orders, and invoicing from one link." />
+  <meta property="og:title"       content="One Link, Three Ways to Get Paid: Products, Custom Orders, and Invoices" />
+  <meta property="og:description" content="Stop juggling three tools and three logins. How a single Kreddlo profile covers digital product sales, custom client orders, and invoicing from one link." />
+  <meta property="og:url"         content="https://kreddlo.space/blog/one-link-three-ways-to-get-paid" />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type"        content="article" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="One Link, Three Ways to Get Paid: Products, Custom Orders, and Invoices" />
+  <meta name="twitter:description" content="Stop juggling three tools and three logins. One Kreddlo profile, three income streams." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <link rel="canonical" href="https://kreddlo.space/blog/one-link-three-ways-to-get-paid" />
+  <script src="/assets/shared.js" defer></script>
+</head>
+
+<body class="overflow-x-hidden">
+
+<div id="navbar-placeholder"></div>
+
+<!-- Hero -->
+<section class="hero-bar relative overflow-hidden px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14">
+  <div class="blob w-64 h-64 sm:w-96 sm:h-96 opacity-10" style="background:#3dbd7a;top:-60px;right:-60px;"></div>
+  <div class="blob w-40 h-40 sm:w-64 sm:h-64 opacity-[0.07]" style="background:#fff;bottom:-30px;left:-20px;"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto fade-up">
+    <nav class="flex items-center gap-2 text-white/50 text-xs font-medium mb-5" aria-label="Breadcrumb">
+      <a href="/blog" class="hover:text-white/80 transition-colors">Blog</a>
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      <span class="text-white/70">Platform</span>
+    </nav>
+
+    <span class="tag-pill mb-4 inline-block" style="background:rgba(61,189,122,0.18);color:#3dbd7a;">Platform</span>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+      One Link, Three Ways to Get Paid:<br class="hidden sm:block" /> Products, Custom Orders, and Invoices
+    </h1>
+    <p class="text-white/70 text-base sm:text-lg leading-relaxed">
+      If you're running three tools to get paid for one freelance career, there's a simpler way. Here's how one Kreddlo profile covers everything.
+    </p>
+    <p class="text-white/40 text-xs mt-5 font-medium">Published June 25, 2026 · 6 min read</p>
+  </div>
+</section>
+
+<!-- Article -->
+<section class="px-4 sm:px-6 py-10 sm:py-14">
+  <div class="max-w-3xl mx-auto">
+
+    <article class="article-body">
+
+      <p>
+        Picture a typical Nigerian freelancer who has figured out a few income streams. She sells an ebook on Selar. She takes design clients and collects payment through a Paystack link she shares on WhatsApp. When a client wants a formal invoice, she copies a template from Google Docs, fills in the amounts manually, and follows up by DM to know if it's been paid.
+      </p>
+      <p>
+        Three income streams. Three separate tools. Three separate logins. And not a single one of them talks to the others.
+      </p>
+      <p>
+        This is the reality for most freelancers who have grown beyond pure product sales. And it creates a specific kind of friction: not just in collecting money, but in projecting professionalism, tracking what you're owed, and knowing at a glance where your income actually stands.
+      </p>
+
+      <h2>The three streams most freelancers have</h2>
+      <p>
+        If you've been freelancing for more than a year, you've probably got at least two of these going at once:
+      </p>
+
+      <div class="stream-grid">
+        <div class="stream-card">
+          <div class="stream-icon" style="background:rgba(45,138,94,0.10);">
+            <svg width="22" height="22" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="stream-label">Digital Products</div>
+          <div class="stream-desc">Ebooks, templates, courses, presets. Things you create once and sell many times.</div>
+        </div>
+        <div class="stream-card">
+          <div class="stream-icon" style="background:rgba(13,33,69,0.07);">
+            <svg width="22" height="22" fill="none" stroke="#0d2145" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div class="stream-label">Custom Orders</div>
+          <div class="stream-desc">Design, development, writing, consulting. Work scoped and priced per client.</div>
+        </div>
+        <div class="stream-card">
+          <div class="stream-icon" style="background:rgba(45,138,94,0.10);">
+            <svg width="22" height="22" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div class="stream-label">Invoices</div>
+          <div class="stream-desc">Formal billing for retainer clients, agencies, or anyone who needs a paper trail.</div>
+        </div>
+      </div>
+
+      <p>
+        Each of these is a legitimate income stream. The problem is that most freelancers end up with a different tool for each one, and none of those tools know about each other.
+      </p>
+
+      <h2>What the multi-tool juggle actually costs you</h2>
+      <p>
+        The obvious cost is time. Logging into three separate dashboards, managing three separate withdrawal accounts, chasing payments across three platforms.
+      </p>
+      <p>
+        But the hidden cost is bigger: it makes you look less professional to clients. When a serious client asks to see your work, your rates, and how they can pay you, sending them three separate links for three different things is not a great first impression. It suggests someone who is piecing things together rather than running an actual business.
+      </p>
+      <p>
+        The other hidden cost is missed visibility. If your product revenue is in Selar, your client payments are through a Paystack link, and your invoices are in a Google Doc. You cannot, at any moment, tell someone what your total earnings are this month without manually adding up three different numbers from three different places.
+      </p>
+
+      <div class="callout">
+        <strong>The real problem is not any single tool.</strong> It's that none of your tools talk to each other, so your freelance business exists as a collection of disconnected parts instead of something coherent you can actually manage.
+      </div>
+
+      <h2>How one Kreddlo profile covers all three</h2>
+      <p>
+        Kreddlo was built specifically for this situation. A single profile gives you three active income streams, all in one dashboard, all withdrawing to the same account.
+      </p>
+
+      <h3>Stream 1: Your product storefront</h3>
+      <p>
+        Upload your ebooks, templates, courses, or digital downloads. Set your prices, configure delivery, and share your store link. Buyers pay and receive their files automatically. This works exactly like Selar or Gumroad, but it lives on the same platform as everything else. If you want to explore this in more detail, see our guide on <a href="/blog/how-to-sell-ebook-digital-product-nigeria">how to sell an ebook or digital product in Nigeria</a>.
+      </p>
+
+      <h3>Stream 2: Custom orders with escrow</h3>
+      <p>
+        This is the part the pure product platforms don't have. When you list a custom service, whether logo design, a website build, or a consulting package, buyers can fund it and the money goes into escrow. It's held securely until you deliver and they confirm. You don't get ghosted after starting the work, and buyers don't worry about paying someone they've never worked with before.
+      </p>
+      <p>
+        This changes what custom work feels like. Instead of chasing 50% upfront via bank transfer and hoping the rest follows, the money is already secured before you begin. Read more about how escrow works in practice in <a href="/blog/kreddlo-vs-selar-vs-nestuge">our platform comparison</a>.
+      </p>
+
+      <h3>Stream 3: Invoicing with payment tracking</h3>
+      <p>
+        Send professional invoices directly from your dashboard. Clients get a payment link, you get a notification when they pay, and the status updates automatically. No more following up manually or guessing whether a bank transfer has cleared.
+      </p>
+      <p>
+        For retainer clients or agencies that need formal documentation before they can process payment, this is the feature that closes the deal.
+      </p>
+
+      <h2>What "one link" actually means in practice</h2>
+      <p>
+        When someone asks what you do and how they can work with you, you send one URL: your Kreddlo profile.
+      </p>
+
+      <div class="my-6">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">They see your products</div>
+            <div class="step-desc">Your digital storefront is front and center. Ebooks, courses, templates. Anything you sell passively is right there.</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">They can commission custom work</div>
+            <div class="step-desc">Your services are listed. They click, fund the project with escrow protection, and you start once the money is secured.</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">They can request an invoice</div>
+            <div class="step-desc">If they need formal documentation for payment, you issue an invoice from the same dashboard and they pay through the same link.</div>
+          </div>
+        </div>
+      </div>
+
+      <p>
+        One URL. One dashboard. One withdrawal account. One place to check what you've earned this month across all three.
+      </p>
+
+      <h2>Who this is actually for</h2>
+      <p>
+        This setup makes the most sense if you are doing at least two of the three income streams already, even if they are currently fragmented across different tools.
+      </p>
+      <p>
+        If you sell only digital products and have never taken a custom client order, a product-only platform like Selar will be simpler to start with. But the moment you start mixing income streams, or the moment a client asks you to do something bespoke, you'll hit the ceiling that product platforms weren't designed to solve.
+      </p>
+      <p>
+        Kreddlo is also the right choice if you're just starting out and want to build something that doesn't have to be rebuilt later. Starting with a platform that handles all three means you never outgrow your tools.
+      </p>
+
+      <h2>Moving from your current setup</h2>
+      <p>
+        If you're already on Selar or another product platform, you don't have to migrate everything at once. Most freelancers start by moving their custom orders and invoicing to Kreddlo first. These are the streams where the fragmentation hurts most, and then consolidate their product sales when it makes sense.
+      </p>
+      <p>
+        There's no penalty for running both in parallel during the transition. The goal is one coherent business, not a rushed migration that disrupts active clients.
+      </p>
+
+      <h2>The bottom line</h2>
+      <p>
+        The three-tool setup is not a sign that you're doing something wrong. It's the natural result of building income streams one at a time, picking whatever tool solved the immediate problem. The cost only becomes obvious when you try to manage the whole thing at once.
+      </p>
+      <p>
+        One Kreddlo profile replaces the stack. Products, custom orders, and invoices, all tracked together, paid out together, managed from a single dashboard. That's the whole idea.
+      </p>
+
+    </article>
+
+    <!-- CTA -->
+    <div class="glass p-6 sm:p-8 mt-10 text-center relative overflow-hidden">
+      <div class="blob w-40 h-40 opacity-[0.06]" style="background:#2d8a5e;top:-20px;right:-20px;"></div>
+      <h2 class="text-navy font-extrabold text-lg sm:text-xl mb-2 relative z-10">Set up your one link today</h2>
+      <p class="text-navy/60 text-sm leading-relaxed mb-5 relative z-10">
+        Products, custom orders, and invoices. One profile, one dashboard, one withdrawal account. Free to start.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
+        <a href="/signup.html" class="btn-green w-full sm:w-auto">Create Free Account</a>
+        <a href="/pricing.html" class="btn-secondary w-full sm:w-auto">See Pricing</a>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    <div class="mt-12">
+      <p class="text-navy/50 text-xs font-semibold uppercase tracking-widest mb-5">Related Articles</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <a href="/blog/kreddlo-vs-selar-vs-nestuge" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Comparison</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Kreddlo vs Selar vs Nestuge</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Which platform fits how you actually work in 2026.</p>
+        </a>
+
+        <a href="/blog/how-to-sell-ebook-digital-product-nigeria" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Products</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">How to Sell an Ebook in Nigeria</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Step-by-step guide to selling digital products online.</p>
+        </a>
+
+        <a href="/blog/how-to-invoice-clients-nigeria" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Invoicing</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">How to Invoice Clients in Nigeria</p>
+          <p class="text-navy/50 text-xs leading-relaxed">What a proper invoice needs and how to track payment status.</p>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Back to blog -->
+    <div class="mt-10 pt-6 border-t border-border">
+      <a href="/blog" class="inline-flex items-center gap-2 text-navy/60 hover:text-navy font-medium text-sm transition-colors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to Blog
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+</body>
+</html>

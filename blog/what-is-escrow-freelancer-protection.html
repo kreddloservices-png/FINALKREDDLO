@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>What Is Escrow and How Does It Protect Freelancers From Non-Payment? | Kreddlo Blog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color:  rgba(255,255,255,0.25);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,
+        0 -1px 0  0   rgba(255,255,255,0.20) inset,
+        0 8px 32px    rgba(13,33,69,0.10),
+        0 1px 2px     rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.08) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    .tag-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(45,138,94,0.10);
+      color: #2d8a5e;
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .hero-bar {
+      background: linear-gradient(135deg, #0d2145 0%, #162f5e 60%, #1a3a6e 100%);
+    }
+
+    /* ── Article body typography ── */
+    .article-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1e2d4a;
+    }
+    .article-body h2 {
+      font-size: clamp(1.2rem, 3vw, 1.45rem);
+      font-weight: 800;
+      color: #0d2145;
+      margin-top: 2.4rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.3;
+    }
+    .article-body h3 {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      color: #0d2145;
+      margin-top: 1.8rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul li {
+      padding-left: 1.4rem;
+      position: relative;
+      margin-bottom: 0.55rem;
+    }
+    .article-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2d8a5e;
+      flex-shrink: 0;
+    }
+    .article-body strong {
+      font-weight: 700;
+      color: #0d2145;
+    }
+    .article-body a {
+      color: #2d8a5e;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-body a:hover { color: #1a6040; }
+
+    /* Callout box */
+    .callout {
+      background: rgba(45,138,94,0.07);
+      border-left: 4px solid #2d8a5e;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout strong { color: #2d8a5e; }
+
+    /* Warning callout */
+    .callout-warn {
+      background: rgba(192,57,43,0.06);
+      border-left: 4px solid #c0392b;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 1.6rem 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #0d2145;
+    }
+    .callout-warn strong { color: #c0392b; }
+
+    /* Step cards */
+    .step-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin: 1.6rem 0;
+    }
+    @media (min-width: 640px) {
+      .step-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .step-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 18px 20px;
+      position: relative;
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: #0d2145;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .step-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0d2145;
+      margin: 0 0 6px 0;
+    }
+    .step-card p {
+      font-size: 13px;
+      color: #4a5568;
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    /* Related posts */
+    .related-card {
+      text-decoration: none;
+      display: block;
+      transition: transform .2s ease;
+    }
+    .related-card:hover { transform: translateY(-3px); }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .5s ease both; }
+  </style>
+
+  <meta name="description" content="Escrow holds a client's money until the work is done. Here's how it works in plain language, why it matters for freelancers, and how Kreddlo uses it to keep both sides safe." />
+  <meta property="og:title"       content="What Is Escrow and How Does It Protect Freelancers From Non-Payment?" />
+  <meta property="og:description" content="Escrow holds a client's money until the work is done. Here's how it works in plain language, why it matters for freelancers, and how Kreddlo uses it to keep both sides safe." />
+  <meta property="og:url"         content="https://kreddlo.space/blog/what-is-escrow-freelancer-protection" />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type"        content="article" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="What Is Escrow and How Does It Protect Freelancers From Non-Payment?" />
+  <meta name="twitter:description" content="Escrow holds a client's money until the work is done. Here's the plain-language breakdown and how Kreddlo puts it to work." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <link rel="canonical" href="https://kreddlo.space/blog/what-is-escrow-freelancer-protection" />
+  <script src="/assets/shared.js" defer></script>
+</head>
+
+<body class="overflow-x-hidden">
+
+<div id="navbar-placeholder"></div>
+
+<!-- ── Hero ── -->
+<section class="hero-bar relative overflow-hidden px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14">
+  <div class="blob w-64 h-64 sm:w-96 sm:h-96 opacity-10" style="background:#3dbd7a;top:-60px;right:-60px;"></div>
+  <div class="blob w-40 h-40 sm:w-64 sm:h-64 opacity-[0.07]" style="background:#fff;bottom:-30px;left:-20px;"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto fade-up">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-white/50 text-xs font-medium mb-5" aria-label="Breadcrumb">
+      <a href="/blog" class="hover:text-white/80 transition-colors">Blog</a>
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      <span class="text-white/70">Payments</span>
+    </nav>
+
+    <span class="tag-pill mb-4 inline-block" style="background:rgba(61,189,122,0.18);color:#3dbd7a;">Payments</span>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+      What Is Escrow and How Does It<br class="hidden sm:block" /> Protect Freelancers From Non-Payment?
+    </h1>
+    <p class="text-white/70 text-base sm:text-lg leading-relaxed">
+      You did the work. The client went quiet. This is the story escrow was built to prevent. Here's how it actually works.
+    </p>
+    <p class="text-white/40 text-xs mt-5 font-medium">Published June 25, 2026 · 6 min read</p>
+  </div>
+</section>
+
+<!-- ── Article ── -->
+<section class="px-4 sm:px-6 py-10 sm:py-14">
+  <div class="max-w-3xl mx-auto">
+
+    <article class="article-body">
+
+      <p>
+        There's a conversation that happens in every freelancer WhatsApp group sooner or later. Someone shares their story. They took a job. They delivered. The client approved it, said "good work," maybe even posted it publicly. And then they vanished. No payment. No response. Nothing.
+      </p>
+      <p>
+        The replies come fast: "Sorry bro," "This is why I collect upfront," "Same thing happened to me." A few people suggest legal threats nobody ever actually follows through on. The conversation moves on. The freelancer doesn't get paid.
+      </p>
+      <p>
+        Escrow is the thing that changes this story entirely. Not by making clients trustworthy. People are people. But by removing the need to trust anyone at all.
+      </p>
+
+      <h2>So what actually is escrow?</h2>
+      <p>
+        Escrow is a financial arrangement where a neutral third party holds money until specific conditions are met. That's it. The concept is old. Banks use it for property purchases. Governments use it for contracts. Car dealerships use it. The idea is simple: neither side has to trust the other completely, because nobody controls the money except the middleman, until the agreed conditions are satisfied.
+      </p>
+      <p>
+        In freelancing, it works like this. A client hires you for a project. Instead of paying you directly (and hoping you deliver) or you starting work directly (and hoping they pay), both of you agree to use escrow. The client deposits the money. It's locked. You can see it's there. You do the work. You deliver. The client confirms delivery. The money releases to you.
+      </p>
+      <p>
+        Neither side is exposed. The client can't ghost you after you deliver because they already paid. You can't disappear with the money without delivering because you don't have it yet.
+      </p>
+
+      <div class="callout">
+        <strong>The core mechanic:</strong> escrow doesn't require trust. It replaces the need for it. The money is already there. The only question is whether the work was delivered to the agreed standard.
+      </div>
+
+      <h2>Why bank transfers and Paystack links keep failing freelancers</h2>
+      <p>
+        The most common payment setup in Nigerian freelancing goes like this: client says they'll pay. You ask for 50% upfront. Client pays. You deliver. You ask for the remaining 50%. Client ghosts, negotiates it down, drags it out, or invents a problem with the work to avoid paying.
+      </p>
+      <p>
+        The 50% upfront model is better than nothing, but it still leaves you chasing half your money on every project. And if the client is determined not to pay, your only options are emotional (guilting them), social (public callouts, which carry their own risks), or legal (which almost nobody pursues over small amounts).
+      </p>
+      <div class="callout-warn">
+        <strong>What direct payment can't solve:</strong> once the money leaves a client's account into yours, disputes get messy. Once you've done the work without payment, you have no leverage at all. The timing problem is the whole problem.
+      </div>
+      <p>
+        Escrow solves the timing problem. The money moves before the work starts, but it doesn't land in your account until the work is done. Both events happen in the right order, every time.
+      </p>
+
+      <h2>How the escrow flow works on Kreddlo</h2>
+      <p>
+        Kreddlo's escrow is built directly into every custom project and service order. There's no setup required. No separate account. No third-party integration. Here's the sequence from the moment a client agrees to hire you:
+      </p>
+
+      <div class="step-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Client funds the project</h3>
+          <p>The client pays the agreed amount into Kreddlo's escrow. You get a notification that funds are secured. Work can begin.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>You do the work</h3>
+          <p>No chasing. No "just checking in on payment." The money is already there. You focus entirely on delivering.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>You submit delivery</h3>
+          <p>When you're done, you mark the project delivered on Kreddlo. The client receives a notification to review and confirm.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Funds release to you</h3>
+          <p>Once the client confirms, the payment releases to your Kreddlo balance immediately. Withdraw on your schedule.</p>
+        </div>
+      </div>
+
+      <p>
+        What happens if the client doesn't confirm? That's where the dispute process comes in, and it's worth understanding before you need it.
+      </p>
+
+      <h2>What happens if there's a dispute?</h2>
+      <p>
+        Disputes happen. Clients have legitimate concerns sometimes. And occasionally a client will try to manufacture a problem to delay or avoid payment. Kreddlo's escrow handles both.
+      </p>
+      <p>
+        If a client raises a dispute after you submit delivery, Kreddlo holds the funds while both sides present their case. You provide the work you delivered. The client explains their concern. A resolution is reached based on what was actually agreed in the project scope.
+      </p>
+      <p>
+        This is why the scope matters. Vague projects ("design something nice for my brand") create room for endless revision requests. Specific projects ("design a logo in three concepts, two revision rounds included") have a clear definition of done. Escrow makes this distinction real in a way that a bank transfer never can.
+      </p>
+      <p>
+        For a detailed walkthrough of the custom project flow including contracts and milestone structures, see our post on <a href="/blog/escrow-backed-custom-freelance-projects">escrow-backed custom freelance projects on Kreddlo</a>.
+      </p>
+
+      <h2>Does escrow protect buyers too?</h2>
+      <p>
+        Yes, and this is the part people underestimate. Escrow isn't a freelancer-only protection. It's symmetric.
+      </p>
+      <p>
+        When a buyer funds a project, they know two things: their money is secured (not gone, not spent), and it will only release when the work meets the agreed standard. If a freelancer takes payment and disappears, the dispute process covers the buyer. The money hasn't gone anywhere.
+      </p>
+      <p>
+        This matters for the reputation of the whole ecosystem. Buyers who feel safe taking risks on newer freelancers are the buyers who build long-term relationships. Escrow creates that safety for both sides at once.
+      </p>
+      <p>
+        If you're a buyer reading this, there's more on this from your angle in our post about <a href="/blog/buyer-protection-paying-freelancers-safely">why you should never pay a freelancer without buyer protection</a>.
+      </p>
+
+      <h2>What escrow cannot do</h2>
+      <p>
+        It's worth being honest about the limits.
+      </p>
+      <p>
+        Escrow does not make bad scope documents good. If you agreed to something vague and the client interprets it differently, escrow holds the money during that disagreement, it doesn't resolve it automatically in your favour.
+      </p>
+      <p>
+        Escrow does not protect you from clients who refuse to pay at all before work begins. If a client won't fund the escrow upfront, that's a red flag in itself. Any serious client who intends to pay has no reason to refuse.
+      </p>
+      <p>
+        And escrow does not cover work done outside the platform. If a client asks you to "just use bank transfer for this one because it's faster," you lose all protection the moment you agree. This is one of the most common ways freelancers get burned even when they know better.
+      </p>
+
+      <div class="callout">
+        <strong>Simple rule:</strong> if the money isn't in escrow before you start, you are extending credit to someone who hasn't earned it yet. You are the bank, and you have no collateral.
+      </div>
+
+      <h2>Is this only for large projects?</h2>
+      <p>
+        No. Escrow makes the most psychological difference on medium-sized projects, the ones worth a few days of work but not enough to justify a contract lawyer. The projects where your gut says "I think they'll pay" and you start anyway and find out you were wrong.
+      </p>
+      <p>
+        For very small amounts, the friction of escrow might feel unnecessary. For very large projects, you'd want a proper contract regardless. But in the middle ground where most freelance work actually happens? Escrow is exactly the right tool.
+      </p>
+
+      <h2>The question worth asking before your next project</h2>
+      <p>
+        Before you start your next piece of client work, ask yourself one question: if this client decided not to pay after delivery, what would I actually do about it?
+      </p>
+      <p>
+        If the honest answer is "not much," then you're taking on a financial risk that no amount of good faith should require. Escrow doesn't fix clients. It removes the need for trust entirely. And that's the point.
+      </p>
+      <p>
+        Read more about what happens when things go wrong and what to watch for before taking a project, in our guide on <a href="/blog/get-paid-freelance-work-without-scam">how to get paid for freelance work without getting scammed</a>.
+      </p>
+
+    </article>
+
+    <!-- ── CTA ── -->
+    <div class="glass p-6 sm:p-8 mt-10 text-center relative overflow-hidden">
+      <div class="blob w-40 h-40 opacity-[0.06]" style="background:#2d8a5e;top:-20px;right:-20px;"></div>
+      <h2 class="text-navy font-extrabold text-lg sm:text-xl mb-2 relative z-10">See how Kreddlo escrow works</h2>
+      <p class="text-navy/60 text-sm leading-relaxed mb-5 relative z-10">
+        Every custom project on Kreddlo comes with escrow built in. No setup. No extra fees. Money held securely until delivery is confirmed.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
+        <a href="/how-it-works.html" class="btn-green w-full sm:w-auto">How Kreddlo Escrow Works</a>
+        <a href="/signup.html"       class="btn-secondary w-full sm:w-auto">Create Free Account</a>
+      </div>
+    </div>
+
+    <!-- ── Related Posts ── -->
+    <div class="mt-12">
+      <p class="text-navy/50 text-xs font-semibold uppercase tracking-widest mb-5">Related Articles</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <a href="/blog/kreddlo-vs-selar-vs-nestuge" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Comparison</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Kreddlo vs Selar vs Nestuge</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Which platform should you use in 2026? A fair, factual comparison.</p>
+        </a>
+
+        <a href="/blog/buyer-protection-paying-freelancers-safely" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Buyers</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Why Buyer Protection Matters</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Never pay a freelancer without it. Here's the honest reason why.</p>
+        </a>
+
+        <a href="/blog/get-paid-freelance-work-without-scam" class="related-card glass p-5">
+          <span class="tag-pill mb-3 block w-fit">Safety</span>
+          <p class="text-navy font-bold text-sm leading-snug mb-1">Get Paid Without Getting Scammed</p>
+          <p class="text-navy/50 text-xs leading-relaxed">Red flags, real stories, and the practical steps that actually protect you.</p>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ── Back to blog ── -->
+    <div class="mt-10 pt-6 border-t border-border">
+      <a href="/blog" class="inline-flex items-center gap-2 text-navy/60 hover:text-navy font-medium text-sm transition-colors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to Blog
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+</body>
+</html>

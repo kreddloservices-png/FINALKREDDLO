@@ -1,0 +1,94 @@
+<footer class="border-t border-border mt-8 py-14 px-5">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Top 3-col grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+
+      <!-- Left: Brand -->
+      <div class="flex flex-col gap-4">
+        <a href="/index.html" style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+        <p class="text-navy/50 text-[14px] leading-relaxed max-w-xs font-normal">
+          The complete freelance operating system for verified professionals in countries locked out of traditional payment networks.
+        </p>
+      </div>
+
+      <!-- Center: Navigation -->
+      <div class="flex flex-col md:items-center gap-3">
+        <p class="text-navy font-bold text-[13px] uppercase tracking-widest mb-1">Platform</p>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+          <a href="/index.html#features"      class="text-navy/55 text-[14px] hover:text-navy transition-colors">Features</a>
+          <a href="/how-it-works.html"        class="text-navy/55 text-[14px] hover:text-navy transition-colors">How It Works</a>
+          <a href="/browse.html"              class="text-navy/55 text-[14px] hover:text-navy transition-colors">Browse</a>
+          <a href="/pricing.html"             class="text-navy/55 text-[14px] hover:text-navy transition-colors">Pricing</a>
+          <a href="/signup.html"              class="text-navy/55 text-[14px] hover:text-navy transition-colors">Sign Up</a>
+          <a href="/login.html"               class="text-navy/55 text-[14px] hover:text-navy transition-colors">Log In</a>
+          <a href="/blog/index.html"          class="text-navy/55 text-[14px] hover:text-navy transition-colors">Blog</a>
+        </div>
+      </div>
+
+      <!-- Right: Social -->
+      <div class="flex flex-col md:items-end gap-4">
+        <p class="text-navy font-bold text-[13px] uppercase tracking-widest mb-1">Connect</p>
+        <div class="flex items-center gap-4">
+          <!-- Twitter/X -->
+          <a id="footer-social-twitter" href="#" target="_blank" rel="noopener" aria-label="Twitter" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+            <svg width="16" height="16" fill="#0d2145" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <!-- LinkedIn -->
+          <a id="footer-social-linkedin" href="#" target="_blank" rel="noopener" aria-label="LinkedIn" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+            <svg width="16" height="16" fill="#0d2145" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <!-- Instagram -->
+          <a id="footer-social-instagram" href="#" target="_blank" rel="noopener" aria-label="Instagram" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+            <svg width="16" height="16" fill="none" stroke="#0d2145" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="#0d2145"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-navy/40 text-[13px] font-normal">
+        &copy; <span class="footer-yr"></span> Kreddlo. All rights reserved.
+      </p>
+      <div class="flex items-center gap-5">
+        <a href="/privacy.html" class="text-navy/40 text-[13px] hover:text-navy transition-colors">Privacy Policy</a>
+        <a href="/terms.html"   class="text-navy/40 text-[13px] hover:text-navy transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  /* ── Copyright year ── */
+  var yrEls = document.querySelectorAll('.footer-yr');
+  var yr = new Date().getFullYear();
+  yrEls.forEach(function (el) { el.textContent = yr; });
+
+  /* ── Social links from Firestore config ── */
+  function loadSocial() {
+    if (!window.db) return;
+    (async function () {
+      try {
+        var fsModule = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        var snap = await fsModule.getDoc(fsModule.doc(window.db, 'config', 'platform'));
+        var s = snap.exists() ? snap.data() : {};
+        ['twitter', 'linkedin', 'instagram'].forEach(function (name) {
+          var el  = document.getElementById('footer-social-' + name);
+          if (!el) return;
+          var url = s[name + 'Url'] || '';
+          if (url) { el.href = url; el.style.display = 'flex'; }
+          else     { el.style.display = 'none'; }
+        });
+      } catch (e) { /* silent fail — social links stay hidden */ }
+    })();
+  }
+
+  if (window.db) {
+    loadSocial();
+  } else {
+    window.addEventListener('kreddlo-firebase-ready', loadSocial, { once: true });
+  }
+})();
+</script>
