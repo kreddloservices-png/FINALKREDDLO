@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Browse Verified Freelancers — Kreddlo</title>
+  <meta id="meta-description" name="description" content="Find skilled KYC-verified freelancers across design, development, writing, marketing and more. Every professional on Kreddlo is identity-verified." />
+  <meta property="og:title" content="Browse Verified Freelancers - Kreddlo" />
+  <meta property="og:description" content="Find skilled KYC-verified freelancers across design, development, writing, marketing and more." />
+  <meta property="og:url" content="https://kreddlo.space/browse.html" />
+  <meta property="og:image" content="/assets/kreddlo-og-banner.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link id="canonical" rel="canonical" href="https://kreddlo.space/browse.html" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            'navy-deep':   '#091830',
+            'navy-mid':    '#162f5e',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            'green-pale':  '#e8f5ef',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          borderRadius: {
+            pill: '50px',
+            card: '20px',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── Base ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Glass ── */
+    .glass {
+      background: rgba(255,255,255,0.60);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.30);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(13,33,69,0.08);
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      text-decoration: none; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(13,33,69,0.20);
+    }
+    .btn-primary:hover  { background: #162f5e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,33,69,0.28); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover  { background: #0d2145; color: #fff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,33,69,0.20); }
+    .btn-secondary:active { transform: translateY(0); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      text-decoration: none; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(45,138,94,0.30);
+    }
+    .btn-green:hover  { background: #236b49; border-color: #236b49; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,138,94,0.38); }
+    .btn-green:active { transform: translateY(0); }
+
+    /* ── Blob decoration ── */
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    /* ── Mobile menu overlay ── */
+    .menu-overlay {
+      position: fixed; inset: 0;
+      background: rgba(9,24,48,0.60);
+      z-index: 400;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .menu-overlay.open { opacity: 1; pointer-events: all; }
+
+    /* ── Mobile slide-in menu ── */
+    .mobile-menu-panel {
+      position: fixed; top: 0; right: 0;
+      width: 280px; height: 100%;
+      background: #091830;
+      z-index: 500;
+      padding: 32px 24px;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.30s cubic-bezier(0.4,0,0.2,1);
+      overflow-y: auto;
+    }
+    .mobile-menu-panel.open { transform: translateX(0); }
+
+    /* ── Search bar ── */
+    .search-wrapper { position: relative; width: 100%; }
+    .search-input {
+      width: 100%;
+      padding: 15px 120px 15px 50px;
+      border-radius: 50px;
+      border: 1.5px solid #e2e8f0;
+      background: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 500;
+      color: #0d2145;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 20px rgba(13,33,69,0.06);
+    }
+    @media (max-width: 400px) {
+      .search-input { padding: 14px 100px 14px 46px; font-size: 14px; }
+      .search-btn   { padding: 9px 16px; font-size: 13px; }
+    }
+    .search-input::placeholder { color: rgba(13,33,69,0.38); }
+    .search-input:focus {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.12), 0 4px 20px rgba(13,33,69,0.06);
+    }
+    .search-icon {
+      position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .search-btn {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      background: #2d8a5e; color: #fff;
+      border: none; border-radius: 50px;
+      padding: 9px 20px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s ease, box-shadow 0.15s ease;
+      box-shadow: 0 2px 10px rgba(45,138,94,0.30);
+    }
+    .search-btn:hover { background: #236b49; box-shadow: 0 4px 14px rgba(45,138,94,0.38); }
+    .search-btn:focus-visible { outline: 2px solid #3dbd7a; outline-offset: 2px; }
+
+    /* ── Category filter pills ── */
+    .filter-scroll-wrap { position: relative; }
+    .filter-scroll-wrap::after {
+      content: ''; position: absolute; top: 0; right: 0; bottom: 4px; width: 36px;
+      background: linear-gradient(to right, rgba(248,249,251,0), #f8f9fb);
+      pointer-events: none; opacity: 1; transition: opacity 0.2s ease;
+    }
+    .filter-scroll-wrap.at-end::after { opacity: 0; }
+    .filter-scroll {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none;
+    }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+    .filter-pill {
+      flex-shrink: 0; padding: 8px 18px; border-radius: 50px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid #e2e8f0; background: #ffffff;
+      color: rgba(13,33,69,0.65);
+      transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+      white-space: nowrap; user-select: none;
+    }
+    .filter-pill:hover  { border-color: #2d8a5e; color: #2d8a5e; background: rgba(45,138,94,0.04); }
+    .filter-pill:focus-visible { outline: 2px solid #2d8a5e; outline-offset: 2px; }
+    .filter-pill.active {
+      background: #2d8a5e; border-color: #2d8a5e; color: #ffffff;
+      box-shadow: 0 4px 12px rgba(45,138,94,0.28);
+    }
+
+    /* ── Freelancer card ── */
+    .freelancer-card {
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.40);
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(13,33,69,0.07);
+      padding: 22px;
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.2s ease;
+      text-decoration: none;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+    @media (min-width: 768px) {
+      .freelancer-card { padding: 26px; }
+    }
+    .freelancer-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(13,33,69,0.14);
+      border-color: rgba(45,138,94,0.30);
+    }
+    .freelancer-card:focus-visible {
+      outline: 2px solid #2d8a5e; outline-offset: 2px;
+    }
+
+    /* ── Boosted ring ── */
+    .freelancer-card.is-boosted {
+      border-color: rgba(45,138,94,0.22);
+    }
+
+    /* ── Avatar ── */
+    .avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      object-fit: cover; flex-shrink: 0;
+      border: 2px solid rgba(45,138,94,0.22);
+    }
+    .avatar-placeholder {
+      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #0d2145 0%, #2d8a5e 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; font-weight: 700; color: #fff;
+      border: 2px solid rgba(45,138,94,0.22);
+    }
+
+    /* ── Badges ── */
+    .badge-verified {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(45,138,94,0.10); color: #2d8a5e;
+      border: 1px solid rgba(45,138,94,0.28);
+      border-radius: 50px; padding: 3px 10px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    .badge-boosted {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(13,33,69,0.07); color: #0d2145;
+      border: 1px solid rgba(13,33,69,0.14);
+      border-radius: 50px; padding: 3px 10px;
+      font-size: 11px; font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* ── Skill tags ── */
+    .skill-tag {
+      display: inline-block;
+      border: 1.5px solid rgba(45,138,94,0.35);
+      color: #2d8a5e;
+      border-radius: 50px;
+      padding: 3px 11px;
+      font-size: 12px; font-weight: 600;
+    }
+
+    /* ── Skeleton loader ── */
+    .skeleton {
+      background: linear-gradient(90deg, #eaecf2 25%, #f2f4f8 50%, #eaecf2 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite linear;
+      border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Empty / error state ── */
+    .empty-state {
+      text-align: center; padding: 64px 24px;
+      grid-column: 1 / -1;
+    }
+
+    /* ── Fade-up ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.55s ease both; }
+
+    /* ── Pulse dot ── */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── Navbar link active ── */
+    .nav-active { color: #0d2145 !important; font-weight: 700 !important; }
+
+    /* ── Focus-visible global ── */
+    :focus-visible { outline: 2px solid #2d8a5e; outline-offset: 2px; }
+
+    /* ── Browse tabs ── */
+    .browse-tabs {
+      display: flex; gap: 8px; justify-content: center;
+      margin: 0 auto 28px; max-width: 380px;
+      background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 50px;
+      padding: 5px; box-shadow: 0 4px 20px rgba(13,33,69,0.06);
+    }
+    .browse-tab {
+      flex: 1; text-align: center; padding: 11px 18px; border-radius: 50px;
+      font-size: 14px; font-weight: 700; cursor: pointer; border: none;
+      background: transparent; color: rgba(13,33,69,0.50);
+      transition: background 0.2s ease, color 0.2s ease;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .browse-tab.active {
+      background: #0d2145; color: #fff;
+      box-shadow: 0 4px 14px rgba(13,33,69,0.22);
+    }
+
+    /* ── Product card ── */
+    .prod-card {
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.40);
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(13,33,69,0.07);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.2s ease;
+    }
+    .prod-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(13,33,69,0.14);
+      border-color: rgba(45,138,94,0.30);
+    }
+    .prod-cover {
+      width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;
+      background: #f0f2f6;
+    }
+    .prod-cover-placeholder {
+      width: 100%; aspect-ratio: 16/9;
+      background: linear-gradient(135deg, rgba(13,33,69,0.05) 0%, rgba(45,138,94,0.07) 100%);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .prod-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
+    .prod-title {
+      font-size: 15px; font-weight: 700; color: #0d2145; letter-spacing: -0.2px;
+      margin: 0 0 6px; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .prod-price { font-size: 18px; font-weight: 800; color: #0d2145; letter-spacing: -0.4px; margin: 0; }
+    .prod-divider { height: 1px; background: #e2e8f0; margin: 12px 0; }
+    .prod-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+    .prod-sales { font-size: 12px; font-weight: 600; color: rgba(13,33,69,0.45); display: inline-flex; align-items: center; }
+
+    /* ── Affiliate link button ── */
+    .btn-affiliate {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; background: transparent; color: #2d8a5e;
+      border: 1.5px solid rgba(45,138,94,0.35); border-radius: 50px;
+      padding: 9px 14px; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+    .btn-affiliate:hover { background: rgba(45,138,94,0.07); border-color: #2d8a5e; transform: translateY(-1px); }
+    .btn-affiliate:active { transform: translateY(0); }
+
+    /* ── Affiliate link modal ── */
+    .aff-modal-bg {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(9,24,48,0.55); display: flex;
+      align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .aff-modal-bg.open { opacity: 1; pointer-events: auto; }
+    .aff-modal {
+      background: #fff; border-radius: 20px 20px 0 0;
+      padding: 24px 20px 32px; width: 100%; max-width: 480px;
+      transform: translateY(40px); transition: transform .25s ease;
+      box-shadow: 0 -8px 40px rgba(13,33,69,0.14);
+    }
+    .aff-modal-bg.open .aff-modal { transform: translateY(0); }
+    @media (min-width: 600px) {
+      .aff-modal-bg { align-items: center; }
+      .aff-modal { border-radius: 20px; padding: 28px 28px 32px; }
+    }
+
+    /* ── Browse page toast ── */
+    #browse-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px);
+      background: #091830; color: #fff; border-radius: 50px;
+      padding: 11px 22px; font-size: 13px; font-weight: 600;
+      z-index: 3000; opacity: 0; pointer-events: none;
+      transition: transform .25s, opacity .25s; white-space: nowrap;
+      max-width: 90vw; text-align: center;
+    }
+    #browse-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+
+  <!-- Firebase CDN -->
+  <script type="module">
+    import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit, doc, getDoc }
+                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+      authDomain:        "kreddlo.firebaseapp.com",
+      projectId:         "kreddlo",
+      storageBucket:     "kreddlo.firebasestorage.app",
+      messagingSenderId: "764500458567",
+      appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+
+    const app      = initializeApp(firebaseConfig);
+    window.db      = getFirestore(app);
+    window.auth    = getAuth(app);
+    window._fsQuery = { collection, query, where, getDocs, orderBy, limit };
+
+    // Set a flag AND dispatch the event — the flag ensures whenFirebaseReady()
+    // works correctly even if the non-module script hasn't registered its
+    // listener yet when this module fires (ES modules are deferred so the
+    // regular script block below may run before or after this one depending
+    // on browser/network timing — the flag makes it order-independent).
+    window._firebaseReady = true;
+    // Expose onAuthStateChanged so non-module scripts can subscribe to auth state
+    // without needing to import from the modular SDK themselves.
+    window._onAuthStateChanged = (cb) => onAuthStateChanged(window.auth, cb);
+    window.dispatchEvent(new Event('kreddlo-firebase-ready'));
+
+    // Load social links from Firestore config
+    (async () => {
+      try {
+        const snap = await getDoc(doc(window.db, 'config', 'platform'));
+        const s = snap.exists() ? snap.data() : {};
+        ['twitter', 'linkedin', 'instagram'].forEach(name => {
+          const el = document.getElementById('social-' + name);
+          if (!el) return;
+          const url = s[name + 'Url'] || '';
+          if (url) { el.href = url; el.style.display = 'flex'; } else { el.style.display = 'none'; }
+        });
+      } catch (e) { /* silent fail */ }
+    })();
+
+    // Auth-aware nav
+    onAuthStateChanged(window.auth, async (user) => {
+      const navPublicDesktop = document.getElementById('nav-public-desktop');
+      const navAuthDesktop   = document.getElementById('nav-auth-desktop');
+      const navPublicMobile  = document.getElementById('nav-public-mobile');
+      const navAuthMobile    = document.getElementById('nav-auth-mobile');
+      const avatarEl         = document.getElementById('nav-browse-avatar');
+      const dashLinkD        = document.getElementById('nav-browse-dash-desktop');
+      const dashLinkM        = document.getElementById('nav-browse-dash-mobile');
+
+      if (!user) return; // keep public nav
+
+      // Resolve role → dashboard href + affiliate status
+      let dashHref = '/dashboard.html';
+      try {
+        const snap = await getDoc(doc(window.db, 'users', user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.role === 'buyer') dashHref = '/buyer-dashboard.html';
+          // Store affiliate state for use in product card rendering
+          window._myUid              = user.uid;
+          window._myAffiliateEnabled = data.affiliateEnabled === true;
+
+          // Product cards render independently of auth and usually finish
+          // first — so cards are often built before _myAffiliateEnabled is
+          // known, locking the "Get Affiliate Link" button out of that
+          // render pass with no onclick attached. Re-render now that the
+          // real affiliate status is known so the button (when it should
+          // appear) is always wired up correctly.
+          if (typeof renderProductCards === 'function' && typeof filterProducts === 'function') {
+            renderProductCards(filterProducts());
+          }
+        }
+      } catch(e) {}
+
+      if (dashLinkD) dashLinkD.href = dashHref;
+      if (dashLinkM) dashLinkM.href = dashHref;
+
+      // Avatar initial
+      const initial = (user.displayName || user.email || '?')[0].toUpperCase();
+      if (avatarEl) avatarEl.textContent = initial;
+
+      // Swap desktop nav
+      if (navPublicDesktop) navPublicDesktop.style.display = 'none';
+      if (navAuthDesktop)   navAuthDesktop.style.display   = 'flex';
+
+      // Swap mobile nav
+      if (navPublicMobile) navPublicMobile.style.display = 'none';
+      if (navAuthMobile)   navAuthMobile.style.display   = 'flex';
+    });
+  </script>
+</head>
+
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+  <!-- ══════════════════════════════════
+       MOBILE MENU OVERLAY
+  ══════════════════════════════════ -->
+  <div class="menu-overlay" id="menu-overlay" onclick="closeMobileMenu()" aria-hidden="true"></div>
+
+  <!-- ══════════════════════════════════
+       MOBILE SLIDE-IN MENU
+  ══════════════════════════════════ -->
+  <div class="mobile-menu-panel" id="mobile-panel" role="dialog" aria-label="Navigation menu" aria-modal="true">
+    <!-- Close button -->
+    <div class="flex items-center justify-between mb-10">
+      <span style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
+        Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span>
+      </span>
+      <button onclick="closeMobileMenu()" aria-label="Close menu"
+        style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.08);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Nav links -->
+    <nav style="display:flex;flex-direction:column;gap:4px;flex:1;">
+      <a href="index.html" onclick="closeMobileMenu()"
+         style="display:block;padding:13px 16px;border-radius:12px;color:rgba(255,255,255,0.60);font-size:15px;font-weight:500;text-decoration:none;transition:background 0.18s,color 0.18s;"
+         onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.color='#fff';"
+         onmouseout="this.style.background='';this.style.color='rgba(255,255,255,0.60)';">
+        Home
+      </a>
+      <a href="browse.html" onclick="closeMobileMenu()"
+         style="display:block;padding:13px 16px;border-radius:12px;background:rgba(45,138,94,0.18);border-left:3px solid #2d8a5e;color:#fff;font-size:15px;font-weight:600;text-decoration:none;">
+        Browse
+      </a>
+      <a href="how-it-works.html" onclick="closeMobileMenu()"
+         style="display:block;padding:13px 16px;border-radius:12px;color:rgba(255,255,255,0.60);font-size:15px;font-weight:500;text-decoration:none;transition:background 0.18s,color 0.18s;"
+         onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.color='#fff';"
+         onmouseout="this.style.background='';this.style.color='rgba(255,255,255,0.60)';">
+        How It Works
+      </a>
+      <a href="pricing.html" onclick="closeMobileMenu()"
+         style="display:block;padding:13px 16px;border-radius:12px;color:rgba(255,255,255,0.60);font-size:15px;font-weight:500;text-decoration:none;transition:background 0.18s,color 0.18s;"
+         onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.color='#fff';"
+         onmouseout="this.style.background='';this.style.color='rgba(255,255,255,0.60)';">
+        Pricing
+      </a>
+    </nav>
+
+    <!-- Auth buttons -->
+    <div id="nav-public-mobile" style="display:flex;flex-direction:column;gap:10px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);">
+      <a href="login.html" onclick="closeMobileMenu()"
+         style="display:block;text-align:center;padding:12px 20px;border-radius:50px;border:1.5px solid rgba(255,255,255,0.20);color:rgba(255,255,255,0.80);font-size:14px;font-weight:600;text-decoration:none;transition:background 0.18s,border-color 0.18s;"
+         onmouseover="this.style.background='rgba(255,255,255,0.06)';"
+         onmouseout="this.style.background='';">
+        Log In
+      </a>
+      <a href="signup.html" onclick="closeMobileMenu()" class="btn-green" style="text-align:center;font-size:14px;padding:12px 20px;">
+        Get Started
+      </a>
+    </div>
+    <!-- Auth nav (shown when logged in) -->
+    <div id="nav-auth-mobile" style="display:none;flex-direction:column;gap:10px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);">
+      <a id="nav-browse-dash-mobile" href="/dashboard.html" onclick="closeMobileMenu()" class="btn-green" style="text-align:center;font-size:14px;padding:12px 20px;">
+        Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       STICKY NAVBAR
+  ══════════════════════════════════ -->
+  <nav style="position:sticky;top:0;z-index:200;padding:12px 16px;">
+    <div class="glass" style="max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+
+      <!-- Logo -->
+      <a href="index.html" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;flex-shrink:0;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+      <!-- Desktop nav links -->
+      <div style="display:none;align-items:center;gap:32px;" class="md-flex-row">
+        <a href="index.html#features" style="color:rgba(13,33,69,0.65);font-size:14px;font-weight:500;text-decoration:none;transition:color 0.18s;"
+           onmouseover="this.style.color='#0d2145';" onmouseout="this.style.color='rgba(13,33,69,0.65)';">Features</a>
+        <a href="how-it-works.html"   style="color:rgba(13,33,69,0.65);font-size:14px;font-weight:500;text-decoration:none;transition:color 0.18s;"
+           onmouseover="this.style.color='#0d2145';" onmouseout="this.style.color='rgba(13,33,69,0.65)';">How It Works</a>
+        <a href="browse.html"         style="color:#0d2145;font-size:14px;font-weight:700;text-decoration:none;">Browse</a>
+        <a href="pricing.html"        style="color:rgba(13,33,69,0.65);font-size:14px;font-weight:500;text-decoration:none;transition:color 0.18s;"
+           onmouseover="this.style.color='#0d2145';" onmouseout="this.style.color='rgba(13,33,69,0.65)';">Pricing</a>
+      </div>
+
+      <!-- Desktop CTA + Hamburger -->
+      <div style="display:flex;align-items:center;gap:10px;">
+        <!-- Desktop auth buttons (hidden on mobile, hidden when logged in) -->
+        <div id="nav-public-desktop" class="desktop-auth" style="display:none;gap:8px;align-items:center;">
+          <a href="login.html"  class="btn-secondary" style="padding:9px 20px;font-size:14px;">Log In</a>
+          <a href="signup.html" class="btn-green"      style="padding:9px 20px;font-size:14px;">Get Started</a>
+        </div>
+        <!-- Logged-in desktop nav (hidden by default) -->
+        <div id="nav-auth-desktop" style="display:none;align-items:center;gap:10px;">
+          <a id="nav-browse-dash-desktop" href="/dashboard.html" class="btn-secondary" style="padding:9px 20px;font-size:14px;font-weight:600;">Dashboard</a>
+          <div id="nav-browse-avatar" style="width:34px;height:34px;border-radius:50%;background:#2d8a5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;"></div>
+        </div>
+        <!-- Hamburger -->
+        <button id="hamburger" onclick="openMobileMenu()" aria-label="Open menu" aria-expanded="false"
+          style="width:40px;height:40px;border-radius:10px;background:rgba(13,33,69,0.06);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:background 0.18s;"
+          onmouseover="this.style.background='rgba(13,33,69,0.10)';"
+          onmouseout="this.style.background='rgba(13,33,69,0.06)';">
+          <span style="display:block;width:18px;height:2px;background:#0d2145;border-radius:2px;"></span>
+          <span style="display:block;width:18px;height:2px;background:#0d2145;border-radius:2px;"></span>
+          <span style="display:block;width:18px;height:2px;background:#0d2145;border-radius:2px;"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════
+       PAGE HEADER
+  ══════════════════════════════════ -->
+  <section style="position:relative;padding:48px 20px 40px;overflow:hidden;">
+    <!-- Blobs -->
+    <div class="blob" style="width:480px;height:480px;background:radial-gradient(circle,rgba(45,138,94,0.08) 0%,transparent 70%);top:-120px;right:-100px;"></div>
+    <div class="blob" style="width:400px;height:400px;background:radial-gradient(circle,rgba(13,33,69,0.06) 0%,transparent 70%);bottom:-60px;left:-80px;"></div>
+
+    <div style="max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+      <!-- Eyebrow pill -->
+      <div class="fade-up" style="display:inline-flex;align-items:center;gap:8px;background:rgba(45,138,94,0.10);border:1px solid rgba(45,138,94,0.22);border-radius:50px;padding:6px 16px;margin-bottom:20px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#3dbd7a;display:inline-block;animation:pulse 1.8s ease-in-out infinite;"></span>
+        <span style="font-size:13px;font-weight:700;color:#2d8a5e;letter-spacing:0.3px;">KYC-Verified Professionals</span>
+      </div>
+
+      <h1 class="fade-up" id="page-heading" style="font-size:clamp(28px,6vw,46px);font-weight:800;color:#0d2145;letter-spacing:-1px;line-height:1.1;margin-bottom:14px;animation-delay:0.05s;">
+        Find Skilled, Verified<br>Freelancers
+      </h1>
+      <p class="fade-up" id="page-subheading" style="font-size:16px;font-weight:500;color:rgba(13,33,69,0.58);line-height:1.7;max-width:480px;margin:0 auto 24px;animation-delay:0.10s;">
+        Every freelancer on Kreddlo has completed identity verification. Browse by skill, filter by category and hire with confidence.
+      </p>
+
+      <!-- Browse tabs -->
+      <div class="fade-up browse-tabs" id="browse-tabs" role="tablist" aria-label="Browse type" style="animation-delay:0.12s;">
+        <button class="browse-tab active" data-tab="freelancers" role="tab" aria-selected="true">Freelancers</button>
+        <button class="browse-tab" data-tab="products" role="tab" aria-selected="false">Products</button>
+      </div>
+
+      <!-- Search bar -->
+      <div class="fade-up search-wrapper" style="max-width:580px;margin:0 auto 0;animation-delay:0.15s;">
+        <svg class="search-icon" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="rgba(13,33,69,0.38)" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          id="search-input"
+          type="text"
+          class="search-input"
+          placeholder="Search by name, skill or title..."
+          autocomplete="off"
+          aria-label="Search freelancers"
+        />
+        <button class="search-btn" onclick="triggerSearch()" aria-label="Search">Search</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       FILTERS + GRID
+  ══════════════════════════════════ -->
+  <section style="padding:0 20px 80px;">
+    <div style="max-width:1200px;margin:0 auto;">
+
+      <!-- Category pills (Freelancers) -->
+      <div class="filter-scroll-wrap" id="filter-bar-wrap" style="margin-bottom:24px;">
+        <div class="filter-scroll" id="filter-bar" role="group" aria-label="Filter by category">
+          <button class="filter-pill active" data-category="all">All</button>
+          <button class="filter-pill" data-category="design">Design</button>
+          <button class="filter-pill" data-category="development">Development</button>
+          <button class="filter-pill" data-category="writing">Writing</button>
+          <button class="filter-pill" data-category="marketing">Marketing</button>
+          <button class="filter-pill" data-category="video">Video</button>
+          <button class="filter-pill" data-category="music">Music</button>
+          <button class="filter-pill" data-category="other">Other</button>
+        </div>
+      </div>
+
+      <!-- Category pills (Products) -->
+      <div class="filter-scroll-wrap" id="product-filter-bar-wrap" style="margin-bottom:24px;display:none;">
+        <div class="filter-scroll" id="product-filter-bar" role="group" aria-label="Filter by product type">
+          <button class="filter-pill active" data-product-type="all">All</button>
+          <button class="filter-pill" data-product-type="digital-download">Digital Downloads</button>
+          <button class="filter-pill" data-product-type="coaching">Coaching</button>
+          <button class="filter-pill" data-product-type="courses">Courses</button>
+          <button class="filter-pill" data-product-type="templates">Templates</button>
+          <button class="filter-pill" data-product-type="external">External</button>
+        </div>
+      </div>
+
+      <!-- Results bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:10px;flex-wrap:wrap;">
+        <p id="results-count" style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);">Loading freelancers...</p>
+        <div id="boosted-note" style="display:flex;align-items:center;gap:6px;color:rgba(13,33,69,0.38);font-size:12px;font-weight:600;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#3dbd7a"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Boosted profiles appear first
+        </div>
+      </div>
+
+      <!-- Freelancers Grid -->
+      <div id="freelancer-grid" style="display:grid;">
+
+        <!-- Skeleton cards (3 shown while loading) -->
+        <div class="freelancer-card" id="skel-1" aria-hidden="true">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+            <div class="skeleton" style="width:52px;height:52px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="skeleton" style="height:14px;width:55%;margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:12px;width:75%;"></div>
+            </div>
+          </div>
+          <div class="skeleton" style="height:12px;width:68%;margin-bottom:16px;"></div>
+          <div style="display:flex;gap:8px;">
+            <div class="skeleton" style="height:26px;width:70px;border-radius:50px;"></div>
+            <div class="skeleton" style="height:26px;width:88px;border-radius:50px;"></div>
+          </div>
+          <div class="skeleton" style="height:14px;width:38%;margin-top:18px;"></div>
+        </div>
+
+        <div class="freelancer-card" id="skel-2" aria-hidden="true">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+            <div class="skeleton" style="width:52px;height:52px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:12px;width:80%;"></div>
+            </div>
+          </div>
+          <div class="skeleton" style="height:12px;width:60%;margin-bottom:16px;"></div>
+          <div style="display:flex;gap:8px;">
+            <div class="skeleton" style="height:26px;width:78px;border-radius:50px;"></div>
+            <div class="skeleton" style="height:26px;width:60px;border-radius:50px;"></div>
+            <div class="skeleton" style="height:26px;width:72px;border-radius:50px;"></div>
+          </div>
+          <div class="skeleton" style="height:14px;width:42%;margin-top:18px;"></div>
+        </div>
+
+        <div class="freelancer-card" id="skel-3" aria-hidden="true">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+            <div class="skeleton" style="width:52px;height:52px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="skeleton" style="height:14px;width:50%;margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:12px;width:85%;"></div>
+            </div>
+          </div>
+          <div class="skeleton" style="height:12px;width:73%;margin-bottom:16px;"></div>
+          <div style="display:flex;gap:8px;">
+            <div class="skeleton" style="height:26px;width:64px;border-radius:50px;"></div>
+            <div class="skeleton" style="height:26px;width:92px;border-radius:50px;"></div>
+          </div>
+          <div class="skeleton" style="height:14px;width:44%;margin-top:18px;"></div>
+        </div>
+
+      </div>
+
+      <!-- Products Grid -->
+      <div id="products-grid" style="display:none;">
+        <div class="prod-card" id="prod-skel-1" aria-hidden="true">
+          <div class="skeleton prod-cover" style="border-radius:0;"></div>
+          <div class="prod-body">
+            <div class="skeleton" style="height:14px;width:80%;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:18px;width:40%;margin-bottom:14px;"></div>
+            <div class="skeleton" style="height:38px;width:100%;border-radius:50px;"></div>
+          </div>
+        </div>
+        <div class="prod-card" id="prod-skel-2" aria-hidden="true">
+          <div class="skeleton prod-cover" style="border-radius:0;"></div>
+          <div class="prod-body">
+            <div class="skeleton" style="height:14px;width:65%;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:18px;width:35%;margin-bottom:14px;"></div>
+            <div class="skeleton" style="height:38px;width:100%;border-radius:50px;"></div>
+          </div>
+        </div>
+        <div class="prod-card" id="prod-skel-3" aria-hidden="true">
+          <div class="skeleton prod-cover" style="border-radius:0;"></div>
+          <div class="prod-body">
+            <div class="skeleton" style="height:14px;width:72%;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:18px;width:45%;margin-bottom:14px;"></div>
+            <div class="skeleton" style="height:38px;width:100%;border-radius:50px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination — shared bar, repopulated for whichever tab (freelancers/products) is active -->
+      <div id="pagination-bar" style="display:none;align-items:center;justify-content:center;gap:6px;margin-top:32px;flex-wrap:wrap;"></div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       FOOTER
+  ══════════════════════════════════ -->
+  <footer style="border-top:1px solid #e2e8f0;padding:56px 20px 40px;">
+    <div style="max-width:1100px;margin:0 auto;">
+      <div style="display:grid;grid-template-columns:1fr;gap:36px;margin-bottom:40px;">
+
+        <!-- Brand -->
+        <div>
+          <a href="index.html" style="text-decoration:none;display:inline-block;margin-bottom:14px;">
+            <span style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;">
+              Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span>
+            </span>
+          </a>
+          <p style="font-size:14px;font-weight:400;color:rgba(13,33,69,0.50);line-height:1.6;max-width:280px;">
+            The complete freelance operating system for verified professionals in countries locked out of traditional payment networks.
+          </p>
+        </div>
+
+        <!-- Links -->
+        <div>
+          <p style="font-size:11px;font-weight:700;color:#0d2145;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">Platform</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;">
+            <a href="index.html#features" style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.55)'">Features</a>
+            <a href="how-it-works.html"   style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.55)'">How It Works</a>
+            <a href="browse.html"         style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.55)'">Browse</a>
+            <a href="pricing.html"        style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.55)'">Pricing</a>
+            <a href="signup.html"         style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.55)'">Sign Up</a>
+            <a href="login.html"          style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.55)'">Log In</a>
+          </div>
+        </div>
+
+        <!-- Social -->
+        <div>
+          <p style="font-size:11px;font-weight:700;color:#0d2145;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">Connect</p>
+          <div style="display:flex;gap:10px;">
+            <a id="social-twitter" href="#" target="_blank" rel="noopener" aria-label="Twitter/X" style="display:none;width:36px;height:36px;border-radius:10px;background:rgba(13,33,69,0.06);display:none;align-items:center;justify-content:center;transition:background 0.18s;" onmouseover="this.style.background='rgba(13,33,69,0.12)'" onmouseout="this.style.background='rgba(13,33,69,0.06)'">
+              <svg width="15" height="15" fill="#0d2145" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a id="social-linkedin" href="#" target="_blank" rel="noopener" aria-label="LinkedIn" style="display:none;width:36px;height:36px;border-radius:10px;background:rgba(13,33,69,0.06);align-items:center;justify-content:center;transition:background 0.18s;" onmouseover="this.style.background='rgba(13,33,69,0.12)'" onmouseout="this.style.background='rgba(13,33,69,0.06)'">
+              <svg width="15" height="15" fill="#0d2145" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+            </a>
+            <a id="social-instagram" href="#" target="_blank" rel="noopener" aria-label="Instagram" style="display:none;width:36px;height:36px;border-radius:10px;background:rgba(13,33,69,0.06);align-items:center;justify-content:center;transition:background 0.18s;" onmouseover="this.style.background='rgba(13,33,69,0.12)'" onmouseout="this.style.background='rgba(13,33,69,0.06)'">
+              <svg width="15" height="15" fill="none" stroke="#0d2145" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="#0d2145"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div style="border-top:1px solid #e2e8f0;padding-top:24px;display:flex;flex-direction:column;gap:12px;align-items:flex-start;">
+        <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.40);">
+          &copy; <span id="yr"></span> Kreddlo. All rights reserved.
+        </p>
+        <div style="display:flex;gap:20px;">
+          <a href="privacy.html" style="font-size:13px;color:rgba(13,33,69,0.40);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.40)'">Privacy Policy</a>
+          <a href="terms.html"   style="font-size:13px;color:rgba(13,33,69,0.40);text-decoration:none;transition:color 0.18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.40)'">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════════
+       RESPONSIVE STYLE INJECTION
+  ══════════════════════════════════ -->
+  <style>
+    /* Mobile-first base (was previously inline on the divs, which —
+       being higher specificity than this stylesheet — silently overrode
+       the 640px/1024px rules below on every screen size, including
+       desktop. Moved here so the cascade below actually takes effect. */
+    #freelancer-grid { grid-template-columns: 1fr; gap: 16px; }
+    #products-grid   { grid-template-columns: 1fr; gap: 16px; }
+
+    @media (min-width: 640px) {
+      #freelancer-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+      #products-grid   { grid-template-columns: 1fr 1fr; gap: 18px; }
+    }
+    @media (max-width: 1023px) {
+      /* Logged-in desktop nav (Dashboard pill + avatar) is desktop-only —
+         on mobile this overflowed the topbar and pushed the hamburger
+         off-screen. Mobile users get Dashboard via the slide-in menu. */
+      #nav-auth-desktop { display: none !important; }
+    }
+    @media (min-width: 1024px) {
+      #freelancer-grid { grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+      #products-grid   { grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+      .md-flex-row { display: flex !important; }
+      /* Show desktop auth area on wide screens — JS will hide/swap when logged in */
+      #nav-public-desktop { display: flex; }
+      #hamburger { display: none !important; }
+    }
+    @media (min-width: 768px) {
+      footer > div > div:first-child {
+        grid-template-columns: 1.8fr 1fr 1fr !important;
+      }
+    }
+  </style>
+
+  <!-- ══════════════════════════════════
+       SCRIPTS
+  ══════════════════════════════════ -->
+  <script>
+
+
+
+
+    /* ────────────────────────────────────
+       CATEGORY KEYWORD MAP
+    ──────────────────────────────────── */
+    const CATEGORY_KEYWORDS = {
+      all:         [],
+      design:      ['design', 'figma', 'ui', 'ux', 'illustrat', 'graphic', 'logo', 'branding', 'photoshop', 'brand'],
+      development: ['develop', 'code', 'coding', 'javascript', 'react', 'vue', 'angular', 'python', 'node', 'php', 'flutter', 'dart', 'ios', 'android', 'web', 'api', 'backend', 'frontend', 'fullstack', 'firebase'],
+      writing:     ['writ', 'copywrite', 'copy', 'content', 'blog', 'article', 'edit', 'proofread', 'seo writing'],
+      marketing:   ['market', 'social media', 'ads', 'ppc', 'email market', 'seo', 'growth', 'analytics', 'content creation'],
+      video:       ['video', 'edit', 'motion', 'animation', 'after effects', 'premiere', 'youtube', 'tiktok'],
+      music:       ['music', 'audio', 'sound', 'mixing', 'mastering', 'produce', 'beat'],
+      other:       [],
+    };
+
+    /* ────────────────────────────────────
+       STATE
+    ──────────────────────────────────── */
+    let allFreelancers   = [];
+    let allProducts      = [];
+    let productsLoaded   = false;
+    let activeCategory   = 'all';
+    let activeProductType = 'all';
+    let searchQuery      = '';
+    let activeTab        = 'freelancers';
+
+    // Affiliate state — populated after auth resolves
+    let _myUid              = null;
+    let _myAffiliateEnabled = false;
+
+    /* Pagination — fixed page size, separate page counter per tab so
+       switching tabs doesn't lose your place on the other list. */
+    const PAGE_SIZE = 24;
+    let freelancerPage = 1;
+    let productPage    = 1;
+
+    /* ────────────────────────────────────
+       DOM REFS
+    ──────────────────────────────────── */
+    const grid         = document.getElementById('freelancer-grid');
+    const productsGrid = document.getElementById('products-grid');
+    const countEl      = document.getElementById('results-count');
+    const searchInput  = document.getElementById('search-input');
+
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // Delegated listener for "Get Affiliate Link" buttons rendered inside
+    // product cards. Buttons use data-aff-* attributes rather than inline
+    // onclick so that JSON.stringify's double-quoted strings don't break the
+    // surrounding HTML attribute value.
+    productsGrid.addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-aff-id]');
+      if (!btn) return;
+      var commission = btn.dataset.affCommission;
+      getAffiliateLink(
+        btn.dataset.affId,
+        btn.dataset.affSlug,
+        btn.dataset.affTitle,
+        commission !== '' ? Number(commission) : null
+      );
+    });
+
+    /* ────────────────────────────────────
+       TABS
+    ──────────────────────────────────── */
+    const pageHeading    = document.getElementById('page-heading');
+    const pageSubheading = document.getElementById('page-subheading');
+    const filterBar        = document.getElementById('filter-bar-wrap');
+    const productFilterBar = document.getElementById('product-filter-bar-wrap');
+    const boostedNote       = document.getElementById('boosted-note');
+
+    document.getElementById('browse-tabs').addEventListener('click', e => {
+      const tab = e.target.closest('.browse-tab');
+      if (!tab) return;
+      const target = tab.dataset.tab;
+      if (target === activeTab) return;
+      activeTab = target;
+
+      document.querySelectorAll('.browse-tab').forEach(t => {
+        const isActive = t.dataset.tab === target;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      if (target === 'products') {
+        grid.style.display          = 'none';
+        productsGrid.style.display  = 'grid';
+        filterBar.style.display        = 'none';
+        productFilterBar.style.display = 'flex';
+        boostedNote.style.display   = 'none';
+        pageHeading.innerHTML    = 'Discover Digital<br>Products';
+        pageSubheading.textContent = 'Browse digital downloads, courses, coaching and templates created by verified Kreddlo professionals.';
+        searchInput.placeholder = 'Search products by name...';
+        searchInput.setAttribute('aria-label', 'Search products');
+
+        if (!productsLoaded) {
+          loadProducts();
+        } else {
+          renderProductCards(filterProducts());
+        }
+      } else {
+        productsGrid.style.display = 'none';
+        grid.style.display         = 'grid';
+        filterBar.style.display        = 'flex';
+        productFilterBar.style.display = 'none';
+        boostedNote.style.display  = 'flex';
+        pageHeading.innerHTML    = 'Find Skilled, Verified<br>Freelancers';
+        pageSubheading.textContent = 'Every freelancer on Kreddlo has completed identity verification. Browse by skill, filter by category and hire with confidence.';
+        searchInput.placeholder = 'Search by name, skill or title...';
+        searchInput.setAttribute('aria-label', 'Search freelancers');
+        renderCards(filterFreelancers());
+      }
+
+      searchQuery = '';
+      searchInput.value = '';
+    });
+
+    /* ────────────────────────────────────
+       MOBILE MENU
+    ──────────────────────────────────── */
+    function openMobileMenu() {
+      document.getElementById('mobile-panel').classList.add('open');
+      document.getElementById('menu-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('hamburger').setAttribute('aria-expanded', 'true');
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobile-panel').classList.remove('open');
+      document.getElementById('menu-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+      document.getElementById('hamburger').setAttribute('aria-expanded', 'false');
+    }
+    // Close on Escape key
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeMobileMenu();
+    });
+
+    /* ════════════════════════════════════════════════════════════
+       RANKING ALGORITHM
+       ════════════════════════════════════════════════════════════
+       Goal: no listing — boosted or not, new or old — should be able
+       to camp at the top (or stay buried at the bottom) forever.
+       Score = rating signal + recency signal, then boosted listings
+       get a multiplier (not an automatic override), then near-tied
+       scores get a small daily-rotating shuffle.
+
+       This intentionally does NOT use a "views" or "engagement" counter
+       — no such field exists anywhere in this codebase yet (verified:
+       no write path tracks profile/product views). Adding a fake
+       engagement signal with no real data behind it would be worse
+       than leaving it out. If view-tracking is built later, add a
+       third weighted term here rather than reworking this function.
+    ──────────────────────────────────────────────────────────────── */
+
+    const RANK_WEIGHTS = {
+      rating:   0.8,   // weight of the confidence-weighted rating signal (dominant — this is the "do the proper things" signal)
+      recency:  0.2,   // weight of the time-decayed "new listing" signal — enough to give new listings a fair look, not enough to outrank a proven track record
+      recencyHalfLifeDays: 10,   // recency bump fades to half by ~10 days, mostly gone by ~30 — it's a launch window, not a standing advantage
+      boostMaxMultiplier:  1.5,  // a freshly-boosted listing's score is multiplied by up to this much — capped so a paid boost can't bury a much better-scored free listing
+      jitterWindow: 0.05,        // scores within this fraction of each other are eligible to swap order
+      jitterStrength: 0.04,      // max size of the daily shuffle nudge
+    };
+
+    // One seed per calendar day (UTC) — same shuffle all day, changes tomorrow.
+    // This is what makes near-tied listings rotate over time instead of one
+    // of them freezing in place at the top or bottom permanently.
+    function dailySeed() {
+      const d = new Date();
+      return Number(`${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}`);
+    }
+
+    // Deterministic pseudo-random in [0,1) from a seed + a listing id —
+    // same listing gets the same jitter all day, but a different one
+    // tomorrow, and different listings don't get identical jitter.
+    function seededJitter(id, seed) {
+      let h = seed;
+      const s = String(id) + seed;
+      for (let i = 0; i < s.length; i++) {
+        h = (h * 31 + s.charCodeAt(i)) >>> 0;
+      }
+      return (h % 10000) / 10000; // → [0, 1)
+    }
+
+    // Confidence-weighted rating: pulls the average toward a neutral
+    // midpoint (3.5) when there are few reviews, so one 5-star review
+    // can't outrank someone with 200 reviews averaging 4.8. Converges
+    // to the true average as totalReviews grows. Profiles with zero
+    // reviews get exactly the neutral midpoint (neither rewarded nor
+    // punished for being new — recency below handles new-listing visibility).
+    function confidenceRating(avgRating, totalReviews) {
+      const NEUTRAL = 3.5;
+      const CONFIDENCE_REVIEWS = 10; // ~10 reviews before the raw average dominates
+      const r  = Number(avgRating)   || 0;
+      const n  = Number(totalReviews) || 0;
+      const weighted = (r * n + NEUTRAL * CONFIDENCE_REVIEWS) / (n + CONFIDENCE_REVIEWS);
+      return weighted / 5; // normalize to 0–1
+    }
+
+    // Exponential decay from createdAt — new listings start near 1 and
+    // fade toward 0 over time, giving new freelancers/products a fair,
+    // temporary visibility window without it being permanent.
+    function recencyScore(createdAtTimestamp) {
+      const ms = createdAtTimestamp && createdAtTimestamp.toMillis ? createdAtTimestamp.toMillis() : 0;
+      if (!ms) return 0;
+      const ageDays  = Math.max(0, (Date.now() - ms) / 86400000);
+      const halfLife = RANK_WEIGHTS.recencyHalfLifeDays;
+      return Math.pow(0.5, ageDays / halfLife); // 1 at age 0, 0.5 at one half-life, etc.
+    }
+
+    // Boost is read-only here (nothing in this codebase currently writes
+    // boostedUntil — see notes shared separately). When the purchase flow
+    // is built, this naturally takes effect with no further changes needed.
+    // Multiplier scales DOWN as the boost approaches expiry instead of
+    // cutting off sharply, and is capped so a boost can't bury a much
+    // better-scored non-boosted listing entirely.
+    function boostMultiplier(boostedUntilTimestamp, boostStartedAtTimestamp) {
+      const untilMs = boostedUntilTimestamp && boostedUntilTimestamp.toMillis ? boostedUntilTimestamp.toMillis() : 0;
+      if (!untilMs || untilMs <= Date.now()) return 1;
+
+      const startMs = boostStartedAtTimestamp && boostStartedAtTimestamp.toMillis
+        ? boostStartedAtTimestamp.toMillis()
+        : untilMs - (7 * 86400000); // assume a 7-day boost if no start time was recorded
+
+      const totalSpan   = Math.max(1, untilMs - startMs);
+      const remaining    = Math.max(0, untilMs - Date.now());
+      const fractionLeft = Math.min(1, remaining / totalSpan);
+
+      return 1 + (RANK_WEIGHTS.boostMaxMultiplier - 1) * fractionLeft;
+    }
+
+    function freelancerScore(f) {
+      const base =
+        RANK_WEIGHTS.rating  * confidenceRating(f.averageRating, f.totalReviews) +
+        RANK_WEIGHTS.recency * recencyScore(f.createdAt);
+      return base * boostMultiplier(f.boostedUntil, f.boostStartedAt);
+    }
+
+    function productScore(p) {
+      // Products have no per-product rating field today (reviews roll up
+      // only to the seller's user doc — verified in submit-review.js).
+      // Sales is normalized with a log curve so one runaway bestseller
+      // doesn't make every other product's sales count round to zero —
+      // it just means each additional sale matters slightly less,
+      // which is the same reasoning as the rating-confidence weighting above.
+      // Reuses RANK_WEIGHTS.rating as the "merit" weight (same role as
+      // rating plays for freelancers — proven performance vs. recency).
+      const meritWeight = RANK_WEIGHTS.rating;
+      const sales = Number(p.salesCount || p.totalSales || 0);
+      const salesNorm = Math.log10(sales + 1) / Math.log10(20000); // ~0 at 0 sales, ~1 around 20,000 sales — wide enough that realistic top sellers (hundreds to a few thousand) still differentiate from each other
+      const base =
+        meritWeight * Math.min(1, salesNorm) +
+        RANK_WEIGHTS.recency * recencyScore(p.createdAt);
+      return base * boostMultiplier(p.boostedUntil, p.boostStartedAt);
+    }
+
+    // Sorts by score, then applies the daily jitter only to items whose
+    // scores are within RANK_WEIGHTS.jitterWindow of each other — so the
+    // shuffle reorders near-ties, not the whole list top to bottom.
+    function applyRankedSort(docs, scoreFn) {
+      const seed = dailySeed();
+      const scored = docs.map(d => ({ doc: d, score: scoreFn(d) }));
+      scored.sort((a, b) => b.score - a.score);
+
+      for (let i = 0; i < scored.length - 1; i++) {
+        const a = scored[i], b = scored[i + 1];
+        if (Math.abs(a.score - b.score) <= RANK_WEIGHTS.jitterWindow) {
+          const swapChance = seededJitter(a.doc.id + '|' + b.doc.id, seed);
+          if (swapChance < RANK_WEIGHTS.jitterStrength) {
+            scored[i] = b; scored[i + 1] = a;
+          }
+        }
+      }
+      return scored.map(s => s.doc);
+    }
+
+    function sortFreelancers(docs) {
+      return applyRankedSort(docs, freelancerScore);
+    }
+
+    function sortProducts(docs) {
+      return applyRankedSort(docs, productScore);
+    }
+
+    /* ────────────────────────────────────
+       FIREBASE READY — callback based, no polling
+    ──────────────────────────────────── */
+    function whenFirebaseReady(cb) {
+      if (window._firebaseReady && window.db && window._fsQuery) { cb(); return; }
+      window.addEventListener('kreddlo-firebase-ready', cb, { once: true });
+    }
+
+    // Normalise a raw Firestore doc (from either publicProfiles or users)
+    // into the shape the rest of the page expects.
+    function normaliseFreelancerDoc(d) {
+      const data  = d.data();
+      const photo = data.photoURL || data.photoUrl || data.profilePhoto || '';
+      const name  = data.name || data.displayName || '';
+      return { id: d.id, ...data, profilePhoto: photo, name };
+    }
+
+    async function fetchFreelancers() {
+      try {
+        const { collection, query, where, getDocs, limit } = window._fsQuery;
+        const db = window.db;
+
+        // ── Primary: publicProfiles compound query ──────────────────────
+        // Reads publicProfiles, not users — this collection only ever
+        // contains the public-safe field subset (name, title, skills,
+        // kycStatus, etc.), never balances/email/walletAddress/fcmToken.
+        let snap;
+        let querySucceeded = false;
+        try {
+          const q = query(
+            collection(db, 'publicProfiles'),
+            where('role',      '==', 'freelancer'),
+            where('kycStatus', '==', 'verified'),
+            limit(100)
+          );
+          snap = await getDocs(q);
+          querySucceeded = true;
+        } catch (qErr) {
+          console.warn('[browse] compound query failed, falling back to role-only:', qErr);
+        }
+
+        // ── Secondary: publicProfiles role-only query ───────────────────
+        // Used when the compound index isn't built yet, or the first query
+        // errors for any reason. kycStatus is filtered client-side below.
+        if (!querySucceeded) {
+          try {
+            const { collection: col2, query: q2, where: w2, getDocs: gd2, limit: lim2 } = window._fsQuery;
+            const qFallback = q2(col2(db, 'publicProfiles'), w2('role', '==', 'freelancer'), lim2(200));
+            snap = await getDocs(qFallback);
+            querySucceeded = true;
+          } catch (qErr2) {
+            console.warn('[browse] role-only publicProfiles query also failed:', qErr2);
+          }
+        }
+
+        // ── Tertiary: users collection direct read ──────────────────────
+        // Safety net for environments where the one-time backfill
+        // (backfill-public-profiles.js) has not been run yet. Pre-existing
+        // accounts have no publicProfiles doc and would appear to vanish
+        // from browse even though their users doc is intact. This query
+        // reads the users collection instead and applies the same filters
+        // client-side. Once the backfill runs, publicProfiles will be
+        // populated and this branch will never be reached because the
+        // primary/secondary queries above return results. Safe to keep in
+        // permanently — it only fires when the others return zero docs.
+        if (!querySucceeded || (snap && snap.empty)) {
+          try {
+            console.info('[browse] publicProfiles returned no results — querying users collection as fallback. Run backfill-public-profiles.js to fix permanently.');
+            const { collection: col3, query: q3, where: w3, getDocs: gd3, limit: lim3 } = window._fsQuery;
+            const qUsers = q3(
+              col3(db, 'users'),
+              w3('role', '==', 'freelancer'),
+              lim3(200)
+            );
+            const usersSnap = await gd3(qUsers);
+            if (!usersSnap.empty) {
+              snap = usersSnap;
+              querySucceeded = true;
+            }
+          } catch (qErr3) {
+            console.warn('[browse] users collection fallback also failed:', qErr3);
+          }
+        }
+
+        // If all three paths failed, render the empty/error state.
+        if (!snap) {
+          renderCards([]);
+          return;
+        }
+
+        const docs = snap.docs
+          .map(normaliseFreelancerDoc)
+          .filter(f => f.kycStatus === 'verified')
+          .filter(f => f.role === 'freelancer')
+          .filter(f => f.name || f.title);
+
+        allFreelancers = sortFreelancers(docs);
+        renderCards(filterFreelancers());
+
+      } catch (err) {
+        console.error('[browse] freelancers fetch error:', err);
+        renderCards([]);
+      }
+    }
+
+    // publicProfiles is public-read, so this no longer needs to wait on
+    // auth state to avoid permission-denied — but we still wait for
+    // Firebase to finish loading before querying.
+    // publicProfiles is public-read — no auth required to fetch freelancers.
+    // We use _onAuthStateChanged (a window-exposed wrapper set by the module
+    // script) so we can still delay until we know whether the visitor is signed
+    // in (so _myUid / _myAffiliateEnabled are resolved before rendering cards).
+    // Wrapped in try/catch so a timing edge-case can't swallow the fallback.
+    whenFirebaseReady(() => {
+      let authResolved = false;
+      const tryFetch = () => { if (authResolved) fetchFreelancers(); };
+
+      try {
+        window._onAuthStateChanged(() => {
+          if (!authResolved) { authResolved = true; tryFetch(); }
+        });
+      } catch (e) {
+        // _onAuthStateChanged not yet available (timing edge) — fall through
+        // to the safety timeout below.
+      }
+
+      // Safety: fetch anyway after 2s if auth callback never fires
+      setTimeout(() => { if (!authResolved) { authResolved = true; tryFetch(); } }, 2000);
+    });
+
+    /* ────────────────────────────────────
+       PRODUCTS FETCH
+    ──────────────────────────────────── */
+    function loadProducts() {
+      whenFirebaseReady(async () => {
+        try {
+          const { collection, query, where, getDocs, limit } = window._fsQuery;
+          const db = window.db;
+
+          // Products store their visibility flag as status: 'active' | 'inactive'
+          // (not a boolean 'active' field) — query the real schema.
+          const q = query(
+            collection(db, 'products'),
+            where('status', '==', 'active'),
+            limit(60)
+          );
+
+          let snap;
+          try {
+            snap = await getDocs(q);
+          } catch (qErr) {
+            console.warn('[browse] products status query failed, falling back to unfiltered fetch:', qErr);
+            // Fallback: fetch broadly and filter client-side so a transient
+            // index/rules issue doesn't surface as a false "no products found".
+            const qFallback = query(collection(db, 'products'), limit(100));
+            snap = await getDocs(qFallback);
+          }
+
+          const docs = snap.docs
+            .map(d => {
+              const data = d.data();
+              // Normalize cover image — products may store it as coverUrl or coverPhoto
+              const coverUrl = data.coverUrl || data.coverPhoto || data.coverImage || '';
+              return { id: d.id, ...data, coverUrl };
+            })
+            .filter(p => p.status !== 'inactive' && p.status !== 'draft' && p.status !== 'deleted' && p.status !== 'removed_by_admin');
+
+          allProducts    = sortProducts(docs);
+          productsLoaded = true;
+          renderProductCards(filterProducts());
+
+        } catch (err) {
+          console.error('Firestore products fetch error:', err);
+          renderProductCards([]);
+        }
+      });
+    }
+
+    /* ────────────────────────────────────
+       FILTER LOGIC
+    ──────────────────────────────────── */
+    function filterFreelancers() {
+      const q   = searchQuery.toLowerCase().trim();
+      const cat = activeCategory;
+
+      return allFreelancers.filter(f => {
+        const skills = (f.skills || []).map(s => s.toLowerCase());
+
+        if (cat !== 'all') {
+          const keywords = CATEGORY_KEYWORDS[cat] || [];
+
+          if (cat === 'other') {
+            const knownCats = ['design','development','writing','marketing','video','music'];
+            const matchesAny = knownCats.some(c =>
+              (CATEGORY_KEYWORDS[c] || []).some(kw => skills.some(sk => sk.includes(kw)))
+            );
+            if (matchesAny) return false;
+          } else {
+            const matchesCat = keywords.some(kw => skills.some(sk => sk.includes(kw)));
+            if (!matchesCat) return false;
+          }
+        }
+
+        if (q) {
+          const nameMatch   = (f.name  || '').toLowerCase().includes(q);
+          const titleMatch  = (f.title || '').toLowerCase().includes(q);
+          const skillsMatch = skills.some(sk => sk.includes(q));
+          const descMatch   = (f.description || '').toLowerCase().includes(q);
+          if (!nameMatch && !titleMatch && !skillsMatch && !descMatch) return false;
+        }
+
+        return true;
+      });
+    }
+
+    /* ────────────────────────────────────
+       FILTER LOGIC (Products)
+    ──────────────────────────────────── */
+    function filterProducts() {
+      const q   = searchQuery.toLowerCase().trim();
+      const type = activeProductType;
+
+      return allProducts.filter(p => {
+        if (type !== 'all' && (p.productType || '') !== type) return false;
+
+        if (q) {
+          const titleMatch = (p.title || '').toLowerCase().includes(q);
+          if (!titleMatch) return false;
+        }
+
+        return true;
+      });
+    }
+
+    /* ────────────────────────────────────
+       RENDER CARDS
+    ──────────────────────────────────── */
+    function renderCards(freelancers) {
+      // Remove skeletons
+      ['skel-1','skel-2','skel-3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+
+      // Remove old real cards
+      grid.querySelectorAll('.real-card').forEach(el => el.remove());
+
+      const count = freelancers.length;
+      countEl.textContent = count === 0
+        ? 'No freelancers found'
+        : `${count} freelancer${count === 1 ? '' : 's'} found`;
+
+      if (count === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state real-card';
+        empty.innerHTML = `
+          <div style="width:64px;height:64px;border-radius:50%;background:rgba(45,138,94,0.08);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="28" height="28" fill="none" stroke="#2d8a5e" stroke-width="1.8" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <p style="font-size:18px;font-weight:700;color:#0d2145;margin-bottom:8px;">No freelancers found</p>
+          <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);max-width:320px;margin:0 auto 24px;line-height:1.6;">
+            Try a different search term or category to find who you are looking for.
+          </p>
+          <button onclick="clearFilters()"
+            style="background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 26px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(45,138,94,0.28);transition:background 0.2s ease;"
+            onmouseover="this.style.background='#236b49'" onmouseout="this.style.background='#2d8a5e'">
+            Clear Filters
+          </button>
+        `;
+        grid.appendChild(empty);
+        renderPagination(0, 0);
+        return;
+      }
+
+      // Clamp page in case filtering shrank the list below the current page
+      // (e.g. user was on page 5, then typed a search that leaves only 2 pages)
+      const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+      if (freelancerPage > totalPages) freelancerPage = totalPages;
+
+      const start = (freelancerPage - 1) * PAGE_SIZE;
+      const pageItems = freelancers.slice(start, start + PAGE_SIZE);
+
+      const now = Date.now();
+      pageItems.forEach((f, i) => {
+        const card = buildCard(f, now);
+        card.classList.add('real-card', 'fade-up');
+        card.style.animationDelay = `${Math.min(i * 0.06, 0.42)}s`;
+        grid.appendChild(card);
+      });
+
+      renderPagination(freelancerPage, totalPages);
+    }
+
+    /* ────────────────────────────────────
+       BUILD A SINGLE CARD
+    ──────────────────────────────────── */
+    function buildCard(f, now) {
+      const isBoosted  = f.boostedUntil && f.boostedUntil.toMillis && f.boostedUntil.toMillis() > now;
+      const isPremium  = f.premiumStatus === 'active';
+      const skills     = (f.skills || []).slice(0, 3);
+      const initials   = (f.name || 'U').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      const profileUrl = `profile.html?uid=${encodeURIComponent(f.id)}`;
+      const price      = f.startingPrice ? `From $${Number(f.startingPrice).toLocaleString()}` : '';
+
+      const card = document.createElement('a');
+      card.href      = profileUrl;
+      card.className = 'freelancer-card' + (isBoosted ? ' is-boosted' : '');
+      card.setAttribute('aria-label', `View profile of ${f.name || 'Freelancer'}`);
+
+      // Avatar
+      let avatarHTML;
+      if (f.profilePhoto) {
+        avatarHTML = `<img src="${escHtml(f.profilePhoto)}" alt="${escHtml(f.name || '')}" class="avatar" loading="lazy" decoding="async"
+          onerror="handleAvatarPlaceholder(this, ${JSON.stringify(initials)})" />`;
+      } else {
+        avatarHTML = `<div class="avatar-placeholder">${escHtml(initials)}</div>`;
+      }
+
+      // Badges
+      let badgesHTML = '';
+      if (isPremium) {
+        badgesHTML += `<span class="badge-verified">
+          <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3.5"><path d="M5 13l4 4L19 7"/></svg>
+          Verified
+        </span>`;
+      }
+      if (isBoosted) {
+        badgesHTML += `<span class="badge-boosted" style="margin-left:6px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="#0d2145"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Featured
+        </span>`;
+      }
+
+      // Skill tags
+      const skillsHTML = skills.map(s =>
+        `<span class="skill-tag">${escHtml(s)}</span>`
+      ).join('');
+
+      card.innerHTML = `
+        <!-- Avatar + Name row -->
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">
+          ${avatarHTML}
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px;">
+              <span style="font-size:16px;font-weight:700;color:#0d2145;letter-spacing:-0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">
+                ${escHtml(f.name || 'Freelancer')}
+              </span>
+              ${badgesHTML}
+            </div>
+            <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${escHtml(f.title || 'Freelancer')}
+            </p>
+          </div>
+        </div>
+
+        <!-- Description -->
+        ${f.description ? `
+        <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.55);line-height:1.6;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          ${escHtml(f.description)}
+        </p>` : ''}
+
+        <!-- Skills -->
+        ${skillsHTML ? `
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+          ${skillsHTML}
+        </div>` : ''}
+
+        <!-- Divider + Price -->
+        <div style="margin-top:auto;padding-top:14px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:15px;font-weight:700;color:#0d2145;letter-spacing:-0.3px;">
+            ${escHtml(price)}
+          </span>
+          <span style="font-size:12px;font-weight:600;color:#2d8a5e;display:inline-flex;align-items:center;gap:4px;">
+            View Profile
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      `;
+
+      return card;
+    }
+
+    /* ────────────────────────────────────
+       PRODUCT TYPE LABELS
+    ──────────────────────────────────── */
+    const PRODUCT_TYPE_LABELS = {
+      'digital-download': 'Digital Download',
+      'coaching':         'Coaching',
+      'courses':          'Course',
+      'templates':        'Template',
+      'external':         'External',
+    };
+    function productTypeLabel(t) {
+      return PRODUCT_TYPE_LABELS[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1) : 'Digital');
+    }
+    function productCoverIcon() {
+      return `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.22)" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`;
+    }
+
+    // Swaps a broken product cover image for the placeholder icon, using real DOM
+    // APIs instead of building HTML in a string (avoids fragile nested-quote escaping).
+    function handleCoverImgError(imgEl) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'prod-cover-placeholder';
+      placeholder.innerHTML = productCoverIcon();
+      imgEl.replaceWith(placeholder);
+    }
+
+    // Swaps a broken freelancer avatar image for an initials placeholder, using real
+    // DOM APIs instead of building HTML in a string (avoids fragile nested-quote escaping).
+    function handleAvatarPlaceholder(imgEl, initials) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'avatar-placeholder';
+      placeholder.textContent = initials;
+      imgEl.replaceWith(placeholder);
+    }
+
+    /* ────────────────────────────────────
+       RENDER PRODUCT CARDS
+    ──────────────────────────────────── */
+    function renderProductCards(products) {
+      // Remove skeletons
+      ['prod-skel-1','prod-skel-2','prod-skel-3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+
+      // Remove old real cards
+      productsGrid.querySelectorAll('.real-card').forEach(el => el.remove());
+
+      const count = products.length;
+      countEl.textContent = count === 0
+        ? 'No products found'
+        : `${count} product${count === 1 ? '' : 's'} found`;
+
+      if (count === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state real-card';
+        empty.innerHTML = `
+          <div style="width:64px;height:64px;border-radius:50%;background:rgba(45,138,94,0.08);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="28" height="28" fill="none" stroke="#2d8a5e" stroke-width="1.8" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <p style="font-size:18px;font-weight:700;color:#0d2145;margin-bottom:8px;">No products found</p>
+          <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);max-width:320px;margin:0 auto 24px;line-height:1.6;">
+            Try a different search term or category to find what you are looking for.
+          </p>
+          <button onclick="clearFilters()"
+            style="background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 26px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(45,138,94,0.28);transition:background 0.2s ease;"
+            onmouseover="this.style.background='#236b49'" onmouseout="this.style.background='#2d8a5e'">
+            Clear Filters
+          </button>
+        `;
+        productsGrid.appendChild(empty);
+        renderPagination(0, 0);
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+      if (productPage > totalPages) productPage = totalPages;
+
+      const start = (productPage - 1) * PAGE_SIZE;
+      const pageItems = products.slice(start, start + PAGE_SIZE);
+
+      pageItems.forEach((p, i) => {
+        const card = buildProductCard(p);
+        card.classList.add('real-card', 'fade-up');
+        card.style.animationDelay = `${Math.min(i * 0.06, 0.42)}s`;
+        productsGrid.appendChild(card);
+      });
+
+      renderPagination(productPage, totalPages);
+    }
+
+    /* ────────────────────────────────────
+       BUILD A SINGLE PRODUCT CARD
+    ──────────────────────────────────── */
+    function buildProductCard(p) {
+      const _priceVal = p.cardPrice != null ? p.cardPrice : p.price;
+      const _priceCur = p.currency || 'USD';
+      let price;
+      try {
+        price = _priceVal != null
+          ? new Intl.NumberFormat('en', { style: 'currency', currency: _priceCur }).format(_priceVal)
+          : '—';
+      } catch (_) {
+        price = _priceVal != null ? _priceCur + ' ' + Number(_priceVal).toFixed(2) : '—';
+      }
+      const type  = productTypeLabel(p.productType);
+      const sales = p.salesCount || p.totalSales || 0;
+      const buyUrl = `p.html?slug=${encodeURIComponent(p.slug || p.id)}`;
+
+      const coverHtml = p.coverUrl
+        ? `<img class="prod-cover" src="${escHtml(p.coverUrl)}" alt="${escHtml(p.title || '')}" loading="lazy" decoding="async" onerror="handleCoverImgError(this)">`
+        : `<div class="prod-cover-placeholder">${productCoverIcon()}</div>`;
+
+      const card = document.createElement('div');
+      card.className = 'prod-card';
+
+      // Show affiliate button only if: product has affiliate enabled AND current user is an affiliate
+      const showAffBtn = p.affiliateEnabled === true && window._myAffiliateEnabled === true;
+      // Use data-* attributes instead of inline onclick so that JSON.stringify's
+      // double-quoted strings don't break the HTML attribute value. A delegated
+      // click listener on the grid picks these up and calls getAffiliateLink().
+      const affCommission = p.affiliateCommissionPercent != null ? p.affiliateCommissionPercent : '';
+      const affBtnHtml = showAffBtn
+        ? `<button class="btn-affiliate" type="button"
+              data-aff-id="${escHtml(p.id)}"
+              data-aff-slug="${escHtml(p.slug || p.id)}"
+              data-aff-title="${escHtml(p.title || '')}"
+              data-aff-commission="${affCommission}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Get Affiliate Link${p.affiliateCommissionPercent != null ? ' · ' + p.affiliateCommissionPercent + '%' : ''}
+          </button>`
+        : '';
+
+      card.innerHTML = `
+        ${coverHtml}
+        <div class="prod-body">
+          <h3 class="prod-title">${escHtml(p.title || 'Untitled product')}</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+            <span class="prod-price">${price}</span>
+            <span class="badge badge-navy" style="display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:0.3px;white-space:nowrap;background:rgba(13,33,69,0.07);color:#0d2145;">${escHtml(type)}</span>
+          </div>
+          <div class="prod-divider"></div>
+          <div class="prod-meta">
+            <span class="prod-sales">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:3px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              ${sales} sale${sales !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <a href="${buyUrl}" class="btn-green" style="width:100%;">Buy Now</a>
+          ${affBtnHtml}
+        </div>
+      `;
+
+      return card;
+    }
+
+    /* ────────────────────────────────────
+       EVENTS
+    ──────────────────────────────────── */
+    searchInput.addEventListener('input', () => {
+      searchQuery = searchInput.value;
+      if (activeTab === 'products') {
+        productPage = 1;
+        renderProductCards(filterProducts());
+      } else {
+        freelancerPage = 1;
+        renderCards(filterFreelancers());
+      }
+    });
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') triggerSearch();
+    });
+    function triggerSearch() {
+      searchQuery = searchInput.value;
+      if (activeTab === 'products') {
+        productPage = 1;
+        renderProductCards(filterProducts());
+      } else {
+        freelancerPage = 1;
+        renderCards(filterFreelancers());
+      }
+    }
+
+    document.getElementById('filter-bar').addEventListener('click', e => {
+      const pill = e.target.closest('.filter-pill');
+      if (!pill) return;
+      document.querySelectorAll('#filter-bar .filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeCategory = pill.dataset.category;
+      freelancerPage = 1;
+      renderCards(filterFreelancers());
+    });
+
+    document.getElementById('product-filter-bar').addEventListener('click', e => {
+      const pill = e.target.closest('.filter-pill');
+      if (!pill) return;
+      document.querySelectorAll('#product-filter-bar .filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeProductType = pill.dataset.productType;
+      productPage = 1;
+      renderProductCards(filterProducts());
+    });
+
+    function clearFilters() {
+      searchQuery    = '';
+      searchInput.value = '';
+
+      if (activeTab === 'products') {
+        activeProductType = 'all';
+        productPage = 1;
+        document.querySelectorAll('#product-filter-bar .filter-pill').forEach(p => p.classList.remove('active'));
+        document.querySelector('#product-filter-bar [data-product-type="all"]').classList.add('active');
+        renderProductCards(filterProducts());
+      } else {
+        activeCategory = 'all';
+        freelancerPage = 1;
+        document.querySelectorAll('#filter-bar .filter-pill').forEach(p => p.classList.remove('active'));
+        document.querySelector('#filter-bar [data-category="all"]').classList.add('active');
+        renderCards(filterFreelancers());
+      }
+    }
+
+    /* ────────────────────────────────────
+       PAGINATION
+       Windowed display (first, last, current ±2, with … gaps) so a
+       catalog of thousands of pages never renders thousands of buttons.
+       Always shows Prev/Next; numbers reflect whichever tab is active.
+    ──────────────────────────────────── */
+    function pageWindow(current, total) {
+      const pages = new Set([1, total, current, current - 1, current - 2, current + 1, current + 2]);
+      return [...pages].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+    }
+
+    function renderPagination(current, totalPages) {
+      const bar = document.getElementById('pagination-bar');
+      if (totalPages <= 1) {
+        bar.style.display = 'none';
+        bar.innerHTML = '';
+        return;
+      }
+      bar.style.display = 'flex';
+
+      const pillBase = 'border:1.5px solid #e2e8f0;background:#fff;color:rgba(13,33,69,0.65);font-size:13px;font-weight:600;border-radius:50px;min-width:36px;height:36px;padding:0 12px;cursor:pointer;transition:border-color .18s ease,color .18s ease,background .18s ease;';
+      const activeStyle = 'border-color:#2d8a5e;background:#2d8a5e;color:#fff;box-shadow:0 4px 12px rgba(45,138,94,0.28);';
+      const disabledStyle = 'opacity:0.4;cursor:not-allowed;';
+
+      let html = '';
+
+      html += `<button ${current === 1 ? 'disabled' : ''} onclick="goToPage(${current - 1})"
+        style="${pillBase}${current === 1 ? disabledStyle : ''}" aria-label="Previous page">‹</button>`;
+
+      const pages = pageWindow(current, totalPages);
+      let lastRendered = 0;
+      pages.forEach(p => {
+        if (p - lastRendered > 1) {
+          html += `<span style="color:rgba(13,33,69,0.35);font-size:13px;padding:0 4px;">…</span>`;
+        }
+        const isActive = p === current;
+        html += `<button onclick="goToPage(${p})" style="${pillBase}${isActive ? activeStyle : ''}"
+          aria-label="Page ${p}" aria-current="${isActive ? 'page' : 'false'}">${p}</button>`;
+        lastRendered = p;
+      });
+
+      html += `<button ${current === totalPages ? 'disabled' : ''} onclick="goToPage(${current + 1})"
+        style="${pillBase}${current === totalPages ? disabledStyle : ''}" aria-label="Next page">›</button>`;
+
+      bar.innerHTML = html;
+    }
+
+    // Shared Prev/Next/number handler — updates whichever page counter
+    // belongs to the currently active tab, then re-renders that list only
+    // (the underlying ranked/filtered data doesn't change, just the slice).
+    function goToPage(p) {
+      if (activeTab === 'products') {
+        productPage = p;
+        renderProductCards(filterProducts());
+      } else {
+        freelancerPage = p;
+        renderCards(filterFreelancers());
+      }
+      // Scroll the results back into view so paging doesn't leave the user
+      // staring at whatever scroll position they were at on the old page.
+      document.getElementById('results-count')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    window.goToPage = goToPage;
+
+    /* ────────────────────────────────────
+       HTML ESCAPE
+    ──────────────────────────────────── */
+    function escHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+
+<script>
+/* ── AFFILIATE LINK FUNCTIONS ── */
+var _affCurrentLink = '';
+
+// Returns a Firebase ID token, waiting up to 5 s for auth state to resolve
+// if currentUser is not yet available. This prevents the affiliate-link
+// creation fetch from being silently dropped when the button is clicked
+// shortly after page load before Firebase Auth has fully initialised.
+function _getAffilIdToken() {
+  return new Promise(function(resolve) {
+    // Fast path — auth already resolved
+    if (window.auth && window.auth.currentUser) {
+      window.auth.currentUser.getIdToken().then(resolve).catch(function() { resolve(''); });
+      return;
+    }
+    // Slow path — wait for auth state (max 5 s)
+    var settled = false;
+    var timeout = setTimeout(function() {
+      if (!settled) { settled = true; resolve(''); }
+    }, 5000);
+    var unsub;
+    function tryUnsub() { try { if (unsub) unsub(); } catch(e) {} }
+    if (window._onAuthStateChanged) {
+      unsub = window._onAuthStateChanged(function(user) {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeout);
+          tryUnsub();
+          if (user) {
+            user.getIdToken().then(resolve).catch(function() { resolve(''); });
+          } else {
+            resolve('');
+          }
+        }
+      });
+    } else {
+      // _onAuthStateChanged not yet exposed — poll briefly
+      var attempts = 0;
+      var poll = setInterval(function() {
+        attempts++;
+        if (window.auth && window.auth.currentUser && !settled) {
+          settled = true;
+          clearTimeout(timeout);
+          clearInterval(poll);
+          window.auth.currentUser.getIdToken().then(resolve).catch(function() { resolve(''); });
+        } else if (attempts >= 50 && !settled) {
+          settled = true;
+          clearTimeout(timeout);
+          clearInterval(poll);
+          resolve('');
+        }
+      }, 100);
+    }
+  });
+}
+
+function getAffiliateLink(productId, productSlug, productTitle, commissionPct) {
+  var uid = window._myUid;
+  if (!uid) { showBrowseToast('Sign in to get your affiliate link'); return; }
+  var link = window.location.origin + '/p.html?slug=' + encodeURIComponent(productSlug) + '&ref=' + encodeURIComponent(uid);
+  _affCurrentLink = link;
+
+  document.getElementById('aff-modal-product').textContent   = productTitle || '';
+  document.getElementById('aff-modal-link').textContent      = link;
+  document.getElementById('aff-modal-commission').textContent = commissionPct
+    ? 'You earn ' + commissionPct + '% commission on each sale through this link'
+    : 'Commission applies to each sale made through this link';
+
+  var copyBtn = document.getElementById('aff-copy-btn');
+  if (copyBtn) { copyBtn.textContent = ''; copyBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Link'; }
+
+  document.getElementById('aff-modal-bg').classList.add('open');
+
+  // Persist the affiliate-links record so dashboard-affiliate.html's
+  // "Promoted Products" table has something to read. Non-blocking —
+  // the link still works for the user even if this fails.
+  //
+  // NOTE: window.auth.currentUser can be null briefly after page load even
+  // when the user IS signed in (Firebase Auth resolves asynchronously).
+  // _getAffilIdToken() waits for auth state to settle before calling
+  // getIdToken(), so the fetch is never silently skipped with an empty token.
+  (async function() {
+    try {
+      var idToken = await _getAffilIdToken();
+      if (!idToken) {
+        console.warn('[affiliate] No auth token — link not recorded.');
+        return;
+      }
+      var res = await fetch('/.netlify/functions/track-affiliate-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+        body: JSON.stringify({
+          action:       'create',
+          affiliateUid: uid,
+          productId:    productId,
+          productTitle: productTitle,
+          productSlug:  productSlug,
+        })
+      });
+      if (!res.ok) {
+        var errData = {};
+        try { errData = await res.json(); } catch(e2) {}
+        console.warn('[affiliate] track-affiliate-link returned', res.status, errData.error || '');
+        // Surface actionable errors to the user
+        if (res.status === 403) {
+          showBrowseToast(errData.error || 'Affiliate account not approved. Enable affiliate mode in Settings.');
+        }
+      }
+    } catch (e) {
+      console.warn('[affiliate] track-affiliate-link fetch failed:', e.message);
+    }
+  })();
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAffModal(e) {
+  if (e && e.target !== document.getElementById('aff-modal-bg')) return;
+  document.getElementById('aff-modal-bg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function copyAffLink() {
+  if (!_affCurrentLink) return;
+  var copyBtn = document.getElementById('aff-copy-btn');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(_affCurrentLink).then(function() {
+      if (copyBtn) copyBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      showBrowseToast('Affiliate link copied!');
+      setTimeout(function() {
+        if (copyBtn) copyBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Link';
+      }, 2500);
+    }).catch(function() { _fallbackCopy(copyBtn); });
+  } else {
+    _fallbackCopy(copyBtn);
+  }
+}
+
+function _fallbackCopy(copyBtn) {
+  var ta = document.createElement('textarea');
+  ta.value = _affCurrentLink;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try {
+    document.execCommand('copy');
+    if (copyBtn) copyBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    showBrowseToast('Affiliate link copied!');
+  } catch(e) {
+    showBrowseToast('Could not copy — please copy manually');
+  }
+  document.body.removeChild(ta);
+}
+
+var _browseToastTimer = null;
+function showBrowseToast(msg) {
+  var t = document.getElementById('browse-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_browseToastTimer);
+  _browseToastTimer = setTimeout(function() { t.classList.remove('show'); }, 2800);
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+
+/* Filter pill scroll-fade affordance:
+   hides the right-edge fade once the row is scrolled to its end,
+   and hides it entirely if the row doesn't overflow (nothing to scroll). */
+(function () {
+  function setupFade(scrollId, wrapId) {
+    var scrollEl = document.getElementById(scrollId);
+    var wrapEl   = document.getElementById(wrapId);
+    if (!scrollEl || !wrapEl) return;
+
+    function update() {
+      var hasOverflow = scrollEl.scrollWidth > scrollEl.clientWidth + 1;
+      var atEnd = scrollEl.scrollLeft + scrollEl.clientWidth >= scrollEl.scrollWidth - 1;
+      wrapEl.classList.toggle('at-end', !hasOverflow || atEnd);
+    }
+
+    scrollEl.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+
+    // Re-check after content/layout settles (fonts, dynamic pill changes, tab switches)
+    setTimeout(update, 250);
+    if (window.ResizeObserver) {
+      new ResizeObserver(update).observe(scrollEl);
+    }
+  }
+
+  setupFade('filter-bar', 'filter-bar-wrap');
+  setupFade('product-filter-bar', 'product-filter-bar-wrap');
+})();
+
+/* ── B2: Capture referral ref= param from URL and store in sessionStorage ──
+   When a user arrives via a referral link (browse.html?ref=uid), we:
+   1. Store the referrer UID in sessionStorage so it survives navigation.
+   2. Patch all signup links on this page to pass ?referrer=uid to signup.html
+      so signup.html can write it to the new user's Firestore doc.
+──────────────────────────────────────────────────────────────────────────── */
+(function captureReferral() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var ref = params.get('ref');
+    if (ref && ref.length > 0) {
+      // Basic sanity check — Firebase UIDs are 28 alphanumeric chars
+      if (/^[A-Za-z0-9]{10,64}$/.test(ref)) {
+        sessionStorage.setItem('kreddlo_referrer', ref);
+      }
+    }
+
+    // Read from sessionStorage (may have been set on a previous page load
+    // in the same tab, e.g. user clicked a referral link to browse.html first)
+    var storedRef = sessionStorage.getItem('kreddlo_referrer');
+    if (!storedRef) return;
+
+    // Patch all signup.html links to include ?referrer=uid
+    function patchSignupLinks() {
+      var links = document.querySelectorAll('a[href*="signup.html"], a[href="/signup.html"], a[href="signup.html"]');
+      links.forEach(function(link) {
+        try {
+          var url = new URL(link.href, window.location.origin);
+          if (!url.searchParams.has('referrer')) {
+            url.searchParams.set('referrer', storedRef);
+            link.href = url.pathname + url.search;
+          }
+        } catch (e) { /* malformed href — skip */ }
+      });
+    }
+
+    // Patch on DOMContentLoaded (most links already in DOM)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', patchSignupLinks);
+    } else {
+      patchSignupLinks();
+    }
+    // Also patch after a short delay for any dynamically injected links
+    setTimeout(patchSignupLinks, 800);
+  } catch (e) {
+    console.warn('[referral] captureReferral error:', e.message);
+  }
+})();
+</script>
+<!-- ══ AFFILIATE LINK MODAL ══ -->
+<div class="aff-modal-bg" id="aff-modal-bg" onclick="closeAffModal(event)" aria-modal="true" role="dialog" aria-label="Affiliate link">
+  <div class="aff-modal" id="aff-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;background:rgba(45,138,94,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#0d2145;">Your Affiliate Link</div>
+          <div id="aff-modal-product" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.50);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;"></div>
+        </div>
+      </div>
+      <button onclick="closeAffModal()" style="width:32px;height:32px;background:rgba(13,33,69,0.06);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Commission info -->
+    <div style="background:rgba(45,138,94,0.06);border:1px solid rgba(45,138,94,0.15);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span id="aff-modal-commission" style="font-size:13px;font-weight:600;color:#2d8a5e;"></span>
+    </div>
+
+    <!-- Link display -->
+    <div style="background:#f8f9fb;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin-bottom:14px;word-break:break-all;">
+      <span id="aff-modal-link" style="font-size:12px;font-weight:500;color:#0d2145;line-height:1.6;"></span>
+    </div>
+
+    <!-- Copy button -->
+    <button id="aff-copy-btn" onclick="copyAffLink()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:13px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#236b49'" onmouseout="this.style.background='#2d8a5e'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy Link
+    </button>
+    <p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.42);text-align:center;margin:10px 0 0;line-height:1.5;">Share this link anywhere. You earn a commission on every sale made through it.</p>
+  </div>
+</div>
+
+<!-- Browse page toast -->
+<div id="browse-toast"></div>
+
+</body>
+</html>

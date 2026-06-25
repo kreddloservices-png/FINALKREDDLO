@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Leave a Review — Kreddlo</title>
+  <meta id="meta-description" name="description" content="Leave a review for a completed Kreddlo project. Share your experience working with verified freelancers and clients on Kreddlo." />
+  <link id="canonical" rel="canonical" href="https://kreddlo.space/review.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+  <style>
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /*
+     * MOBILE FIRST — base styles target 375px (smallest common phone).
+     * Larger screens are added with min-width breakpoints below.
+     * Never use max-width to override — always build up from small.
+     */
+
+    /* ── BODY ──
+     * On mobile: standard block flow so the page scrolls naturally.
+     * The card is centred horizontally via margin auto.
+     * padding-bottom 40px covers iOS Safari home-bar safe area.
+     */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f8f9fb;
+      color: #0d2145;
+      margin: 0;
+      padding: 0 0 40px;
+      min-height: 100vh;
+      overflow-y: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* On larger screens (768px+) centre the card in the viewport */
+    @media (min-width: 768px) {
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+      }
+    }
+
+    /* ── BLOBS ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+    }
+    .blob-n {
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(13,33,69,0.09) 0%, transparent 70%);
+      top: -80px; right: -60px;
+    }
+    .blob-g {
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(45,138,94,0.08) 0%, transparent 70%);
+      bottom: -60px; left: -60px;
+    }
+    @media (min-width: 768px) {
+      .blob-n { width: 480px; height: 480px; top: -120px; right: -120px; }
+      .blob-g  { width: 400px; height: 400px; bottom: -80px; left: -80px; }
+    }
+
+    /* ── CARD ──
+     * Mobile: full-width minus 32px gutter (16px each side).
+     * Desktop: centred glassmorphism card, max-width 500px.
+     * Padding 28px on all sides per spec.
+     */
+    .card {
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.42);
+      border-radius: 24px;
+      box-shadow: 0 8px 40px rgba(13,33,69,0.10);
+      width: calc(100% - 32px);
+      max-width: 500px;
+      padding: 28px;
+      margin: 32px auto 0;
+    }
+
+    @media (min-width: 768px) {
+      .card { margin: 0 auto; }
+    }
+
+    /* ── LOGO ── */
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0d2145;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .logo span { color: #3dbd7a; }
+
+    @media (min-width: 480px) {
+      .logo { font-size: 22px; margin-bottom: 26px; }
+    }
+
+    /* ── HEADING ── */
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0d2145;
+      letter-spacing: -0.4px;
+      margin: 0 0 6px;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    /* ── PRODUCT TITLE ── */
+    .product-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(13,33,69,0.55);
+      text-align: center;
+      margin: 0 0 24px;
+      line-height: 1.5;
+    }
+
+    /* ── STAR RATING ── */
+    .stars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      line-height: 0;
+      transition: transform .12s;
+    }
+    .star-btn:active { transform: scale(0.92); }
+    .star-btn svg {
+      width: 34px;
+      height: 34px;
+      display: block;
+      transition: fill .15s, stroke .15s;
+    }
+    @media (min-width: 480px) {
+      .star-btn svg { width: 40px; height: 40px; }
+    }
+    .stars.locked .star-btn { cursor: default; }
+
+    /* ── RATING DESCRIPTION ── */
+    .rating-desc {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(13,33,69,0.55);
+      text-align: center;
+      min-height: 18px;
+      margin: 0 0 22px;
+    }
+
+    /* ── FORM FIELDS ── */
+    .field { margin-bottom: 16px; }
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(13,33,69,0.65);
+      margin-bottom: 7px;
+    }
+    .input-field {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.85);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0d2145;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input-field:focus {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.11);
+    }
+    .input-field::placeholder { color: rgba(13,33,69,0.35); }
+    textarea.input-field {
+      resize: vertical;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.6;
+      min-height: 100px;
+    }
+    .input-field[readonly] {
+      background: rgba(13,33,69,0.045);
+      color: rgba(13,33,69,0.55);
+      cursor: not-allowed;
+    }
+
+    /* ── SUBMIT BUTTON ── */
+    .btn-green {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: #2d8a5e;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 22px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(45,138,94,0.28);
+      transition: transform .15s, box-shadow .15s, background .15s, opacity .15s;
+      margin-top: 4px;
+    }
+    .btn-green:hover { background: #236b49; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,138,94,0.36); }
+    .btn-green:active { transform: translateY(0); }
+    .btn-green:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 4px 16px rgba(45,138,94,0.28);
+    }
+
+    .spin {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ERROR MESSAGE ── */
+    .msg-error {
+      display: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: #c0392b;
+      text-align: center;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+    .msg-error.show { display: block; }
+
+    /* ── STATE WRAP (loading / not-found / success) ── */
+    .state-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 12px 0 4px;
+    }
+    .state-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .state-icon.green { background: #e8f5ef; }
+    .state-icon.navy  { background: rgba(13,33,69,0.06); }
+    .state-heading {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0d2145;
+      letter-spacing: -0.3px;
+      margin: 0 0 8px;
+      line-height: 1.3;
+    }
+    .state-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(13,33,69,0.55);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── SKELETON (loading) ── */
+    .sk {
+      background: linear-gradient(90deg,#eef1f6 25%,#e3e7ee 50%,#eef1f6 75%);
+      background-size: 200% 100%;
+      animation: sk 1.5s infinite linear;
+      border-radius: 8px;
+    }
+    @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .sk-row { height: 14px; margin: 0 auto 12px; }
+
+    /* ── UTILITY ── */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+
+  <div class="blob blob-n"></div>
+  <div class="blob blob-g"></div>
+
+  <div class="card" id="card">
+
+    <a href="index.html" class="logo">Kreddl<span style="letter-spacing:0;">o</span></a>
+
+    <!-- ══ LOADING STATE ══ -->
+    <div id="loading-state" class="state-wrap">
+      <div class="sk sk-row" style="width:70%;height:20px;"></div>
+      <div class="sk sk-row" style="width:50%;height:13px;"></div>
+      <div class="sk sk-row" style="width:90%;height:36px;margin-top:14px;border-radius:50px;"></div>
+      <div class="sk sk-row" style="width:100%;height:90px;border-radius:12px;"></div>
+      <div class="sk sk-row" style="width:100%;height:44px;border-radius:50px;margin-bottom:0;"></div>
+    </div>
+
+    <!-- ══ NOT FOUND / ALREADY REVIEWED STATE ══ -->
+    <div id="info-state" class="state-wrap hidden">
+      <div class="state-icon navy">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h1 class="state-heading" id="info-heading">Order not found</h1>
+      <p class="state-text" id="info-text">We couldn't find an order matching this review link. Please check the link and try again.</p>
+    </div>
+
+    <!-- ══ REVIEW FORM STATE ══ -->
+    <div id="form-state" class="hidden">
+
+      <h1>How was your experience?</h1>
+      <p class="product-title" id="product-title">Loading product…</p>
+
+      <!-- Star rating -->
+      <div class="stars" id="stars">
+        <button type="button" class="star-btn" data-value="1" aria-label="1 star">
+          <svg viewBox="0 0 24 24" fill="#d1d6e0" stroke="#d1d6e0" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button type="button" class="star-btn" data-value="2" aria-label="2 stars">
+          <svg viewBox="0 0 24 24" fill="#d1d6e0" stroke="#d1d6e0" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button type="button" class="star-btn" data-value="3" aria-label="3 stars">
+          <svg viewBox="0 0 24 24" fill="#d1d6e0" stroke="#d1d6e0" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button type="button" class="star-btn" data-value="4" aria-label="4 stars">
+          <svg viewBox="0 0 24 24" fill="#d1d6e0" stroke="#d1d6e0" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button type="button" class="star-btn" data-value="5" aria-label="5 stars">
+          <svg viewBox="0 0 24 24" fill="#d1d6e0" stroke="#d1d6e0" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+      </div>
+      <p class="rating-desc" id="rating-desc"></p>
+
+      <!-- Comment -->
+      <div class="field">
+        <label class="field-label" for="comment">Tell others about your experience</label>
+        <textarea class="input-field" id="comment" placeholder="Leave an honest review to help other buyers."></textarea>
+      </div>
+
+      <!-- Name -->
+      <div class="field">
+        <label class="field-label" for="reviewer-name">Your name</label>
+        <input class="input-field" id="reviewer-name" type="text" placeholder="Your name"/>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label class="field-label" for="reviewer-email">Your email</label>
+        <input class="input-field" id="reviewer-email" type="email" readonly/>
+      </div>
+
+      <button class="btn-green" id="submit-btn">Submit Review</button>
+
+      <p class="msg-error" id="error-msg"></p>
+    </div>
+
+    <!-- ══ SUCCESS STATE ══ -->
+    <div id="success-state" class="state-wrap hidden">
+      <div class="state-icon green">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h1 class="state-heading">Thank you for your review</h1>
+      <p class="state-text">Your review has been posted and will help other buyers make informed decisions.</p>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       FIREBASE + DATA
+  ══════════════════════════════════════ -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+      authDomain:        'kreddlo.firebaseapp.com',
+      projectId:         'kreddlo',
+      storageBucket:     'kreddlo.firebasestorage.app',
+      messagingSenderId: '764500458567',
+      appId:             '1:764500458567:web:2389d5cf8c688caafd0562'
+    };
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db  = getFirestore(app);
+
+    /* ── Elements ── */
+    const loadingState = document.getElementById('loading-state');
+    const infoState    = document.getElementById('info-state');
+    const infoHeading  = document.getElementById('info-heading');
+    const infoText     = document.getElementById('info-text');
+    const formState    = document.getElementById('form-state');
+    const successState = document.getElementById('success-state');
+
+    const productTitleEl = document.getElementById('product-title');
+    const starsWrap      = document.getElementById('stars');
+    const starBtns       = Array.from(starsWrap.querySelectorAll('.star-btn'));
+    const ratingDescEl   = document.getElementById('rating-desc');
+    const commentEl      = document.getElementById('comment');
+    const nameEl         = document.getElementById('reviewer-name');
+    const emailEl        = document.getElementById('reviewer-email');
+    const submitBtn      = document.getElementById('submit-btn');
+    const errorMsg       = document.getElementById('error-msg');
+
+    const RATING_LABELS = { 1: 'Terrible', 2: 'Poor', 3: 'Average', 4: 'Good', 5: 'Excellent' };
+
+    let selectedRating = 0;
+    let locked         = false;
+    let orderId        = '';
+    let orderData      = null;
+
+    /* ── Star rendering ── */
+    function paintStars(count) {
+      starBtns.forEach((btn, i) => {
+        const svg = btn.querySelector('svg');
+        if (i < count) {
+          svg.setAttribute('fill', '#f5b400');
+          svg.setAttribute('stroke', '#f5b400');
+        } else {
+          svg.setAttribute('fill', '#d1d6e0');
+          svg.setAttribute('stroke', '#d1d6e0');
+        }
+      });
+    }
+
+    starBtns.forEach((btn) => {
+      const val = Number(btn.dataset.value);
+
+      btn.addEventListener('mouseenter', () => {
+        if (locked) return;
+        paintStars(val);
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        if (locked) return;
+        paintStars(selectedRating);
+      });
+
+      btn.addEventListener('click', () => {
+        selectedRating = val;
+        locked = true;
+        starsWrap.classList.add('locked');
+        paintStars(selectedRating);
+        ratingDescEl.textContent = RATING_LABELS[selectedRating];
+      });
+    });
+
+    starsWrap.addEventListener('mouseleave', () => {
+      if (!locked) paintStars(selectedRating);
+    });
+
+    /* ── Show a given state, hide the rest ── */
+    function showState(state) {
+      [loadingState, infoState, formState, successState].forEach(el => el.classList.add('hidden'));
+      state.classList.remove('hidden');
+    }
+
+    /* ── Error helper ── */
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.add('show');
+    }
+    function clearError() {
+      errorMsg.textContent = '';
+      errorMsg.classList.remove('show');
+    }
+
+    /* ── Load order + product ── */
+    async function loadOrder() {
+      const params = new URLSearchParams(window.location.search);
+      orderId = params.get('orderId') || '';
+
+      if (!orderId) {
+        infoHeading.textContent = 'Order not found';
+        infoText.textContent = "We couldn't find an order matching this review link. Please check the link and try again.";
+        showState(infoState);
+        return;
+      }
+
+      try {
+        const orderRef  = doc(db, 'product-orders', orderId);
+        const orderSnap = await getDoc(orderRef);
+
+        if (!orderSnap.exists()) {
+          infoHeading.textContent = 'Order not found';
+          infoText.textContent = "We couldn't find an order matching this review link. Please check the link and try again.";
+          showState(infoState);
+          return;
+        }
+
+        orderData = orderSnap.data();
+
+        if (orderData.reviewLeft === true) {
+          infoHeading.textContent = 'Review already submitted';
+          infoText.textContent = "You've already left a review for this order. Thanks for sharing your feedback!";
+          showState(infoState);
+          return;
+        }
+
+        /* Pre-fill name + email if available */
+        if (orderData.buyerName)  nameEl.value  = orderData.buyerName;
+        if (orderData.buyerEmail) emailEl.value = orderData.buyerEmail;
+
+        /* Fetch product title */
+        if (orderData.productId) {
+          try {
+            const prodSnap = await getDoc(doc(db, 'products', orderData.productId));
+            if (prodSnap.exists() && prodSnap.data().title) {
+              productTitleEl.textContent = prodSnap.data().title;
+            } else {
+              productTitleEl.textContent = '';
+            }
+          } catch {
+            productTitleEl.textContent = '';
+          }
+        } else {
+          productTitleEl.textContent = '';
+        }
+
+        showState(formState);
+
+      } catch (err) {
+        console.error('[review] Failed to load order:', err);
+        infoHeading.textContent = 'Something went wrong';
+        infoText.textContent = "We couldn't load this review request. Please try again later.";
+        showState(infoState);
+      }
+    }
+
+    /* ── Submit review ── */
+    submitBtn.addEventListener('click', async () => {
+      clearError();
+
+      if (!selectedRating) {
+        showError('Please select a star rating.');
+        return;
+      }
+      if (!commentEl.value.trim()) {
+        showError('Please write a short comment about your experience.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spin"></span> Submitting…';
+
+      try {
+        const res = await fetch('/.netlify/functions/submit-review', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (auth && auth.currentUser ? await auth.currentUser.getIdToken() : '') },
+          body: JSON.stringify({
+            sourceType:    'product',
+            sourceId:      orderId,
+            rating:        selectedRating,
+            comment:       commentEl.value.trim(),
+            reviewerEmail: emailEl.value.trim(),
+            reviewerName:  nameEl.value.trim(),
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Something went wrong. Please try again.');
+        }
+
+        showState(successState);
+
+      } catch (err) {
+        showError(err.message || 'Something went wrong. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Review';
+      }
+    });
+
+    loadOrder();
+  </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

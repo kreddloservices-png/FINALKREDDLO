@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found — Kreddlo</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          borderRadius: {
+            pill: '50px',
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.60);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.30);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(13, 33, 69, 0.08);
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d2145;
+      color: #fff;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 15px;
+      border: 2px solid #0d2145;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: #0d2145;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 15px;
+      border: 2px solid #0d2145;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #2d8a5e;
+      color: #fff;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 15px;
+      border: 2px solid #2d8a5e;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    /* Mobile menu open state */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: flex; }
+
+    /* Animated 404 illustration */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+    .float-anim { animation: float 3.5s ease-in-out infinite; }
+
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-up {
+      opacity: 0;
+      animation: fade-in-up 0.6s ease forwards;
+    }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.35s; }
+    .delay-4 { animation-delay: 0.5s; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+  <!-- ══ NAV ══ -->
+  <nav class="sticky top-0 z-50 glass" style="border-radius:0; border-left:none; border-right:none; border-top:none;">
+    <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+
+      <!-- Logo -->
+      <a href="index.html" class="flex-shrink-0" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+      <!-- Desktop nav links -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="index.html#features"  class="text-navy/60 hover:text-navy text-[14px] font-medium transition-colors">Features</a>
+        <a href="how-it-works.html"    class="text-navy/60 hover:text-navy text-[14px] font-medium transition-colors">How It Works</a>
+        <a href="browse.html"          class="text-navy/60 hover:text-navy text-[14px] font-medium transition-colors">Browse</a>
+        <a href="pricing.html"         class="text-navy/60 hover:text-navy text-[14px] font-medium transition-colors">Pricing</a>
+      </div>
+
+      <!-- Desktop CTA -->
+      <div class="hidden md:flex items-center gap-3">
+        <a href="login.html"  class="btn-secondary" style="padding:9px 22px;font-size:14px;">Log In</a>
+        <a href="signup.html" class="btn-green"      style="padding:9px 22px;font-size:14px;">Get Started</a>
+      </div>
+
+      <!-- Hamburger -->
+      <button id="hamburger" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Open menu">
+        <span class="w-5 h-0.5 bg-navy rounded"></span>
+        <span class="w-5 h-0.5 bg-navy rounded"></span>
+        <span class="w-5 h-0.5 bg-navy rounded"></span>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="glass md:hidden px-5 py-5 flex flex-col gap-4"
+         style="border-radius:0; border-left:none; border-right:none; border-top: 1px solid rgba(226,232,240,0.6);">
+      <a href="index.html#features"  class="text-navy/70 hover:text-navy text-[15px] font-medium transition-colors">Features</a>
+      <a href="how-it-works.html"    class="text-navy/70 hover:text-navy text-[15px] font-medium transition-colors">How It Works</a>
+      <a href="browse.html"          class="text-navy/70 hover:text-navy text-[15px] font-medium transition-colors">Browse</a>
+      <a href="pricing.html"         class="text-navy/70 hover:text-navy text-[15px] font-medium transition-colors">Pricing</a>
+      <div class="flex flex-col gap-3 pt-2 border-t border-border">
+        <a href="login.html"  class="btn-secondary w-full text-center">Log In</a>
+        <a href="signup.html" class="btn-green w-full text-center">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ══ 404 CONTENT ══ -->
+  <main class="flex-1 flex items-center justify-center px-5 py-16">
+    <div class="w-full max-w-lg text-center">
+
+      <!-- Floating illustration -->
+      <div class="float-anim mb-8 fade-in-up delay-1">
+        <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg"
+             class="w-full max-w-[260px] mx-auto" aria-hidden="true">
+          <!-- Background blob -->
+          <ellipse cx="110" cy="130" rx="85" ry="18" fill="#e2e8f0" opacity="0.5"/>
+          <!-- Document base -->
+          <rect x="55" y="20" width="110" height="120" rx="12" fill="white"
+                stroke="#e2e8f0" stroke-width="1.5"/>
+          <!-- Document lines (content placeholder) -->
+          <rect x="72" y="42" width="76" height="7" rx="3.5" fill="#e2e8f0"/>
+          <rect x="72" y="56" width="55" height="6" rx="3" fill="#f1f5f9"/>
+          <rect x="72" y="70" width="65" height="6" rx="3" fill="#f1f5f9"/>
+          <!-- Big 404 text on doc -->
+          <text x="110" y="108" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif"
+                font-weight="800" font-size="36" fill="#0d2145" letter-spacing="-1" opacity="0.12">404</text>
+          <!-- Magnifying glass -->
+          <circle cx="148" cy="88" r="22" fill="#f8f9fb" stroke="#0d2145" stroke-width="3"/>
+          <circle cx="148" cy="88" r="13" fill="white" stroke="#2d8a5e" stroke-width="2.5"/>
+          <line x1="160" y1="100" x2="172" y2="112" stroke="#0d2145" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Question mark inside glass -->
+          <text x="148" y="93" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif"
+                font-weight="800" font-size="13" fill="#2d8a5e">?</text>
+        </svg>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-[42px] sm:text-[56px] font-extrabold tracking-[-1.5px] text-navy leading-none mb-3 fade-in-up delay-2">
+        404
+      </h1>
+      <p class="text-[20px] sm:text-[24px] font-bold text-navy tracking-[-0.4px] mb-3 fade-in-up delay-2">
+        Page not found
+      </p>
+      <p class="text-[15px] sm:text-[16px] text-navy/55 font-normal leading-relaxed max-w-sm mx-auto mb-10 fade-in-up delay-3">
+        The page you're looking for doesn't exist or may have moved. Let's get you back on track.
+      </p>
+
+      <!-- Actions -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 fade-in-up delay-4">
+        <a href="index.html" class="btn-primary w-full sm:w-auto" style="padding:13px 32px;">
+          Go Home
+        </a>
+        <a href="browse.html" class="btn-secondary w-full sm:w-auto" style="padding:13px 32px;">
+          Browse Services
+        </a>
+      </div>
+
+      <!-- Quick links -->
+      <div class="mt-10 pt-8 border-t border-border fade-in-up delay-4">
+        <p class="text-[13px] text-navy/40 font-medium uppercase tracking-widest mb-4">Or go to</p>
+        <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          <a href="how-it-works.html" class="text-[14px] text-navy/55 hover:text-navy transition-colors font-medium">How It Works</a>
+          <a href="pricing.html"      class="text-[14px] text-navy/55 hover:text-navy transition-colors font-medium">Pricing</a>
+          <a href="login.html"        class="text-[14px] text-navy/55 hover:text-navy transition-colors font-medium">Log In</a>
+          <a href="signup.html"       class="text-[14px] text-navy/55 hover:text-navy transition-colors font-medium">Sign Up</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="border-t border-border py-10 px-5">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-navy/40 text-[13px] font-normal">&copy; <span id="yr"></span> Kreddlo. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="privacy.html" class="text-navy/40 text-[13px] hover:text-navy transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-navy/40 text-[13px] hover:text-navy transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/service-worker.js').catch(function (err) {
+          console.warn('Service worker registration failed:', err);
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>

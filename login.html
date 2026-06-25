@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta id="meta-description" name="description" content="Log in to your Kreddlo account to access your dashboard, contracts, earnings and withdrawal tools." />
+  <link id="canonical" rel="canonical" href="https://kreddlo.space/login.html" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Log In — Kreddlo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Full-page layout ── */
+    .page-bg {
+      min-height: 100vh;
+      width: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 48px;
+      overflow: hidden;
+    }
+
+    /* ── Blobs ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Glass card ── */
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.60) 100%);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.60);
+      border-bottom-color: rgba(255,255,255,0.30);
+      border-right-color:  rgba(255,255,255,0.30);
+      border-radius: 24px;
+      box-shadow:
+        0 2px 0 0 rgba(255,255,255,0.90) inset,
+        0 -1px 0 0 rgba(255,255,255,0.25) inset,
+        0 12px 48px rgba(13,33,69,0.11),
+        0 2px 4px rgba(13,33,69,0.06);
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+    }
+    .glass::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.10) 100%);
+      pointer-events: none; z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    /* ── Primary button ── */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%;
+      background: #0d2145; color: #fff;
+      border-radius: 50px; padding: 14px 28px;
+      font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s;
+      text-decoration: none; white-space: nowrap;
+      letter-spacing: -0.1px;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    /* ── Inputs ── */
+    .field-group  { display: flex; flex-direction: column; gap: 6px; }
+    .field-label  { font-size: 13px; font-weight: 600; color: #0d2145; letter-spacing: -0.1px; }
+
+    .field-input {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: rgba(255,255,255,0.70);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 400; color: #0d2145;
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field-input::placeholder { color: rgba(13,33,69,0.30); }
+    .field-input:focus {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.12);
+    }
+    .field-input.error {
+      border-color: #e53e3e;
+      box-shadow: 0 0 0 3px rgba(229,62,62,0.10);
+    }
+
+    /* ── Password wrapper ── */
+    .pw-wrapper { position: relative; }
+    .pw-wrapper .field-input { padding-right: 44px; }
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 0;
+      color: rgba(13,33,69,0.35); display: flex; align-items: center;
+      transition: color .15s;
+    }
+    .pw-toggle:hover { color: #0d2145; }
+
+    /* ── Error banner ── */
+    .form-error {
+      background: rgba(229,62,62,0.08);
+      border: 1px solid rgba(229,62,62,0.22);
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; font-weight: 500; color: #c53030;
+      display: none;
+    }
+    .form-error.visible { display: block; }
+
+    /* ── Field hint ── */
+    .field-hint { font-size: 12px; color: #e53e3e; font-weight: 500; display: none; }
+    .field-hint.visible { display: block; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(13,33,69,0.10), transparent);
+    }
+
+    /* ── Reset modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(13,33,69,0.35);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 28px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 20px 60px rgba(13,33,69,0.18);
+      transform: translateY(12px);
+      transition: transform .2s;
+    }
+    .modal-overlay.open .modal-card { transform: translateY(0); }
+
+    .modal-success {
+      background: rgba(45,138,94,0.08);
+      border: 1px solid rgba(45,138,94,0.22);
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; font-weight: 500; color: #2d8a5e;
+      display: none;
+    }
+    .modal-success.visible { display: block; }
+    .modal-error {
+      background: rgba(229,62,62,0.08);
+      border: 1px solid rgba(229,62,62,0.22);
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; font-weight: 500; color: #c53030;
+      display: none;
+    }
+    .modal-error.visible { display: block; }
+  </style>
+
+  <!-- Firebase CDN -->
+  <script type="module">
+    import { initializeApp }                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, signInWithEmailAndPassword,
+             sendPasswordResetEmail, signOut }                   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+      authDomain:        "kreddlo.firebaseapp.com",
+      projectId:         "kreddlo",
+      storageBucket:     "kreddlo.firebasestorage.app",
+      messagingSenderId: "764500458567",
+      appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+
+    const app   = initializeApp(firebaseConfig);
+    window.db   = getFirestore(app);
+    window.auth = getAuth(app);
+    window._fbReady = { signInWithEmailAndPassword, getDoc, doc, sendPasswordResetEmail, signOut };
+  </script>
+</head>
+
+<body class="overflow-x-hidden">
+  <div class="page-bg">
+
+    <!-- Background blobs -->
+    <div class="blob" style="width:480px;height:480px;background:radial-gradient(circle,rgba(45,138,94,0.10) 0%,transparent 70%);top:-140px;left:-160px;"></div>
+    <div class="blob" style="width:400px;height:400px;background:radial-gradient(circle,rgba(13,33,69,0.07) 0%,transparent 70%);bottom:-80px;right:-100px;"></div>
+    <div class="blob" style="width:280px;height:280px;background:radial-gradient(circle,rgba(61,189,122,0.07) 0%,transparent 70%);top:50%;right:10%;"></div>
+
+    <!-- Logo -->
+    <a href="index.html" class="relative z-10 mb-8 flex-shrink-0 mt-2" style="font-size:24px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+    <!-- Card -->
+    <div class="glass relative z-10 px-6 py-8 sm:px-8 sm:py-10">
+
+      <!-- Heading -->
+      <div class="text-center mb-7">
+        <h1 class="text-[22px] sm:text-[26px] font-extrabold text-navy tracking-[-0.6px] mb-1.5">
+          Welcome Back
+        </h1>
+        <p class="text-[14px] text-navy/50 font-normal">
+          Log in to your Kreddlo account.
+        </p>
+      </div>
+
+      <div class="divider mb-6"></div>
+
+      <!-- Error banner -->
+      <div id="form-error" class="form-error mb-5" role="alert"></div>
+
+      <!-- Form -->
+      <form id="login-form" novalidate autocomplete="on">
+
+        <!-- Email -->
+        <div class="field-group mb-4">
+          <label class="field-label" for="email">Email Address</label>
+          <input
+            id="email"
+            type="email"
+            class="field-input"
+            placeholder="you@example.com"
+            autocomplete="email"
+            inputmode="email"
+          />
+          <span id="hint-email" class="field-hint">Please enter a valid email address.</span>
+        </div>
+
+        <!-- Password -->
+        <div class="field-group mb-2">
+          <label class="field-label" for="password">Password</label>
+          <div class="pw-wrapper">
+            <input
+              id="password"
+              type="password"
+              class="field-input"
+              placeholder="Your password"
+              autocomplete="current-password"
+            />
+            <button type="button" class="pw-toggle" aria-label="Show password" onclick="togglePw(this)">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span id="hint-password" class="field-hint">Please enter your password.</span>
+        </div>
+
+        <!-- Forgot password -->
+        <div class="flex justify-end mb-6">
+          <button type="button" onclick="openReset()"
+                  class="text-[13px] font-semibold text-green hover:underline bg-transparent border-none cursor-pointer p-0">
+            Forgot Password?
+          </button>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="submit-btn" class="btn-primary">
+          <span id="btn-label">Log In</span>
+        </button>
+
+      </form>
+
+      <!-- Sign up link -->
+      <p class="text-center text-[14px] text-navy/50 font-normal mt-5">
+        New to Kreddlo?
+        <a href="signup.html" class="font-semibold text-green hover:underline ml-1">Sign Up</a>
+      </p>
+
+    </div>
+
+    <div class="h-12 relative z-10"></div>
+
+  </div><!-- /page-bg -->
+
+
+  <!-- ══ FORGOT PASSWORD MODAL ══ -->
+  <div id="reset-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+
+      <div class="flex items-center justify-between mb-5">
+        <h2 id="modal-title" class="text-[18px] font-extrabold text-navy tracking-[-0.4px]">Reset Your Password</h2>
+        <button onclick="closeReset()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer" aria-label="Close">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0d2145" stroke-width="2.5">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="text-[14px] text-navy/55 font-normal leading-relaxed mb-5">
+        Enter the email address on your account and we will send you a link to reset your password.
+      </p>
+
+      <div id="modal-error"   class="modal-error   mb-4"></div>
+      <div id="modal-success" class="modal-success mb-4"></div>
+
+      <div class="field-group mb-4">
+        <label class="field-label" for="reset-email">Email Address</label>
+        <input
+          id="reset-email"
+          type="email"
+          class="field-input"
+          placeholder="you@example.com"
+          inputmode="email"
+          autocomplete="email"
+        />
+      </div>
+
+      <button id="reset-btn" onclick="sendReset()"
+              class="btn-primary" style="border-radius:50px;">
+        <span id="reset-label">Send Reset Link</span>
+      </button>
+
+    </div>
+  </div>
+
+
+  <script>
+    /* ── Password toggle ── */
+    function togglePw(btn) {
+      const input  = document.getElementById('password');
+      const isText = input.type === 'text';
+      input.type   = isText ? 'password' : 'text';
+      btn.querySelector('svg').innerHTML = isText
+        ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+        : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+      btn.setAttribute('aria-label', isText ? 'Show password' : 'Hide password');
+    }
+
+    /* ── Field helpers ── */
+    function markField(id, error) { document.getElementById(id).classList.toggle('error', error); }
+    function showHint(id, show)   { document.getElementById(id).classList.toggle('visible', show); }
+
+    function showError(msg) {
+      const el = document.getElementById('form-error');
+      el.textContent = msg; el.classList.add('visible');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function clearError() {
+      const el = document.getElementById('form-error');
+      el.textContent = ''; el.classList.remove('visible');
+    }
+
+    function setLoading(loading) {
+      const btn   = document.getElementById('submit-btn');
+      const label = document.getElementById('btn-label');
+      btn.disabled = loading;
+      label.innerHTML = loading
+        ? '<span class="spinner mr-2"></span> Logging In...'
+        : 'Log In';
+    }
+
+    /* ── Firebase error messages ── */
+    function firebaseMsg(code) {
+      const map = {
+        'auth/user-not-found':        'No account found with this email address.',
+        'auth/wrong-password':        'Incorrect password. Please try again.',
+        'auth/invalid-credential':    'Incorrect email or password. Please try again.',
+        'auth/invalid-email':         'The email address is not valid.',
+        'auth/user-disabled':         'This account has been disabled. Contact support.',
+        'auth/too-many-requests':     'Too many failed attempts. Please wait a moment and try again.',
+        'auth/network-request-failed':'Network error. Check your connection and try again.',
+      };
+      return map[code] || 'Something went wrong. Please try again.';
+    }
+
+    /* ── Wait for Firebase ── */
+    async function waitForFirebase() {
+      const start = Date.now();
+      while (!window._fbReady && Date.now() - start < 8000) {
+        await new Promise(r => setTimeout(r, 80));
+      }
+      return !!window._fbReady;
+    }
+
+    /* ── Role-based redirect ── */
+    async function redirect(userData) {
+      // FIX: suspended accounts were never checked anywhere after login —
+      // admin.html set userData.suspended but nothing enforced it, so a
+      // suspended user could still sign in and use the site normally.
+      // Checked here since both the immediate-login path and the post-2FA
+      // path call this same function before routing anywhere.
+      if (userData.suspended === true) {
+        setLoading(false);
+        try {
+          const { signOut } = window._fbReady;
+          await signOut(window.auth);
+        } catch (e) { /* non-fatal — show the message regardless */ }
+        showError('Your account has been suspended. Please contact support for assistance.');
+        return;
+      }
+
+      // FIX: users who completed signup but never verified the OTP could log in
+      // and skip email verification entirely — the role/KYC checks below never
+      // looked at emailVerified, so they'd be routed straight to verify.html
+      // (KYC) or dashboard. Now we intercept here, resend a fresh code, and
+      // send them to email-confirm.html to complete the step they skipped.
+      // Admin and buyer accounts are excluded — they go through a different
+      // onboarding path that does not use emailVerified.
+      if (
+        userData.emailVerified !== true &&
+        userData.role !== 'admin' &&
+        userData.role !== 'buyer'
+      ) {
+        // Fire-and-forget: resend a fresh OTP so the user doesn't have to
+        // click "resend" themselves. Non-fatal — email-confirm.html has its
+        // own resend button as a fallback.
+        try {
+          await fetch('/.netlify/functions/send-verification-email', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ uid: window.auth.currentUser && window.auth.currentUser.uid }),
+          });
+        } catch (e) { /* non-fatal */ }
+
+        // Redirect to the OTP entry page, passing uid + email so it works
+        // without requiring the user to be mid-signup.
+        var _uid   = window.auth.currentUser ? window.auth.currentUser.uid : (userData.uid || '');
+        var _email = encodeURIComponent(userData.email || '');
+        window.location.href = 'email-confirm.html?uid=' + encodeURIComponent(_uid) + '&email=' + _email;
+        return;
+      }
+
+      // Honour ?next=upgrade — send freelancers straight to the Pro upgrade modal
+      var _nextParam = new URLSearchParams(window.location.search).get('next');
+      if (userData.role === 'admin') {
+        window.location.href = 'admin.html';
+      } else if (userData.role === 'buyer') {
+        window.location.href = 'buyer-dashboard.html';
+      } else if (userData.kycStatus === 'pending') {
+        // Not yet submitted — send to verify (keep ?next so it survives KYC)
+        window.location.href = 'verify.html' + (_nextParam ? '?next=' + encodeURIComponent(_nextParam) : '');
+      } else {
+        // verified, under-review, declined — dashboard handles all these states
+        var target = (_nextParam === 'upgrade') ? 'pricing.html?openUpgrade=1' : 'dashboard.html';
+        window.location.href = target;
+      }
+    }
+
+    /* ── Form submit ── */
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearError();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      /* Reset field states */
+      ['email', 'password'].forEach(id => markField(id, false));
+      ['hint-email', 'hint-password'].forEach(id => showHint(id, false));
+
+      /* Validate */
+      let valid = true;
+      const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!email || !emailRx.test(email)) {
+        markField('email', true); showHint('hint-email', true); valid = false;
+      }
+      if (!password) {
+        markField('password', true); showHint('hint-password', true); valid = false;
+      }
+      if (!valid) return;
+
+      const ready = await waitForFirebase();
+      if (!ready) { showError('Firebase failed to load. Please refresh and try again.'); return; }
+
+      const { signInWithEmailAndPassword, getDoc, doc } = window._fbReady;
+
+      setLoading(true);
+
+      try {
+        const credential = await signInWithEmailAndPassword(window.auth, email, password);
+        const uid        = credential.user.uid;
+
+        /* Fetch Firestore user document */
+        const snap = await getDoc(doc(window.db, 'users', uid));
+
+        if (!snap.exists()) {
+          /* Document missing — redirect to verify as safe fallback */
+          window.location.href = 'verify.html';
+          return;
+        }
+
+        const userData = snap.data();
+
+        /* ── 2FA gate ── */
+        if (userData.twoFactorEnabled === true) {
+          setLoading(false);
+          // Generate and send code
+          window._2fa_uid      = uid;
+          window._2fa_userData = userData;
+          window._2fa_code     = String(Math.floor(100000 + Math.random() * 900000));
+          try {
+            await fetch('/.netlify/functions/send-email', {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to:   email,
+                type: 'email-verification',
+                data: { name: userData.name || 'there', code: window._2fa_code }
+              })
+            });
+          } catch(e) { /* non-fatal — user will see the modal and can resend */ }
+          show2faModal(email);
+          return;
+        }
+
+        await redirect(userData);
+
+      } catch (err) {
+        setLoading(false);
+        showError(firebaseMsg(err.code));
+      }
+    });
+
+
+    /* ══ FORGOT PASSWORD MODAL ══ */
+
+    function openReset() {
+      const email = document.getElementById('email').value.trim();
+      if (email) document.getElementById('reset-email').value = email;
+      clearModalMessages();
+      document.getElementById('reset-modal').classList.add('open');
+      setTimeout(() => document.getElementById('reset-email').focus(), 150);
+    }
+
+    function closeReset() {
+      document.getElementById('reset-modal').classList.remove('open');
+    }
+
+    /* Close on overlay click */
+    document.getElementById('reset-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeReset();
+    });
+
+    /* Close on Escape */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeReset();
+    });
+
+    function clearModalMessages() {
+      ['modal-error', 'modal-success'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = ''; el.classList.remove('visible');
+      });
+    }
+
+    function setResetLoading(loading) {
+      const btn   = document.getElementById('reset-btn');
+      const label = document.getElementById('reset-label');
+      btn.disabled = loading;
+      label.innerHTML = loading
+        ? '<span class="spinner mr-2"></span> Sending...'
+        : 'Send Reset Link';
+    }
+
+    async function sendReset() {
+      clearModalMessages();
+
+      const email = document.getElementById('reset-email').value.trim();
+      const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!email || !emailRx.test(email)) {
+        const el = document.getElementById('modal-error');
+        el.textContent = 'Please enter a valid email address.';
+        el.classList.add('visible');
+        return;
+      }
+
+      const ready = await waitForFirebase();
+      if (!ready) {
+        const el = document.getElementById('modal-error');
+        el.textContent = 'Firebase failed to load. Please refresh.';
+        el.classList.add('visible');
+        return;
+      }
+
+      const { sendPasswordResetEmail } = window._fbReady;
+      setResetLoading(true);
+
+      try {
+        await sendPasswordResetEmail(window.auth, email);
+        const el = document.getElementById('modal-success');
+        el.textContent = 'Reset link sent. Check your inbox and spam folder.';
+        el.classList.add('visible');
+        setResetLoading(false);
+
+        /* Auto-close after 3 seconds */
+        setTimeout(closeReset, 3000);
+
+      } catch (err) {
+        setResetLoading(false);
+        const el = document.getElementById('modal-error');
+        el.textContent = err.code === 'auth/user-not-found'
+          ? 'No account found with this email address.'
+          : 'Could not send reset email. Please try again.';
+        el.classList.add('visible');
+      }
+    }
+  </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+<!-- ══ 2FA MODAL ══ -->
+<div id="login-2fa-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(9,24,48,0.60);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 24px 64px rgba(13,33,69,0.18);">
+    <div style="font-size:22px;font-weight:800;color:#0d2145;margin-bottom:6px;">Check your email</div>
+    <p id="login-2fa-desc" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.55);margin:0 0 20px;line-height:1.5;"></p>
+    <input id="login-2fa-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000"
+      style="width:100%;box-sizing:border-box;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:22px;font-weight:700;letter-spacing:8px;color:#0d2145;text-align:center;font-family:inherit;outline:none;margin-bottom:8px;"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+      onfocus="this.style.borderColor='#2d8a5e'" onblur="this.style.borderColor='#e2e8f0'">
+    <p id="login-2fa-error" style="font-size:12px;font-weight:600;color:#c81e1e;margin:0 0 14px;display:none;"></p>
+    <button id="login-2fa-btn" onclick="confirm2faLogin()"
+      style="width:100%;padding:13px;background:#0d2145;border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;margin-bottom:12px;">
+      Verify & Sign In
+    </button>
+    <p style="font-size:12px;font-weight:600;color:#2d8a5e;margin:0;text-align:center;cursor:pointer;" onclick="resend2faCode()">Resend code</p>
+  </div>
+</div>
+
+<script>
+function show2faModal(email) {
+  var modal = document.getElementById('login-2fa-modal');
+  var desc  = document.getElementById('login-2fa-desc');
+  var inp   = document.getElementById('login-2fa-input');
+  var err   = document.getElementById('login-2fa-error');
+  if (desc) desc.textContent = 'We sent a 6-digit code to ' + email + '. Enter it below to complete sign in.';
+  if (inp)  inp.value = '';
+  if (err)  { err.style.display = 'none'; err.textContent = ''; }
+  if (modal) modal.style.display = 'flex';
+}
+
+async function confirm2faLogin() {
+  var inp = document.getElementById('login-2fa-input');
+  var err = document.getElementById('login-2fa-error');
+  var btn = document.getElementById('login-2fa-btn');
+  var code = inp ? inp.value.trim() : '';
+
+  if (code.length !== 6) {
+    if (err) { err.textContent = 'Please enter the full 6-digit code.'; err.style.display = 'block'; }
+    return;
+  }
+  if (code !== window._2fa_code) {
+    if (err) { err.textContent = 'Incorrect code. Please try again.'; err.style.display = 'block'; }
+    if (inp) { inp.value = ''; inp.focus(); }
+    return;
+  }
+
+  // Code correct — proceed with redirect
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
+  if (err) err.style.display = 'none';
+
+  // Close modal then redirect
+  var modal = document.getElementById('login-2fa-modal');
+  if (modal) modal.style.display = 'none';
+
+  await redirect(window._2fa_userData);
+}
+
+async function resend2faCode() {
+  if (!window._2fa_userData) return;
+  window._2fa_code = String(Math.floor(100000 + Math.random() * 900000));
+  var email = window._2fa_userData.email || '';
+  var name  = window._2fa_userData.name  || 'there';
+  try {
+    await fetch('/.netlify/functions/send-email', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: email, type: 'email-verification', data: { name, code: window._2fa_code } })
+    });
+    var err = document.getElementById('login-2fa-error');
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+    var inp = document.getElementById('login-2fa-input');
+    if (inp) inp.value = '';
+    alert('New code sent to ' + email);
+  } catch(e) {
+    alert('Could not resend. Check your connection.');
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="xEX4yqngkHEW_zKtyQksCNn2Xfg_CND2yoFU4ipterA" />
+  <!-- Mobile app redirect: if running inside Capacitor native wrapper, skip the landing page -->
+  <script>
+    (function () {
+      try {
+        var isCap = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+        if (!isCap) {
+          // Also catch cases where Capacitor bridge hasn't fully initialised yet
+          // by checking the user-agent for the custom scheme Capacitor injects
+          var ua = navigator.userAgent || '';
+          isCap = /capacitor/i.test(ua);
+        }
+        if (isCap) {
+          window.location.replace('/login.html');
+        }
+      } catch (e) { /* fail silently — show landing page as fallback */ }
+    })();
+  </script>
+  <meta id="meta-description" name="description" content="Kreddlo is the Fiverr and Upwork alternative built for global freelancers. Unlike Selar, Gumroad or Payhip, Kreddlo combines KYC verification, escrow contracts and automatic payouts — better than Payoneer or Wise for freelance income." />
+  <link id="canonical" rel="canonical" href="https://kreddlo.space/" />
+
+  <!-- Open Graph (Facebook, WhatsApp, LinkedIn, Discord previews) -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://kreddlo.space/" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta property="og:title"       content="Kreddlo — Get Paid Globally Without the Barriers" />
+  <meta property="og:description" content="KYC-verified freelance platform with escrow contracts, 300+ crypto payments and 24 payout currencies. Built for freelancers locked out of Stripe, PayPal and Wise." />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"   content="Kreddlo — Global Freelance Payment Platform" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="@kreddlo" />
+  <meta name="twitter:title"       content="Kreddlo — Get Paid Globally Without the Barriers" />
+  <meta name="twitter:description" content="KYC-verified freelance platform with escrow contracts, 300+ crypto payments and 24 payout currencies. Built for freelancers locked out of Stripe, PayPal and Wise." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Kreddlo — Global Freelance Payment Platform</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:        '#0d2145',
+            green:       '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:       '#f8f9fb',
+            border:      '#e2e8f0',
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          borderRadius: {
+            pill: '50px',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── Base ── */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Glass ── */
+    .glass {
+      background: rgba(255, 255, 255, 0.60);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.30);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(13, 33, 69, 0.08);
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d2145;
+      color: #fff;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 15px;
+      border: 2px solid #0d2145;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: #0d2145;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 15px;
+      border: 2px solid #0d2145;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #2d8a5e;
+      color: #fff;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 15px;
+      border: 2px solid #2d8a5e;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    /* ── Blob ── */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-navy {
+      width: 560px;
+      height: 560px;
+      background: radial-gradient(circle, rgba(13,33,69,0.10) 0%, transparent 70%);
+      top: -120px;
+      right: -120px;
+    }
+    .blob-green {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(45,138,94,0.08) 0%, transparent 70%);
+      bottom: -80px;
+      left: -100px;
+    }
+
+    /* ── Float animation ── */
+    @keyframes floatUp {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+    .float-card { animation: floatUp 4s ease-in-out infinite; }
+
+    /* ── Step arrow ── */
+    .step-arrow {
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, #2d8a5e, #3dbd7a);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .step-arrow::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: -4px;
+      border-left: 8px solid #3dbd7a;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    /* ── Nav mobile menu ── */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+
+    /* ── Pulse dot ── */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    .live-dot { animation: pulse 1.8s ease-in-out infinite; }
+
+    /* ── Section fade-in ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.7s ease both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+  </style>
+
+  <!-- Firebase CDN -->
+  <script type="module">
+    import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth }        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getStorage }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+      authDomain:        "kreddlo.firebaseapp.com",
+      projectId:         "kreddlo",
+      storageBucket:     "kreddlo.firebasestorage.app",
+      messagingSenderId: "764500458567",
+      appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+
+    const app       = initializeApp(firebaseConfig);
+    window.db       = getFirestore(app);
+    window.auth     = getAuth(app);
+    window.storage  = getStorage(app);
+
+    // Load social links from Firestore config
+    (async () => {
+      try {
+        const snap = await getDoc(doc(window.db, 'config', 'platform'));
+        const s = snap.exists() ? snap.data() : {};
+        const links = { twitter: s.twitterUrl || '', linkedin: s.linkedinUrl || '', instagram: s.instagramUrl || '' };
+        ['twitter', 'linkedin', 'instagram'].forEach(name => {
+          const el = document.getElementById('social-' + name);
+          if (!el) return;
+          if (links[name]) { el.href = links[name]; el.style.display = 'flex'; }
+          else { el.style.display = 'none'; }
+        });
+      } catch (e) { /* silent fail */ }
+    })();
+  </script>
+
+  <!-- Structured Data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Kreddlo",
+    "url": "https://kreddlo.space/",
+    "logo": "https://kreddlo.space/assets/kreddlo-logo.png",
+    "description": "Kreddlo is a global freelance platform combining KYC verification, escrow contracts and automatic payouts for freelancers and clients."
+  }
+  </script>
+
+  <!-- Structured Data: WebSite + Sitelinks Searchbox -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Kreddlo",
+    "url": "https://kreddlo.space/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://kreddlo.space/browse.html?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: Site Navigation (helps Google generate sitelinks) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Kreddlo Site Navigation",
+    "itemListElement": [
+      { "@type": "SiteNavigationElement", "position": 1, "name": "How It Works", "url": "https://kreddlo.space/how-it-works.html" },
+      { "@type": "SiteNavigationElement", "position": 2, "name": "Browse Freelancers", "url": "https://kreddlo.space/browse.html" },
+      { "@type": "SiteNavigationElement", "position": 3, "name": "Pricing", "url": "https://kreddlo.space/pricing.html" },
+      { "@type": "SiteNavigationElement", "position": 4, "name": "Sign Up", "url": "https://kreddlo.space/signup.html" },
+      { "@type": "SiteNavigationElement", "position": 5, "name": "Log In", "url": "https://kreddlo.space/login.html" },
+      { "@type": "SiteNavigationElement", "position": 6, "name": "About", "url": "https://kreddlo.space/about.html" }
+    ]
+  }
+  </script>
+</head>
+
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+  <!-- ═══════════════════════════════════════════
+       ANNOUNCEMENT BANNER
+  ═══════════════════════════════════════════ -->
+  <div id="announce-bar" style="background:#2d8a5e;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    <span>Now supporting 24 payout currencies — NGN, GHS, KES, UGX and more</span>
+    <a href="pricing.html" style="color:#fff;text-decoration:underline;white-space:nowrap;">See Pricing →</a>
+    <button onclick="document.getElementById('announce-bar').style.display='none';try{localStorage.setItem('ab_dismissed','1');}catch(e){}" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:18px;line-height:1;cursor:pointer;margin-left:8px;padding:4px 8px;" aria-label="Dismiss">×</button>
+  </div>
+  <script>try{if(localStorage.getItem('ab_dismissed')==='1')document.getElementById('announce-bar').style.display='none';}catch(e){}</script>
+
+  <!-- ═══════════════════════════════════════════
+       NAVBAR
+  ═══════════════════════════════════════════ -->
+  <nav class="glass sticky top-0 z-50 mx-4 mt-3 rounded-2xl px-5 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+
+      <!-- Logo -->
+      <a href="index.html" class="flex-shrink-0" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;line-height:36px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+      <!-- Desktop nav links -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#features"    class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">Features</a>
+        <a href="#how-it-works" class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">How It Works</a>
+        <a href="browse.html"  class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">Browse</a>
+        <a href="pricing.html" class="text-navy/70 hover:text-navy font-medium text-sm transition-colors">Pricing</a>
+      </div>
+
+      <!-- Desktop CTA -->
+      <div class="hidden md:flex items-center gap-3">
+        <a href="login.html"  class="btn-secondary" style="padding:10px 22px;font-size:14px;">Log In</a>
+        <a href="signup.html" class="btn-green"     style="padding:10px 22px;font-size:14px;">Get Started</a>
+      </div>
+
+      <!-- Hamburger -->
+      <button id="hamburger" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="block w-5 h-0.5 bg-navy rounded transition-all"></span>
+        <span class="block w-5 h-0.5 bg-navy rounded transition-all"></span>
+        <span class="block w-5 h-0.5 bg-navy rounded transition-all"></span>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="glass mt-3 rounded-xl px-5 py-5 flex flex-col gap-4">
+      <a href="#features"     class="text-navy font-medium text-sm">Features</a>
+      <a href="#how-it-works" class="text-navy font-medium text-sm">How It Works</a>
+      <a href="browse.html"   class="text-navy font-medium text-sm">Browse</a>
+      <a href="pricing.html"  class="text-navy font-medium text-sm">Pricing</a>
+      <div class="flex flex-col gap-3 pt-2 border-t border-border">
+        <a href="login.html"  class="btn-secondary text-center">Log In</a>
+        <a href="signup.html" class="btn-green text-center">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════ -->
+  <section class="relative min-h-screen flex flex-col items-center justify-center px-5 pt-16 pb-20 overflow-hidden text-center">
+    <!-- Blobs -->
+    <div class="blob blob-navy"></div>
+    <div class="blob blob-green"></div>
+
+    <!-- Content -->
+    <div class="relative z-10 max-w-3xl mx-auto">
+
+      <!-- Kicker -->
+      <p class="fade-up text-[13px] md:text-[14px] font-bold uppercase tracking-[2px] text-navy/40 mb-3">
+        Your Freelance Space
+      </p>
+
+      <!-- Badge -->
+      <div class="fade-up delay-1 inline-flex items-center gap-2 bg-green/10 border border-green/20 text-green rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
+        <span class="live-dot w-2 h-2 rounded-full bg-green-light inline-block"></span>
+        Verified Global Freelancing
+      </div>
+
+      <!-- Headline -->
+      <h1 class="fade-up delay-2 text-[36px] md:text-[56px] font-extrabold leading-tight tracking-[-1px] text-navy mb-5">
+        Get Paid From Anywhere.<br />
+        <span class="text-green">Without the Barriers.</span>
+      </h1>
+
+      <!-- Subheading -->
+      <p class="fade-up delay-3 text-[17px] md:text-[18px] font-normal text-navy/60 max-w-xl mx-auto mb-8 leading-relaxed">
+        Kreddlo is the complete freelance operating system for verified professionals in countries locked out of Stripe, PayPal, and Wise — and sell digital products anywhere.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="fade-up delay-4 flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+        <a href="signup.html" class="btn-primary">Get Started Free</a>
+        <a href="how-it-works.html" class="btn-secondary">See How It Works</a>
+      </div>
+
+      <!-- Two-card hero illustration -->
+      <div class="fade-up delay-5 float-card mx-auto" style="max-width:360px;position:relative;">
+        <!-- Card 1: Escrow released -->
+        <div class="glass p-5 text-left" style="position:relative;z-index:2;">
+          <div class="flex items-center gap-3 mb-1">
+            <div class="w-8 h-8 rounded-full bg-green/10 flex items-center justify-center">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-widest text-green">Escrow Released</p>
+              <p class="text-[15px] font-extrabold text-navy leading-tight">$1,200.00</p>
+            </div>
+            <span class="ml-auto text-[10px] font-bold uppercase tracking-widest bg-green/10 text-green rounded-full px-2 py-0.5">Paid</span>
+          </div>
+          <p class="text-[12px] text-navy/40 pl-11">Brand Design Project · approved just now</p>
+        </div>
+        <!-- Card 2: KYC Verified (offset overlap) -->
+        <div class="glass p-5 text-left" style="margin-top:-10px;margin-left:24px;position:relative;z-index:1;">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-green/10 flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-widest text-navy/40">KYC Verified</p>
+              <p class="text-[14px] font-bold text-navy leading-tight">Chidi O. · Lagos, Nigeria</p>
+            </div>
+            <div class="ml-auto w-7 h-7 rounded-full bg-green/10 flex items-center justify-center flex-shrink-0">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FEATURES
+  ═══════════════════════════════════════════ -->
+  <section id="features" class="relative py-24 px-5">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- Heading -->
+      <div class="text-center mb-14">
+        <h2 class="text-[30px] md:text-[40px] font-extrabold tracking-[-0.8px] text-navy mb-3">
+          Everything You Need to Work Globally
+        </h2>
+        <p class="text-navy/50 font-normal text-[16px] max-w-lg mx-auto">
+          One platform that handles every layer of your freelance business, from identity to instant payout.
+        </p>
+      </div>
+
+      <!-- Feature cards grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+
+        <!-- Feature 1: Verified Identity -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Verified Identity</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Didit KYC verifies every freelancer before they accept work, building the trust that global clients require.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 2: Secure Escrow -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Secure Escrow</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Funds are held safely in escrow until work is approved, protecting both the client and the freelancer equally.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 3: Auto Contracts -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Auto Contracts</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Contracts are generated automatically and signed digitally by both parties before any work or payment begins.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 4: Crypto Payments -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Crypto Payments</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Accept payments in over 300 cryptocurrencies through NowPayments, with instant conversion to your preferred currency.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 5: Live Withdrawals -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Live Withdrawals</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Withdraw earnings at real-time exchange rates directly to your crypto wallet with no delays and no manual processing.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 6: Dispute Protection -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Dispute Protection</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Every dispute receives a fair admin review with evidence collected from both sides before any ruling is made.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 7: Sell Products Instantly -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Sell Products Instantly</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Create a product, set your price and share a link. Buyers pay and get automatic delivery. No custom work needed.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 8: Verified Reviews -->
+        <div class="glass p-7 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+          <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.539 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-1.5 tracking-tight">Verified Reviews</h3>
+            <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+              Every completed project and product sale builds your verified review profile. Real reviews from real buyers.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       HOW IT WORKS
+  ═══════════════════════════════════════════ -->
+  <section id="how-it-works" class="py-24 px-5 relative overflow-hidden">
+    <!-- Subtle background blob -->
+    <div class="blob" style="width:400px;height:400px;background:radial-gradient(circle,rgba(45,138,94,0.06) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+    <div class="max-w-5xl mx-auto relative z-10">
+
+      <!-- Heading -->
+      <div class="text-center mb-16">
+        <h2 class="text-[30px] md:text-[40px] font-extrabold tracking-[-0.8px] text-navy mb-3">
+          Three Steps to Getting Paid
+        </h2>
+        <p class="text-navy/50 font-normal text-[16px] max-w-md mx-auto">
+          From signup to first withdrawal, the whole process is designed to take hours, not weeks.
+        </p>
+      </div>
+
+      <!-- Steps -->
+      <div class="flex flex-col md:flex-row items-center md:items-start justify-center gap-6 md:gap-0">
+
+        <!-- Step 1 -->
+        <div class="glass p-8 flex flex-col items-center text-center max-w-xs w-full">
+          <span class="text-[52px] font-extrabold text-green leading-none mb-4">01</span>
+          <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Create and Verify</h3>
+          <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+            Sign up, complete Didit KYC verification and build your professional profile in under 30 minutes.
+          </p>
+        </div>
+
+        <!-- Arrow (desktop only) -->
+        <div class="hidden md:flex items-center justify-center w-16 mt-20 flex-shrink-0">
+          <div class="step-arrow"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="glass p-8 flex flex-col items-center text-center max-w-xs w-full">
+          <span class="text-[52px] font-extrabold text-green leading-none mb-4">02</span>
+          <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Get Hired and Sign</h3>
+          <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+            Receive project offers, review the auto-generated contract and sign digitally before work begins.
+          </p>
+        </div>
+
+        <!-- Arrow (desktop only) -->
+        <div class="hidden md:flex items-center justify-center w-16 mt-20 flex-shrink-0">
+          <div class="step-arrow"></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="glass p-8 flex flex-col items-center text-center max-w-xs w-full">
+          <span class="text-[52px] font-extrabold text-green leading-none mb-4">03</span>
+          <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Get Paid Automatically</h3>
+          <p class="text-navy/55 text-[14px] leading-relaxed font-normal">
+            Escrow releases on approval and funds hit your crypto wallet automatically at live exchange rates.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       TRUST / STATS
+  ═══════════════════════════════════════════ -->
+  <section class="py-20 px-5">
+    <div class="max-w-4xl mx-auto">
+      <div class="glass px-8 py-12">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-4 text-center">
+
+          <div class="flex flex-col items-center">
+            <span class="text-[44px] md:text-[52px] font-extrabold text-navy tracking-tight leading-none mb-2">24</span>
+            <span class="text-navy/50 font-medium text-[14px] uppercase tracking-widest">Payout Currencies Supported</span>
+          </div>
+
+          <div class="flex flex-col items-center sm:border-x border-border">
+            <span class="text-[44px] md:text-[52px] font-extrabold text-navy tracking-tight leading-none mb-2">300+</span>
+            <span class="text-navy/50 font-medium text-[14px] uppercase tracking-widest">Crypto Coins Accepted</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <span class="text-[44px] md:text-[52px] font-extrabold text-navy tracking-tight leading-none mb-2">100%</span>
+            <span class="text-navy/50 font-medium text-[14px] uppercase tracking-widest">KYC-Verified Freelancers</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       MARKETING IMAGE
+  ═══════════════════════════════════════════ -->
+  <section class="py-12 px-5">
+    <div class="max-w-4xl mx-auto">
+      <div class="glass overflow-hidden" style="border-radius:24px;">
+        <img
+          src="https://res.cloudinary.com/dzp83jat0/image/upload/v1782150446/140e6a9b9b57052a0135edb7adcac719_xuewuf.jpg"
+          alt="Kreddlo — Global Freelance Payment Platform"
+          style="width:100%;height:auto;display:block;object-fit:cover;max-height:420px;"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       CALL TO ACTION
+  ═══════════════════════════════════════════ -->
+  <section class="py-20 px-5">
+    <div class="max-w-4xl mx-auto">
+      <div class="glass relative overflow-hidden px-8 py-16 text-center">
+        <!-- Decorative blobs inside CTA -->
+        <div class="blob" style="width:300px;height:300px;background:radial-gradient(circle,rgba(13,33,69,0.07) 0%,transparent 70%);top:-60px;right:-60px;"></div>
+        <div class="blob" style="width:250px;height:250px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-50px;left:-50px;"></div>
+
+        <div class="relative z-10">
+          <h2 class="text-[28px] md:text-[40px] font-extrabold tracking-[-0.8px] text-navy mb-4 leading-tight">
+            Start Getting Paid Globally<br />in Under 30 Minutes.
+          </h2>
+          <p class="text-navy/55 font-normal text-[16px] max-w-md mx-auto mb-8">
+            KYC verification takes under 30 minutes. Your first withdrawal can happen the same day.
+          </p>
+          <a href="signup.html" class="btn-green" style="padding:14px 36px;font-size:16px;">Get Started Free</a>
+          <p class="text-navy/40 text-[12px] font-medium mt-4">Free to join · No monthly fees · Withdraw same day</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
+  <footer class="border-t border-border mt-8 py-14 px-5">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- Top 3-col grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+
+        <!-- Left: Brand -->
+        <div class="flex flex-col gap-4">
+          <a href="index.html" style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+          <p class="text-navy/50 text-[14px] leading-relaxed max-w-xs font-normal">
+            The complete freelance operating system for verified professionals in countries locked out of traditional payment networks.
+          </p>
+        </div>
+
+        <!-- Center: Navigation -->
+        <div class="flex flex-col md:items-center gap-3">
+          <p class="text-navy font-bold text-[13px] uppercase tracking-widest mb-1">Platform</p>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+            <a href="#features"      class="text-navy/55 text-[14px] hover:text-navy transition-colors">Features</a>
+            <a href="how-it-works.html" class="text-navy/55 text-[14px] hover:text-navy transition-colors">How It Works</a>
+            <a href="browse.html"    class="text-navy/55 text-[14px] hover:text-navy transition-colors">Browse</a>
+            <a href="pricing.html"   class="text-navy/55 text-[14px] hover:text-navy transition-colors">Pricing</a>
+            <a href="signup.html"    class="text-navy/55 text-[14px] hover:text-navy transition-colors">Sign Up</a>
+            <a href="login.html"     class="text-navy/55 text-[14px] hover:text-navy transition-colors">Log In</a>
+          </div>
+        </div>
+
+        <!-- Right: Social -->
+        <div class="flex flex-col md:items-end gap-4">
+          <p class="text-navy font-bold text-[13px] uppercase tracking-widest mb-1">Connect</p>
+          <div class="flex items-center gap-4">
+            <!-- Twitter/X -->
+            <a id="social-twitter" href="#" target="_blank" rel="noopener" aria-label="Twitter" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+              <svg width="16" height="16" fill="#0d2145" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <!-- LinkedIn -->
+            <a id="social-linkedin" href="#" target="_blank" rel="noopener" aria-label="LinkedIn" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+              <svg width="16" height="16" fill="#0d2145" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+            </a>
+            <!-- Instagram -->
+            <a id="social-instagram" href="#" target="_blank" rel="noopener" aria-label="Instagram" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+              <svg width="16" height="16" fill="none" stroke="#0d2145" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="#0d2145"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-navy/40 text-[13px] font-normal">
+          &copy; <span id="yr"></span> Kreddlo. All rights reserved.
+        </p>
+        <div class="flex items-center gap-5">
+          <a href="privacy.html" class="text-navy/40 text-[13px] hover:text-navy transition-colors">Privacy Policy</a>
+          <a href="terms.html" class="text-navy/40 text-[13px] hover:text-navy transition-colors">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
+  <script>
+    // Year
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // Hamburger toggle
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('open');
+    });
+
+    // Close menu when a link is clicked
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+    });
+  </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

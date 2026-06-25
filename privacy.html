@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Privacy Policy — Kreddlo</title>
+<meta id="meta-description" name="description" content="Learn how Kreddlo collects, uses and protects your personal data including identity verification documents and payment information."/>
+<meta property="og:title" content="Privacy Policy — Kreddlo"/>
+<meta property="og:description" content="Learn how Kreddlo collects, uses and protects your personal data including identity verification documents and payment information."/>
+<meta property="og:url" content="https://kreddlo.space/privacy.html"/>
+<meta property="og:image" content="/assets/kreddlo-og-banner.png"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link id="canonical" rel="canonical" href="https://kreddlo.space/privacy.html"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+/* Glass */
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+/* Buttons */
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.28);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-navy{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#0d2145;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(13,33,69,0.20);transition:transform .15s,box-shadow .15s}
+.btn-navy:hover{background:#162f5e;transform:translateY(-1px)}
+.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+.btn-outline:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+
+/* Nav */
+.nav-lnk{font-size:14px;font-weight:600;color:rgba(13,33,69,0.60);text-decoration:none;transition:color .15s;padding:4px 0}
+.nav-lnk:hover{color:#0d2145}
+.nav-lnk.active{color:#2d8a5e}
+
+/* Mobile menu */
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+/* Mobile nav links */
+.mob-lnk{display:block;font-size:16px;font-weight:600;color:rgba(255,255,255,0.72);text-decoration:none;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.07);transition:color .15s}
+.mob-lnk:hover{color:#fff}
+.mob-lnk:last-child{border-bottom:none}
+
+/* Blobs */
+.blob-n{position:absolute;width:560px;height:560px;background:radial-gradient(circle,rgba(13,33,69,0.10) 0%,transparent 70%);top:-120px;right:-120px;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.blob-g{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(45,138,94,0.08) 0%,transparent 70%);bottom:-80px;left:-100px;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+
+/* Fade up */
+.fu{opacity:0;transform:translateY(18px);animation:fu .5s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.14s}.fu-3{animation-delay:.23s}
+
+/* Policy content */
+.policy-section{margin-bottom:40px}
+.policy-section:last-child{margin-bottom:0}
+.policy-h{font-size:18px;font-weight:700;color:#0d2145;margin:0 0 14px;letter-spacing:-0.2px;display:flex;align-items:center;gap:10px}
+.policy-h::before{content:'';display:inline-block;width:4px;height:20px;background:#2d8a5e;border-radius:2px;flex-shrink:0}
+.policy-p{font-size:15px;font-weight:500;color:rgba(13,33,69,0.66);line-height:1.85;margin:0 0 12px}
+.policy-p:last-child{margin-bottom:0}
+.policy-ul{list-style:none;padding:0;margin:0 0 12px}
+.policy-ul li{font-size:15px;font-weight:500;color:rgba(13,33,69,0.66);line-height:1.75;padding:5px 0 5px 22px;position:relative}
+.policy-ul li::before{content:'';position:absolute;left:0;top:14px;width:7px;height:7px;border-radius:50%;background:#2d8a5e;opacity:.65}
+.policy-divider{height:1px;background:linear-gradient(to right,transparent,#e2e8f0,transparent);margin:32px 0}
+.policy-highlight{background:#e8f5ef;border-left:3px solid #2d8a5e;border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.policy-highlight p{font-size:14px;font-weight:600;color:#2d8a5e;margin:0;line-height:1.6}
+
+/* Table of contents */
+.toc-link{display:block;font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);text-decoration:none;padding:7px 12px;border-radius:8px;transition:all .15s;border-left:2px solid transparent}
+.toc-link:hover{color:#0d2145;background:rgba(13,33,69,0.04);border-left-color:#e2e8f0}
+
+/* Third party chip */
+.vendor-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(13,33,69,0.05);border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin:6px 6px 6px 0;transition:background .15s}
+.vendor-chip:hover{background:rgba(13,33,69,0.08)}
+.vendor-name{font-size:13px;font-weight:700;color:#0d2145}
+.vendor-role{font-size:11px;font-weight:500;color:rgba(13,33,69,0.48)}
+
+/* Responsive */
+@media(min-width:768px){
+  .hide-desktop{display:none!important}
+}
+@media(max-width:767px){
+  .hide-mobile{display:none!important}
+}
+</style>
+</head>
+<body class="overflow-x-hidden">
+
+<!-- PUBLIC NAVBAR -->
+<nav style="position:sticky;top:0;z-index:300;background:rgba(248,249,251,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #e2e8f0;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;">
+    <!-- Logo -->
+    <a href="index.html" style="font-size:22px;font-weight:800;color:#0d2145;text-decoration:none;letter-spacing:-0.5px;flex-shrink:0;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+    <!-- Desktop nav links -->
+    <div class="hide-mobile" style="display:flex;align-items:center;gap:32px;">
+      <a href="how-it-works.html" class="nav-lnk">How it works</a>
+      <a href="browse.html" class="nav-lnk">Browse</a>
+      <a href="pricing.html" class="nav-lnk">Pricing</a>
+      <a href="about.html" class="nav-lnk">About</a>
+    </div>
+
+    <!-- Desktop CTA -->
+    <div class="hide-mobile" style="display:flex;align-items:center;gap:12px;">
+      <a href="login.html" class="btn-outline" style="padding:9px 20px;font-size:13px;">Log In</a>
+      <a href="signup.html" class="btn-green" style="padding:9px 20px;font-size:13px;">Get Started</a>
+    </div>
+
+    <!-- Mobile hamburger -->
+    <button id="mob-burger" class="hide-desktop" onclick="openMobileMenu()" style="width:40px;height:40px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE BACKDROP -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:280px;height:100%;background:#091830;z-index:500;padding:32px 24px;display:flex;flex-direction:column;overflow-y:auto;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav style="flex:1;display:flex;flex-direction:column;">
+    <a href="how-it-works.html" class="mob-lnk">How it works</a>
+    <a href="browse.html" class="mob-lnk">Browse</a>
+    <a href="pricing.html" class="mob-lnk">Pricing</a>
+    <a href="about.html" class="mob-lnk">About</a>
+  </nav>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:32px;">
+    <a href="login.html" style="display:block;text-align:center;padding:13px;border:1.5px solid rgba(255,255,255,0.18);border-radius:50px;color:rgba(255,255,255,0.80);font-size:14px;font-weight:600;text-decoration:none;transition:all .15s;">Log In</a>
+    <a href="signup.html" style="display:block;text-align:center;padding:13px;background:#2d8a5e;border-radius:50px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);">Get Started</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section style="position:relative;overflow:hidden;background:linear-gradient(160deg,#0d2145 0%,#162f5e 60%,#0d2145 100%);padding:64px 20px 56px;">
+  <div class="blob-n" style="opacity:.6;top:-80px;right:-80px;"></div>
+  <div class="blob-g" style="opacity:.5;bottom:-40px;left:-60px;"></div>
+  <div style="position:relative;z-index:1;max-width:720px;margin:0 auto;text-align:center;">
+    <div class="fu fu-1" style="display:inline-flex;align-items:center;gap:8px;background:rgba(45,138,94,0.20);border:1px solid rgba(61,189,122,0.30);border-radius:50px;padding:5px 14px;margin-bottom:20px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3dbd7a" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span style="font-size:12px;font-weight:600;color:#3dbd7a;letter-spacing:.5px;">DATA PRIVACY</span>
+    </div>
+    <h1 class="fu fu-2" style="font-size:36px;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1.1;margin:0 0 16px;">Privacy Policy</h1>
+    <p class="fu fu-3" style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.60);margin:0;line-height:1.6;">Last updated: 13 June 2026. This policy explains what data we collect, how we use it, and your rights over it.</p>
+  </div>
+</section>
+
+<!-- CONTENT -->
+<section style="padding:40px 20px 80px;position:relative;">
+  <div style="max-width:720px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:24px;" id="content-grid">
+
+    <!-- Quick TOC (desktop only, shows as sticky sidebar when screen is wide enough) -->
+    <div class="hide-mobile fu fu-1" id="toc-box" style="background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08);padding:24px;margin-bottom:4px;">
+      <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(13,33,69,0.40);margin:0 0 12px;">ON THIS PAGE</p>
+      <a href="#s1" class="toc-link">What We Collect</a>
+      <a href="#s2" class="toc-link">How We Use It</a>
+      <a href="#s3" class="toc-link">How Long We Store It</a>
+      <a href="#s4" class="toc-link">Your Rights</a>
+      <a href="#s5" class="toc-link">Third Party Processors</a>
+      <a href="#s6" class="toc-link">Cookies</a>
+      <a href="#s7" class="toc-link">Contact Us</a>
+    </div>
+
+    <!-- Main glass card -->
+    <div class="glass fu fu-2" style="padding:28px 24px;" id="policy-card">
+
+      <!-- Section 1 -->
+      <div class="policy-section" id="s1">
+        <h2 class="policy-h">What We Collect</h2>
+        <p class="policy-p">When you create a Kreddlo account and complete identity verification, we collect the following categories of personal data:</p>
+        <ul class="policy-ul">
+          <li>Full legal name and email address provided during registration</li>
+          <li>Government-issued identity document images (passport, national ID card or driver's licence) submitted for KYC verification</li>
+          <li>A live selfie or selfie video captured during the identity verification process</li>
+          <li>IP address, device type, browser version, and approximate location derived from your connection</li>
+          <li>Payment-related information including wallet addresses and transaction history processed on our platform</li>
+          <li>Profile information you choose to publish, including your skills, biography, portfolio links, and profile photo</li>
+          <li>Communication records such as messages exchanged through platform support channels</li>
+        </ul>
+        <div class="policy-highlight">
+          <p>We do not collect or store your bank card details. All crypto payment processing is handled by our payment processor NOWPayments.</p>
+        </div>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 2 -->
+      <div class="policy-section" id="s2">
+        <h2 class="policy-h">How We Use It</h2>
+        <p class="policy-p">We use your personal data only for the purposes described here. We do not sell your data to advertisers or third parties for marketing.</p>
+        <ul class="policy-ul">
+          <li><strong style="color:#0d2145;font-weight:700;">Identity verification</strong> - Your ID documents and selfie are transmitted to Didit, our KYC partner, to verify your identity and comply with anti-fraud and anti-money laundering obligations.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Payment processing</strong> - Transaction data is shared with NOWPayments to facilitate crypto payments, escrow management, and withdrawal processing.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Transactional communications</strong> - Your email address is used via Brevo to send you account notifications, contract updates, payment confirmations, and platform alerts.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Platform operation</strong> - Firebase stores your account, project, and notification data to power the Kreddlo platform. Firebase is operated by Google and processes data within their infrastructure.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Profile photo enhancement</strong> - When you upload a profile photo, Remove.bg is used to remove the background. Only the image is shared; no other personal data is transmitted.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Fraud prevention and security</strong> - IP addresses and device data are used to detect unusual login patterns and protect your account.</li>
+        </ul>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 3 -->
+      <div class="policy-section" id="s3">
+        <h2 class="policy-h">How Long We Store It</h2>
+        <ul class="policy-ul">
+          <li><strong style="color:#0d2145;font-weight:700;">Account data</strong> is retained for the full duration of your active account, plus 90 days after account deletion to allow for dispute resolution or legal requests.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">KYC documents</strong> (identity images and verification records) are retained for the regulatory minimum required by applicable anti-money laundering laws. This is typically 5 years from the date of verification.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Payment and transaction records</strong> are retained for 7 years to meet financial compliance and tax reporting obligations.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Support communications</strong> are retained for 2 years after resolution.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Log data</strong> such as IP addresses and access records are retained for 90 days and then automatically purged.</li>
+        </ul>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 4 -->
+      <div class="policy-section" id="s4">
+        <h2 class="policy-h">Your Rights</h2>
+        <p class="policy-p">You have the following rights regarding your personal data. To exercise any of them, email us at <a href="mailto:privacy@kreddlo.com" id="privacy-mailto-link-1" style="color:#2d8a5e;font-weight:600;text-decoration:none;">our privacy contact</a>.</p>
+        <ul class="policy-ul">
+          <li><strong style="color:#0d2145;font-weight:700;">Right of access</strong> - You may request a copy of all personal data we hold about you. We will respond within 30 days.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Right to deletion</strong> - You may request that we delete your account and personal data. Some data may be retained where required by law (such as transaction records for tax compliance).</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Right to correction</strong> - You may update most of your profile information directly from your account settings. For legal name corrections, contact us with supporting documentation.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Right to withdraw consent</strong> - Where we rely on consent to process your data, you may withdraw it at any time. Withdrawal does not affect the lawfulness of processing before withdrawal.</li>
+          <li><strong style="color:#0d2145;font-weight:700;">Right to portability</strong> - You may request your data in a machine-readable format for transfer to another service.</li>
+        </ul>
+        <div class="policy-highlight">
+          <p>We aim to respond to all data rights requests within 30 calendar days. For complex or bulk requests, we may extend this by a further 60 days, and will notify you if this applies.</p>
+        </div>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 5 -->
+      <div class="policy-section" id="s5">
+        <h2 class="policy-h">Third Party Processors</h2>
+        <p class="policy-p">We share your data with the following service providers only to the extent necessary to operate the platform:</p>
+        <div style="display:flex;flex-wrap:wrap;margin-top:4px;margin-bottom:16px;">
+          <div class="vendor-chip">
+            <div>
+              <div class="vendor-name">Firebase</div>
+              <div class="vendor-role">Database, authentication, file storage</div>
+            </div>
+          </div>
+          <div class="vendor-chip">
+            <div>
+              <div class="vendor-name">NOWPayments</div>
+              <div class="vendor-role">Crypto payment processing and escrow</div>
+            </div>
+          </div>
+          <div class="vendor-chip">
+            <div>
+              <div class="vendor-name">Didit</div>
+              <div class="vendor-role">KYC identity verification</div>
+            </div>
+          </div>
+          <div class="vendor-chip">
+            <div>
+              <div class="vendor-name">Brevo</div>
+              <div class="vendor-role">Transactional email delivery</div>
+            </div>
+          </div>
+          <div class="vendor-chip">
+            <div>
+              <div class="vendor-name">Remove.bg</div>
+              <div class="vendor-role">Profile photo background removal</div>
+            </div>
+          </div>
+          <div class="vendor-chip">
+            <div>
+              <div class="vendor-name">CoinGecko</div>
+              <div class="vendor-role">Live cryptocurrency exchange rate data</div>
+            </div>
+          </div>
+        </div>
+        <p class="policy-p">All third party processors are contractually required to handle your data securely and only for the purposes described above. We do not authorise any of them to use your data for their own marketing.</p>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 6 -->
+      <div class="policy-section" id="s6">
+        <h2 class="policy-h">Cookies</h2>
+        <p class="policy-p">Kreddlo uses a minimal cookie policy.</p>
+        <ul class="policy-ul">
+          <li><strong style="color:#0d2145;font-weight:700;">Session authentication cookies</strong> are set by Firebase Authentication to keep you logged in during a session. These are essential to platform operation and cannot be disabled while using your account.</li>
+          <li>We do not use advertising cookies, third-party tracking cookies, or retargeting pixels.</li>
+          <li>We do not use analytics cookies. We rely on anonymised server-side metrics for platform monitoring.</li>
+          <li>Closing your browser session clears session cookies. You can also clear them manually from your browser settings at any time.</li>
+        </ul>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 7 -->
+      <div class="policy-section" id="s7">
+        <h2 class="policy-h">Contact Us</h2>
+        <p class="policy-p">For any questions about this Privacy Policy, to exercise your data rights, or to report a concern:</p>
+        <div style="background:rgba(13,33,69,0.04);border-radius:14px;padding:20px 22px;margin-top:8px;">
+          <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 4px;">Kreddlo Data Privacy</p>
+          <a href="mailto:privacy@kreddlo.com" id="privacy-mailto-link-2" style="font-size:14px;font-weight:600;color:#2d8a5e;text-decoration:none;display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span id="privacy-mailto-text-2">Privacy Contact</span>
+          </a>
+          <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.44);margin:8px 0 0;">We aim to respond to all privacy enquiries within 5 business days.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#091830;padding:48px 20px 32px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="display:flex;flex-direction:column;gap:32px;">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:10px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+        <p style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.42);max-width:300px;line-height:1.7;margin:0;">The complete freelance operating system for verified professionals worldwide.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div>
+          <p style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.30);margin:0 0 14px;">Platform</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="how-it-works.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">How it works</a>
+            <a href="pricing.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Pricing</a>
+            <a href="browse.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Browse</a>
+            <a href="about.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">About</a>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.30);margin:0 0 14px;">Legal</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="privacy.html" style="font-size:13px;font-weight:500;color:#3dbd7a;text-decoration:none;">Privacy Policy</a>
+            <a href="terms.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Terms of Service</a>
+            <a href="mailto:support@kreddlo.com" id="support-mailto-link" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Support</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;">
+      <p style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.28);margin:0;">2026 Kreddlo. All rights reserved.</p>
+      <p style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.20);margin:0;">Built for global freelancers.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+function openMobileMenu(){
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMobileMenu(){
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// Smooth scroll for TOC links
+document.querySelectorAll('a[href^="#s"]').forEach(function(a){
+  a.addEventListener('click',function(e){
+    e.preventDefault();
+    var t=document.querySelector(this.getAttribute('href'));
+    if(t){t.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+});
+
+// Desktop: widen layout to show TOC as sidebar
+function applyDesktopLayout(){
+  var grid=document.getElementById('content-grid');
+  var toc=document.getElementById('toc-box');
+  if(window.innerWidth>=900){
+    grid.style.maxWidth='960px';
+    grid.style.gridTemplateColumns='220px 1fr';
+    toc.style.display='block';
+    toc.style.position='sticky';
+    toc.style.top='80px';
+    toc.style.alignSelf='start';
+  } else {
+    grid.style.maxWidth='720px';
+    grid.style.gridTemplateColumns='1fr';
+    toc.style.display='none';
+  }
+}
+applyDesktopLayout();
+window.addEventListener('resize',applyDesktopLayout);
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+  <script type="module">
+    // Load social links + contact emails from Firestore config
+    (async () => {
+      try {
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+        const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+        // Reuse existing app/db if another script on this page already initialized Firebase;
+        // otherwise do a minimal read-only init just for this config lookup.
+        let db = window.db;
+        if (!db) {
+          const firebaseConfig = {
+            apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+            authDomain:        "kreddlo.firebaseapp.com",
+            projectId:         "kreddlo",
+            storageBucket:     "kreddlo.firebasestorage.app",
+            messagingSenderId: "764500458567",
+            appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+          };
+          const app = initializeApp(firebaseConfig);
+          db = getFirestore(app);
+          window.db = db;
+        }
+
+        const snap = await getDoc(doc(db, 'config', 'platform'));
+        const s = snap.exists() ? snap.data() : {};
+
+        const links = { twitter: s.twitterUrl || '', linkedin: s.linkedinUrl || '', instagram: s.instagramUrl || '' };
+        ['twitter', 'linkedin', 'instagram'].forEach(name => {
+          const el = document.getElementById('social-' + name);
+          if (!el) return;
+          if (links[name]) { el.href = links[name]; el.style.display = 'flex'; }
+          else { el.style.display = 'none'; }
+        });
+
+        if (s.privacyEmail) {
+          const p1 = document.getElementById('privacy-mailto-link-1');
+          if (p1) { p1.href = 'mailto:' + s.privacyEmail; p1.textContent = s.privacyEmail; }
+          const p2 = document.getElementById('privacy-mailto-link-2');
+          if (p2) p2.href = 'mailto:' + s.privacyEmail;
+          const p2text = document.getElementById('privacy-mailto-text-2');
+          if (p2text) p2text.textContent = s.privacyEmail;
+        }
+        if (s.supportEmail) {
+          const sup = document.getElementById('support-mailto-link');
+          if (sup) sup.href = 'mailto:' + s.supportEmail;
+        }
+      } catch (e) { /* silent fail — static fallback emails/links stay in place */ }
+    })();
+  </script>
+</body>
+</html>

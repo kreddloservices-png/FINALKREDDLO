@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Verify Your Email — Kreddlo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+  <style>
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /*
+     * MOBILE FIRST — base styles target 375px (smallest common phone).
+     * Larger screens are added with min-width breakpoints below.
+     * Never use max-width to override — always build up from small.
+     */
+
+    /* ── BODY ──
+     * On mobile: standard block flow so the page scrolls naturally.
+     * The card is centred horizontally via margin auto.
+     * padding-bottom 40px covers iOS Safari home-bar safe area.
+     * overflow-y: auto ensures content is never clipped on short viewports
+     * or when error messages push the card height taller.
+     */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f8f9fb;
+      color: #0d2145;
+      margin: 0;
+      padding: 0 0 40px;           /* bottom room for iOS home bar */
+      min-height: 100vh;
+      overflow-y: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* On larger screens (768px+) switch to the centred flex layout */
+    @media (min-width: 768px) {
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;        /* breathing room on all sides */
+      }
+    }
+
+    /* ── BLOBS ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+    }
+    /* Smaller blobs on mobile so they don't overwhelm the small viewport */
+    .blob-n {
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(13,33,69,0.09) 0%, transparent 70%);
+      top: -80px; right: -60px;
+    }
+    .blob-g {
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(45,138,94,0.08) 0%, transparent 70%);
+      bottom: -60px; left: -60px;
+    }
+    /* Full-size blobs on desktop */
+    @media (min-width: 768px) {
+      .blob-n { width: 480px; height: 480px; top: -120px; right: -120px; }
+      .blob-g  { width: 400px; height: 400px; bottom: -80px; left: -80px; }
+    }
+
+    /* ── CARD ──
+     * Mobile: full-width minus 32px gutter (16px each side).
+     * Centred with margin auto. Top margin 32px so it's not flush with nav.
+     * padding 28px 20px — enough breathing room without wasting space.
+     */
+    .card {
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.42);
+      border-radius: 24px;
+      box-shadow: 0 8px 40px rgba(13,33,69,0.10);
+      width: calc(100% - 32px);   /* full width minus 16px gutters on each side */
+      max-width: 420px;
+      padding: 28px 20px 26px;    /* compact but comfortable on small phones */
+      margin: 32px auto 0;        /* centred, top gap, no bottom margin needed */
+    }
+
+    /* Slightly more padding on larger phones and tablets */
+    @media (min-width: 480px) {
+      .card {
+        padding: 36px 28px 32px;
+        margin: 40px auto 0;
+      }
+    }
+
+    /* On desktop the flex body centres the card; remove top margin */
+    @media (min-width: 768px) {
+      .card { margin: 0 auto; }
+    }
+
+    /* ── LOGO ── */
+    .logo {
+      font-size: 20px;             /* slightly smaller on tiny phones */
+      font-weight: 800;
+      color: #0d2145;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 24px;
+    }
+    .logo span { color: #3dbd7a; }
+
+    @media (min-width: 480px) {
+      .logo { font-size: 22px; margin-bottom: 28px; }
+    }
+
+    /* ── ICON WRAP ── */
+    .icon-wrap {
+      width: 52px;
+      height: 52px;
+      background: #e8f5ef;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 480px) {
+      .icon-wrap { width: 56px; height: 56px; border-radius: 16px; margin-bottom: 20px; }
+    }
+
+    /* ── HEADING ── */
+    h1 {
+      font-size: 20px;             /* base: fits all phones without truncation */
+      font-weight: 800;
+      color: #0d2145;
+      letter-spacing: -0.5px;
+      margin: 0 0 10px;
+      line-height: 1.25;
+    }
+
+    @media (min-width: 480px) {
+      h1 { font-size: 22px; }
+    }
+
+    /* ── SUBTITLE ── */
+    .subtitle {
+      font-size: 13px;             /* 13px base — readable on 375px */
+      font-weight: 500;
+      color: rgba(13,33,69,0.58);
+      margin: 0 0 24px;
+      line-height: 1.65;
+    }
+    .subtitle strong {
+      color: #0d2145;
+      font-weight: 700;
+      word-break: break-all;      /* long email addresses don't overflow */
+    }
+
+    @media (min-width: 480px) {
+      .subtitle { font-size: 14px; margin-bottom: 28px; }
+    }
+
+    /* ── CODE LABEL ── */
+    .code-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(13,33,69,0.48);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    /* ── CODE INPUT ──
+     * Base font-size 22px + letter-spacing 6px fits "000000" inside 375px cards.
+     * Scales up on wider screens.
+     * inputmode="numeric" opens the number keyboard on mobile automatically.
+     */
+    .code-input-wrap {
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    #code-input {
+      width: 100%;
+      padding: 14px 12px;          /* enough tap height — renders ~52px tall */
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px;             /* safe for 375px; placeholder fits */
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: #0d2145;
+      background: rgba(255,255,255,0.92);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      outline: none;
+      text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+      -moz-appearance: textfield;
+    }
+    #code-input::-webkit-inner-spin-button,
+    #code-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    /* Larger input on wider phones / tablets */
+    @media (min-width: 400px) {
+      #code-input { font-size: 26px; letter-spacing: 8px; padding: 15px 14px; }
+    }
+    @media (min-width: 480px) {
+      #code-input { font-size: 28px; letter-spacing: 10px; padding: 16px 18px; }
+    }
+
+    #code-input:focus {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.12);
+    }
+    #code-input.error {
+      border-color: #c81e1e;
+      box-shadow: 0 0 0 3px rgba(200,30,30,0.09);
+    }
+    #code-input.success {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.15);
+    }
+
+    /* ── MESSAGES ── */
+    .msg {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 0 16px;
+      min-height: 18px;
+      display: block;
+      line-height: 1.4;
+    }
+    .msg-error   { color: #c81e1e; }
+    .msg-success { color: #2d8a5e; }
+
+    /* ── VERIFY BUTTON ──
+     * min-height 48px ensures Apple/Google minimum tap target on mobile.
+     */
+    .btn-verify {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 48px;
+      padding: 13px 20px;
+      background: #0d2145;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(13,33,69,0.22);
+      transition: background .15s, transform .15s, box-shadow .15s;
+      margin-bottom: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-verify:hover   { background: #162f5e; transform: translateY(-1px); }
+    .btn-verify:active  { transform: translateY(0); }
+    .btn-verify:disabled { opacity: .6; cursor: default; transform: none; }
+    .btn-verify:focus-visible { outline: 2px solid #2d8a5e; outline-offset: 3px; }
+
+    /* ── RESEND BUTTON ──
+     * min-height 44px — meets minimum touch target.
+     */
+    .btn-resend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      min-height: 44px;
+      padding: 11px 20px;
+      background: transparent;
+      color: rgba(13,33,69,0.55);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 50px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, color .15s, transform .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-resend:hover:not(:disabled) {
+      border-color: #0d2145;
+      color: #0d2145;
+      transform: translateY(-1px);
+    }
+    .btn-resend:active:not(:disabled) { transform: translateY(0); }
+    .btn-resend:disabled { opacity: .5; cursor: default; }
+    .btn-resend:focus-visible { outline: 2px solid #2d8a5e; outline-offset: 3px; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 20px 0;
+    }
+
+    @media (min-width: 480px) {
+      .divider { margin: 22px 0; }
+    }
+
+    /* ── WRONG EMAIL ── */
+    .wrong-email {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(13,33,69,0.45);
+      margin: 0;
+    }
+    .wrong-email a {
+      color: #2d8a5e;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .wrong-email a:hover { text-decoration: underline; }
+
+    /* ── SPINNER ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2.5px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    .spin-dark {
+      border-color: rgba(13,33,69,0.20);
+      border-top-color: rgba(13,33,69,0.60);
+    }
+
+    /* ── SUCCESS ICON (unused in current flow but kept for JS) ── */
+    .success-icon {
+      width: 56px;
+      height: 56px;
+      background: #e8f5ef;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+  </style>
+</head>
+<body class="overflow-x-hidden">
+
+  <div class="blob blob-n"></div>
+  <div class="blob blob-g"></div>
+
+  <div class="card">
+
+    <a href="index.html" class="logo">Kreddl<span style="letter-spacing:0;">o</span></a>
+
+    <!-- Icon -->
+    <div class="icon-wrap" id="icon-wrap">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+           stroke="#2d8a5e" stroke-width="2" stroke-linecap="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+    </div>
+
+    <!-- Heading -->
+    <h1 id="main-heading">Check your inbox</h1>
+    <p class="subtitle" id="main-subtitle">
+      We sent a 6-digit verification code to
+      <strong id="email-display">your email</strong>.
+      Enter it below to continue.
+    </p>
+
+    <!-- Code input -->
+    <label class="code-label" for="code-input">Verification code</label>
+    <div class="code-input-wrap">
+      <input
+        id="code-input"
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="6"
+        placeholder="000000"
+        autocomplete="one-time-code"
+        aria-label="6-digit verification code"
+      />
+    </div>
+
+    <!-- Error / success message -->
+    <span class="msg msg-error" id="msg-error" role="alert" aria-live="polite"></span>
+    <span class="msg msg-success" id="msg-success" role="status" aria-live="polite"></span>
+
+    <!-- Verify button -->
+    <button class="btn-verify" id="btn-verify" onclick="submitCode()">
+      Verify Email
+    </button>
+
+    <!-- Resend button -->
+    <button class="btn-resend" id="btn-resend" onclick="resendCode()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polyline points="1 4 1 10 7 10"/>
+        <path d="M3.51 15a9 9 0 1 0 .49-3.96"/>
+      </svg>
+      <span id="resend-label">Resend Code</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <p class="wrong-email">
+      Wrong email address?
+      <a href="signup.html">Back to sign up</a>
+    </p>
+
+  </div>
+
+  <script>
+    // ── Read uid + email from URL params ───────────────────────────────────────
+    const params    = new URLSearchParams(window.location.search);
+    const uid       = params.get('uid')   || '';
+    const userEmail = params.get('email') || '';
+
+    if (!uid) {
+      // No uid means someone landed here directly — send back to signup
+      window.location.href = 'signup.html';
+    }
+
+    // Display email address
+    if (userEmail) {
+      document.getElementById('email-display').textContent = userEmail;
+    }
+
+    // ── Resend cooldown state ──────────────────────────────────────────────────
+    let resendTimer     = null;
+    let resendCooldown  = 0;
+
+    function startResendCooldown(seconds) {
+      resendCooldown = seconds;
+      const btn   = document.getElementById('btn-resend');
+      const label = document.getElementById('resend-label');
+      btn.disabled = true;
+
+      resendTimer = setInterval(function() {
+        resendCooldown--;
+        label.textContent = 'Resend in ' + resendCooldown + 's';
+        if (resendCooldown <= 0) {
+          clearInterval(resendTimer);
+          btn.disabled = false;
+          label.textContent = 'Resend Code';
+        }
+      }, 1000);
+    }
+
+    // ── Clear messages ─────────────────────────────────────────────────────────
+    function clearMsgs() {
+      document.getElementById('msg-error').textContent   = '';
+      document.getElementById('msg-success').textContent = '';
+      document.getElementById('code-input').classList.remove('error', 'success');
+    }
+
+    function showError(msg) {
+      clearMsgs();
+      document.getElementById('msg-error').textContent = msg;
+      document.getElementById('code-input').classList.add('error');
+    }
+
+    function showSuccess(msg) {
+      clearMsgs();
+      document.getElementById('msg-success').textContent = msg;
+      document.getElementById('code-input').classList.add('success');
+    }
+
+    // ── Submit code ────────────────────────────────────────────────────────────
+    async function submitCode() {
+      const raw  = document.getElementById('code-input').value.trim().replace(/\D/g, '');
+      const btn  = document.getElementById('btn-verify');
+
+      clearMsgs();
+
+      if (raw.length !== 6) {
+        showError('Please enter the full 6-digit code from your email.');
+        document.getElementById('code-input').focus();
+        return;
+      }
+
+      btn.disabled  = true;
+      btn.innerHTML = '<span class="spin"></span> Verifying...';
+
+      try {
+        const res  = await fetch('/.netlify/functions/verify-email-code', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ uid, code: raw }),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showSuccess('Email verified. Redirecting...');
+          document.getElementById('code-input').classList.add('success');
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Verified';
+          setTimeout(function() {
+            // Buyers skip KYC entirely — go straight to their dashboard.
+            if (data.role === 'buyer') {
+              window.location.href = 'buyer-dashboard.html';
+              return;
+            }
+            var _nextParam = new URLSearchParams(window.location.search).get('next');
+            window.location.href = 'verify.html' + (_nextParam ? '?next=' + encodeURIComponent(_nextParam) : '');
+          }, 800);
+        } else {
+          showError(data.error || 'Incorrect or expired code. Please try again.');
+          btn.disabled  = false;
+          btn.innerHTML = 'Verify Email';
+          document.getElementById('code-input').focus();
+          document.getElementById('code-input').select();
+        }
+      } catch (err) {
+        showError('Something went wrong. Please check your connection and try again.');
+        btn.disabled  = false;
+        btn.innerHTML = 'Verify Email';
+      }
+    }
+
+    // ── Resend code ────────────────────────────────────────────────────────────
+    async function resendCode() {
+      const btn   = document.getElementById('btn-resend');
+      const label = document.getElementById('resend-label');
+      clearMsgs();
+
+      btn.disabled  = true;
+      label.textContent = '';
+      btn.innerHTML = '<span class="spin spin-dark"></span> Sending...';
+
+      try {
+        const res  = await fetch('/.netlify/functions/send-verification-email', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ uid }),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showSuccess('A new code has been sent. Check your inbox.');
+          btn.innerHTML = '<span id="resend-label">Resend Code</span>';
+          startResendCooldown(60);
+        } else {
+          showError(data.error || 'Could not send a new code. Please try again.');
+          btn.disabled  = false;
+          btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.96"/></svg><span id="resend-label">Resend Code</span>';
+        }
+      } catch (err) {
+        showError('Could not send a new code. Please check your connection.');
+        btn.disabled  = false;
+        btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.96"/></svg><span id="resend-label">Resend Code</span>';
+      }
+    }
+
+    // ── Auto-submit when 6 digits are entered ──────────────────────────────────
+    document.getElementById('code-input').addEventListener('input', function() {
+      // Strip non-digits as user types
+      this.value = this.value.replace(/\D/g, '').slice(0, 6);
+      clearMsgs();
+      if (this.value.length === 6) {
+        // Small delay so user can see the last digit before submit
+        setTimeout(submitCode, 120);
+      }
+    });
+
+    // ── Allow Enter key to submit ──────────────────────────────────────────────
+    document.getElementById('code-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') submitCode();
+    });
+
+    // ── Start resend cooldown immediately (just sent at signup) ───────────────
+    startResendCooldown(60);
+  </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

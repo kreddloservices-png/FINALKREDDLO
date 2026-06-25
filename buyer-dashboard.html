@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Buyer Dashboard — Kreddlo</title>
+<script src="/assets/shared.js"></script>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+/* Glass */
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+/* Buttons */
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-green:disabled{opacity:.6;cursor:default;transform:none}
+.btn-navy{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#0d2145;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(13,33,69,0.20);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-navy:hover{background:#162f5e;transform:translateY(-1px)}
+.btn-navy:active{transform:translateY(0)}
+.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s,background .15s}
+.btn-outline:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:rgba(13,33,69,0.06);color:#0d2145;border:1.5px solid transparent;border-radius:50px;padding:9px 18px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,background .15s}
+.btn-secondary:hover{background:rgba(13,33,69,0.11);transform:translateY(-1px)}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:rgba(13,33,69,0.55);border:1.5px solid #e2e8f0;border-radius:50px;padding:9px 18px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s,color .15s}
+.btn-ghost:hover{border-color:#c81e1e;color:#c81e1e;transform:translateY(-1px)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-blue{background:#e8f0fe;color:#1a56db}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-red{background:#fde8e8;color:#c81e1e}
+.badge-grey{background:rgba(13,33,69,0.07);color:rgba(13,33,69,0.55)}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+
+/* Label */
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+/* Skeleton */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Nav */
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+/* Stat card */
+.stat-card{border-radius:20px;padding:22px;transition:box-shadow .2s,transform .2s;cursor:default}
+.stat-card:hover{box-shadow:0 10px 40px rgba(13,33,69,0.13);transform:translateY(-2px)}
+.stat-val{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.stat-lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48);margin-top:5px}
+.stat-trend{font-size:12px;font-weight:600;margin-top:9px;display:flex;align-items:center;gap:4px}
+
+/* Project row */
+.proj-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 20px;border-bottom:1px solid #f0f2f6;transition:background .15s;flex-wrap:wrap}
+.proj-row:last-child{border-bottom:none}
+.proj-row:hover{background:rgba(13,33,69,0.02)}
+.proj-title{font-size:13px;font-weight:700;color:#0d2145}
+.proj-buyer{font-size:12px;font-weight:500;color:rgba(13,33,69,0.48);margin-top:2px}
+.proj-actions{display:flex;gap:8px;flex-wrap:wrap;width:100%;margin-top:4px}
+@media(min-width:640px){.proj-actions{width:auto;margin-top:0}}
+
+/* Mobile menu */
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+/* Quick cards */
+.qcard{flex:1;min-width:0;padding:18px 12px;border-radius:18px;background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);box-shadow:0 6px 24px rgba(13,33,69,0.07);display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;transition:box-shadow .2s,transform .2s;text-align:center}
+.qcard:hover{box-shadow:0 8px 36px rgba(13,33,69,0.13);transform:translateY(-2px)}
+.qcard:active{transform:translateY(0)}
+.qcard-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center}
+.qcard-lbl{font-size:12px;font-weight:700;color:#0d2145}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Blobs */
+.blob-n{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(13,33,69,0.09) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;will-change:transform}
+.blob-g{position:absolute;width:440px;height:440px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-60px;left:-80px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;will-change:transform}
+
+/* Fade up */
+.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.12s}.fu-3{animation-delay:.19s}.fu-4{animation-delay:.26s}.fu-5{animation-delay:.33s}
+
+/* Spinner */
+.spin{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Responsive */
+@media(min-width:1024px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px;width:calc(100% - 248px);max-width:none;overflow-x:visible}
+  #section-c{grid-template-columns:1fr 1fr!important}
+  #stats-2col{grid-template-columns:repeat(4,1fr)!important}
+}
+@media(min-width:768px){
+  #page-content{padding:32px!important;width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box}
+  .stat-val{font-size:42px}
+  #quick-cards{display:none!important}
+  #desktop-actions{display:flex!important}
+}
+</style>
+<style id="mobile-first-patch">
+/* 1. BODY — no horizontal scroll on mobile */
+body { overflow-x: hidden !important; }
+
+/* 2. SIDEBAR — safe area on desktop */
+#sidebar {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding-top: max(30px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+
+/* 3. PAGE CONTENT — proper mobile padding, no bleed */
+#page-content {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  min-height: 100dvh !important;
+}
+
+/* 4. HAMBURGER — always visible on mobile, proper tap size */
+#hamburger {
+  display: flex !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+@media (min-width: 1024px) {
+  #hamburger { display: none !important; }
+  #sidebar { display: flex !important; }
+}
+
+/* 5. LOADING OVERLAY — full screen properly */
+
+
+/* 6. NAV LINKS — prevent text overflow in sidebar */
+.nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 7. TOAST — above safe area on mobile */
+#toast {
+  bottom: max(24px, env(safe-area-inset-bottom, 24px)) !important;
+}
+
+/* 8. MODALS — full width on mobile */
+@media (max-width: 600px) {
+  .modal-box {
+    max-width: 100% !important;
+    border-radius: 18px !important;
+    padding: 24px 16px !important;
+  }
+}
+
+/* B3. QUICK CARDS — 5 cards: 3-top / 2-bottom on mobile, single row on wider screens */
+#quick-cards .qcard {
+  flex: 1 1 calc(33.333% - 8px);
+  min-width: 0;
+}
+@media (min-width: 480px) {
+  #quick-cards .qcard {
+    flex: 1 1 calc(20% - 9px);
+  }
+}
+
+/* A1. STAT CARDS — shrink font on small phones */
+@media (max-width: 480px) {
+  .stat-card { padding: 16px !important; }
+  .stat-val { font-size: 26px !important; letter-spacing: -0.5px !important; }
+}
+
+/* A1. STAT CARDS — single column on very small phones */
+@media (max-width: 360px) {
+  #stats-2col { grid-template-columns: 1fr !important; }
+}
+
+/* A5. DESKTOP ACTIONS — force hidden on mobile */
+@media (max-width: 767px) {
+  #desktop-actions { display: none !important; }
+}
+
+/* PERF: disable expensive backdrop-filter on weak/small devices */
+@media (prefers-reduced-motion: reduce), (max-width: 480px) {
+  .glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255,255,255,0.92) !important;
+  }
+  .qcard {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255,255,255,0.92) !important;
+  }
+}
+</style>
+</head>
+<body style="visibility:hidden" class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+
+<!-- LOADING OVERLAY — hidden by JS after boot -->
+
+<style>
+</style>
+
+<!-- MOBILE BACKDROP -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:272px;height:100%;height:100dvh;background:#091830;z-index:500;padding:30px 22px;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;margin-top:2px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="mb-signout" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;height:100dvh;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;">
+  <a href="/buyer-dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="dt-signout" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrap" style="min-height:100dvh;display:flex;flex-direction:column;">
+
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Dashboard</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <!-- Bell -->
+      <button onclick="window.location.href='/notifications.html'" style="position:relative;width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <!-- Avatar -->
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;">CD</div>
+      <!-- Hamburger -->
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main id="page-content" style="flex:1;padding:22px 18px;width:100%;position:relative;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;">
+
+      <!-- SECTION A: Greeting + actions -->
+      <div class="fu fu-1" style="margin-bottom:26px;">
+        <p id="greeting" style="font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48);margin:0 0 5px;">GOOD MORNING</p>
+        <h2 id="welcome-heading" style="font-size:26px;font-weight:800;color:#0d2145;letter-spacing:-0.7px;margin:0 0 5px;line-height:1.2;">Welcome back.</h2>
+        <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.52);margin:0 0 18px;">Here is an overview of your projects and spending.</p>
+        <div id="desktop-actions" style="display:none;flex-wrap:wrap;gap:10px;">
+          <a href="/browse.html" class="btn-green">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Browse Freelancers
+          </a>
+          <a href="/buyer-payments.html" class="btn-outline">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            View Payments
+          </a>
+        </div>
+      </div>
+
+      <!-- SECTION B: Stat cards -->
+      <div id="stats-2col" class="fu fu-2" style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:26px;">
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(13,33,69,0.04),rgba(255,255,255,0.85));border:1px solid rgba(255,255,255,0.55);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(13,33,69,0.07);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <span class="badge badge-navy">All time</span>
+          </div>
+          <div class="stat-val" id="stat-spent">--</div>
+          <div class="stat-lbl">Total Spent</div>
+          <div class="stat-trend" style="color:rgba(13,33,69,0.45);">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            Across all projects
+          </div>
+        </div>
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(26,86,219,0.06),rgba(255,255,255,0.85));border:1px solid rgba(26,86,219,0.12);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(26,86,219,0.10);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <span class="badge badge-blue">Active</span>
+          </div>
+          <div class="stat-val" id="stat-active" style="color:#1a56db;">0</div>
+          <div class="stat-lbl">Active Projects</div>
+          <div class="stat-trend" style="color:rgba(13,33,69,0.45);">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            In progress now
+          </div>
+        </div>
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(45,138,94,0.08),rgba(255,255,255,0.85));border:1px solid rgba(45,138,94,0.16);box-shadow:0 4px 24px rgba(45,138,94,0.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(45,138,94,0.12);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <span class="badge badge-green">This year</span>
+          </div>
+          <div class="stat-val" id="stat-completed" style="color:#2d8a5e;">0</div>
+          <div class="stat-lbl">Completed</div>
+          <div class="stat-trend" style="color:#2d8a5e;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            Delivered and approved
+          </div>
+        </div>
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,30,30,0.05),rgba(255,255,255,0.85));border:1px solid rgba(200,30,30,0.12);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(200,30,30,0.10);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <span class="badge badge-red">Disputes</span>
+          </div>
+          <div class="stat-val" id="stat-disputes" style="color:#c81e1e;">0</div>
+          <div class="stat-lbl">Disputes Raised</div>
+          <div class="stat-trend" style="color:rgba(13,33,69,0.45);">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            Open or resolved
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION B2: Refer & Earn teaser (Fix 6) -->
+      <div id="section-b2" class="fu fu-2b" style="display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:26px;">
+
+        <!-- Refer & Earn active card -->
+        <div class="glass" id="refer-earn-card" style="padding:20px;display:none;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:11px;min-width:0;flex:1;">
+              <div style="width:40px;height:40px;border-radius:12px;background:rgba(108,63,197,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#633cb4" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div style="min-width:0;">
+                <div style="font-size:15px;font-weight:800;color:#0d2145;">Refer &amp; Earn</div>
+                <div style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.50);margin-top:2px;">Share products. Earn commissions.</div>
+              </div>
+            </div>
+            <a href="/dashboard-affiliate.html" style="display:inline-flex;align-items:center;gap:6px;background:#633cb4;color:#fff;border-radius:50px;padding:9px 18px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .15s;flex-shrink:0;" onmouseover="this.style.background='#4f2d96'" onmouseout="this.style.background='#633cb4'">View Dashboard</a>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(108,63,197,0.06);border-radius:12px;padding:12px 14px;flex-wrap:wrap;gap:10px;">
+            <div>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.8px;color:rgba(13,33,69,0.45);text-transform:uppercase;margin-bottom:3px;">Total Earned</div>
+              <div id="refer-earned-val" style="font-size:20px;font-weight:800;color:#633cb4;">$0.00</div>
+            </div>
+            <div style="flex:1;min-width:140px;">
+              <div style="font-size:11px;font-weight:600;letter-spacing:.8px;color:rgba(13,33,69,0.45);text-transform:uppercase;margin-bottom:5px;">Your referral link</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div id="refer-link-display" style="font-size:11px;font-weight:600;color:#633cb4;background:rgba(108,63,197,0.10);border-radius:8px;padding:6px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;">kreddlo.space/browse?ref=...</div>
+                <button onclick="copyReferralLink()" style="width:32px;height:32px;background:#633cb4;border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Copy link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Refer & Earn discovery card (not yet opted in) -->
+        <div class="glass" id="refer-discover-card" style="padding:20px;display:none;">
+          <div style="display:flex;align-items:center;gap:11px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(108,63,197,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#633cb4" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:15px;font-weight:800;color:#0d2145;">Refer &amp; Earn</div>
+              <div style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.50);margin-top:2px;">Share products and earn a commission on every sale.</div>
+            </div>
+            <a href="/dashboard-settings.html#affiliate" style="display:inline-flex;align-items:center;gap:6px;border:1.5px solid #633cb4;color:#633cb4;background:transparent;border-radius:50px;padding:9px 16px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all .15s;flex-shrink:0;" onmouseover="this.style.background='rgba(108,63,197,0.08)'" onmouseout="this.style.background='transparent'">Enable</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION C: Projects + Quick stats -->
+      <div id="section-c" class="fu fu-3" style="display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:26px;">
+
+        <!-- Recent projects -->
+        <div class="glass" style="overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0;">
+            <div>
+              <h3 style="font-size:15px;font-weight:700;color:#0d2145;margin:0 0 2px;">Recent Projects</h3>
+              <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.48);margin:0;">Your most recent projects</p>
+            </div>
+            <a href="/buyer-projects.html" style="font-size:13px;font-weight:600;color:#2d8a5e;text-decoration:none;">View all</a>
+          </div>
+          <div id="projects-list" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="glass" style="padding:22px;">
+          <h3 style="font-size:15px;font-weight:700;color:#0d2145;margin:0 0 3px;">Spending Overview</h3>
+          <p id="spending-month-label" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.48);margin:0 0 18px;"></p>
+          <div style="display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0f2f6;">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#0d2145;flex-shrink:0;"></div>
+                <span style="font-size:13px;font-weight:600;color:#0d2145;">Spent this month</span>
+              </div>
+              <span id="qs-spent-month" style="font-size:15px;font-weight:800;color:#0d2145;">--</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0f2f6;">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#856404;flex-shrink:0;"></div>
+                <span style="font-size:13px;font-weight:600;color:#0d2145;">In Escrow</span>
+              </div>
+              <span id="qs-escrow" style="font-size:15px;font-weight:800;color:#856404;">--</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#2d8a5e;flex-shrink:0;"></div>
+                <span style="font-size:13px;font-weight:600;color:#0d2145;">Freelancers Hired</span>
+              </div>
+              <span id="qs-hired" style="font-size:15px;font-weight:800;color:#2d8a5e;">0</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding:15px;background:#e8f5ef;border-radius:13px;">
+            <p class="lbl" style="margin:0 0 3px;">AVG PROJECT VALUE</p>
+            <p id="qs-avg" style="font-size:21px;font-weight:800;color:#2d8a5e;margin:0;letter-spacing:-0.5px;">--</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION D: Mobile quick cards -->
+      <div id="quick-cards" class="fu fu-4" style="display:flex;flex-wrap:wrap;gap:11px;margin-bottom:24px;">
+        <div class="qcard" onclick="window.location.href='/browse.html'">
+          <div class="qcard-icon" style="background:#e8f5ef;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <span class="qcard-lbl">Browse</span>
+        </div>
+        <div class="qcard" onclick="window.location.href='/buyer-payments.html'">
+          <div class="qcard-icon" style="background:rgba(13,33,69,0.07);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <span class="qcard-lbl">Payments</span>
+        </div>
+        <div class="qcard" onclick="window.location.href='/buyer-projects.html'">
+          <div class="qcard-icon" style="background:#e8f0fe;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <span class="qcard-lbl">Projects</span>
+        </div>
+        <div class="qcard" onclick="window.location.href='/buyer-purchases.html'">
+          <div class="qcard-icon" style="background:#f0eaff;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6c3fc5" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <span class="qcard-lbl">Purchases</span>
+        </div>
+        <div class="qcard" onclick="window.location.href='/dashboard-settings.html'">
+          <div class="qcard-icon" style="background:#fff3cd;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          </div>
+          <span class="qcard-lbl">Settings</span>
+        </div>
+      </div>
+
+      <!-- SECTION E: Recent Purchases -->
+      <div id="recent-purchases-section" class="fu fu-5" style="margin-bottom:32px;">
+        <div class="glass" style="overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0;">
+            <div>
+              <h3 style="font-size:15px;font-weight:700;color:#0d2145;margin:0 0 2px;">Recent Purchases</h3>
+              <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.48);margin:0;">Your last 3 digital products</p>
+            </div>
+            <a href="/buyer-purchases.html" style="font-size:13px;font-weight:600;color:#6c3fc5;text-decoration:none;">View all</a>
+          </div>
+          <div id="recent-purchases-list" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ============ CURRENT USER ============
+var currentUser = { name: '', role: 'buyer', uid: null };
+
+// LIVE DATA — populated by loadBuyerDashboard() in _boot
+var PROJECTS = [];
+var PURCHASES = [];
+var DISPUTES_COUNT = 0;
+var _dashboardLoading = false;
+
+var STATUS = {
+  unsigned:   { label:'Awaiting Signature', cls:'badge-grey'  },
+  in_progress:{ label:'In Progress',        cls:'badge-blue'  },
+  delivered:  { label:'Delivered',          cls:'badge-amber' },
+  completed:  { label:'Completed',          cls:'badge-green' },
+  disputed:   { label:'Disputed',           cls:'badge-red'   },
+  cancelled:  { label:'Cancelled',          cls:'badge-grey'  }
+};
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ── Currency helpers — delegates to shared.js (kreddloCurrency) with
+// self-contained Intl fallbacks so the page is resilient to load order.
+function fmtCurrency(amount, currency) {
+  if (window.kreddloCurrency && window.kreddloCurrency.fmt) {
+    return window.kreddloCurrency.fmt(amount, currency);
+  }
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 2 }).format(Number(amount) || 0);
+  } catch(e) {
+    return (currency || 'USD') + ' ' + Number(amount || 0).toFixed(2);
+  }
+}
+// Per-currency stat card renderer — uses shared.js interactive chip renderer
+// when available, falls back to inline pills so layout never breaks.
+function renderCurrencyLines(map) {
+  if (window.kreddloCurrency && window.kreddloCurrency.renderCard) {
+    return window.kreddloCurrency.renderCard(map, { primaryColor: 'inherit' });
+  }
+  var keys = Object.keys(map || {}).filter(function(c){ return Number(map[c]) > 0; });
+  if (!keys.length) return fmtCurrency(0, 'USD');
+  if (keys.length === 1) return fmtCurrency(map[keys[0]], keys[0]);
+  var pills = keys.map(function(cur) {
+    return '<span style="display:inline-flex;align-items:baseline;gap:3px;' +
+      'background:rgba(45,138,94,0.08);border-radius:7px;' +
+      'padding:3px 7px;margin:2px 2px 2px 0;white-space:nowrap;">' +
+      '<span style="font-size:0.52em;font-weight:800;color:#2d8a5e;">' + fmtCurrency(map[cur], cur) + '</span>' +
+      '<span style="font-size:0.38em;font-weight:700;color:rgba(45,138,94,0.65);letter-spacing:.4px;">' + cur + '</span>' +
+      '</span>';
+  }).join('');
+  return '<span style="display:flex;flex-wrap:wrap;align-items:center;' +
+    'margin-top:2px;line-height:1;">' + pills + '</span>';
+}
+// Compact per-currency for tight single-line rows.
+function renderCurrencyLinesCompact(map, color) {
+  if (window.kreddloCurrency && window.kreddloCurrency.renderCompact) {
+    return window.kreddloCurrency.renderCompact(map, color);
+  }
+  var keys = Object.keys(map || {}).filter(function(c){ return Number(map[c]) !== 0; });
+  if (!keys.length) return fmtCurrency(0, 'USD');
+  if (keys.length === 1) return fmtCurrency(map[keys[0]], keys[0]);
+  return '<span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">' +
+    keys.map(function(cur) {
+      return '<span style="font-size:0.8em;white-space:nowrap;' + (color ? 'color:'+color+';' : '') + '">' +
+        fmtCurrency(map[cur], cur) + '</span>';
+    }).join('') +
+    '</span>';
+}
+
+// ============ NAV (buyer) ============
+var NAV = [
+  { label:'Dashboard',    href:'/buyer-dashboard.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Projects',     href:'/buyer-projects.html',  icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Contracts',    href:'/dashboard-contracts.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Browse',       href:'/browse.html',          icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Payments',     href:'/buyer-payments.html',  icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' },
+  { label:'Purchases',    href:'/buyer-purchases.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',    href:'/dashboard-affiliate.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Settings',     href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' }
+];
+
+function buildNav(affiliateEnabled) {
+  var cur = (window.location.pathname.split('/').pop() || 'buyer-dashboard.html');
+  var items = NAV.filter(function(n) {
+    if (n.label === 'Affiliate') return affiliateEnabled === true;
+    return true;
+  });
+  var html = items.map(function(n) {
+    var active = (cur === n.href.replace(/^\//,'')) ? ' active' : '';
+    return '<a href="'+n.href+'" class="nav-link'+active+'" onclick="closeMobileMenu()">'+n.icon+n.label+'</a>';
+  }).join('');
+  document.getElementById('mobile-nav').innerHTML  = html;
+  document.getElementById('desktop-nav').innerHTML = html;
+}
+
+// ============ MOBILE MENU ============
+function openMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ============ GREETING ============
+function setGreeting() {
+  var h = new Date().getHours();
+  document.getElementById('greeting').textContent =
+    h < 12 ? 'GOOD MORNING' : h < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+  var now = new Date();
+  document.getElementById('spending-month-label').textContent =
+    now.toLocaleString('en', { month: 'long', year: 'numeric' }) + ' summary';
+}
+
+// ============ STATS ============
+function renderStats() {
+  // Per-currency, never blended — a project paid in USD and one paid in
+  // NGN must never be summed into a single raw number or shown with one
+  // hardcoded symbol.
+  var spentMap  = {};
+  var escrowMap = {};
+  var monthMap  = {};
+  function addToMap(map, currency, amount) {
+    var c = (currency || 'USD').toUpperCase();
+    map[c] = (map[c] || 0) + Number(amount || 0);
+  }
+
+  PROJECTS.forEach(function(p) {
+    var cur = (p.currency || 'USD').toUpperCase();
+    if (p.escrowStatus === 'funded' || p.escrowStatus === 'released') addToMap(spentMap, cur, p.amount);
+    if (p.escrowStatus === 'funded') addToMap(escrowMap, cur, p.amount);
+    if (p.escrowStatus !== 'unfunded') addToMap(monthMap, cur, p.amount);
+  });
+
+  var totalSpentSum = Object.keys(spentMap).reduce(function(s,c){ return s + spentMap[c]; }, 0);
+  var active = PROJECTS.filter(function(p){ return p.status === 'in_progress'; }).length;
+  var completed = PROJECTS.filter(function(p){ return p.status === 'completed'; }).length;
+
+  document.getElementById('stat-spent').innerHTML = renderCurrencyLines(spentMap);
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-completed').textContent = completed;
+  document.getElementById('stat-disputes').textContent = DISPUTES_COUNT;
+
+  // Quick stats panel
+  var hired = new Set(PROJECTS.map(function(p){ return p.freelancerUid || p.freelancer; })).size;
+  var fundedCount = PROJECTS.filter(function(p){ return p.escrowStatus !== 'unfunded'; }).length;
+
+  document.getElementById('qs-spent-month').innerHTML = renderCurrencyLinesCompact(monthMap, '#0d2145');
+  document.getElementById('qs-escrow').innerHTML = renderCurrencyLinesCompact(escrowMap, '#856404');
+  document.getElementById('qs-hired').textContent = hired;
+
+  // Average is only meaningful within a single currency — if the buyer has
+  // paid in more than one currency, show a per-currency average instead of
+  // dividing mixed currencies together.
+  var qsAvgEl = document.getElementById('qs-avg');
+  var spentKeys = Object.keys(spentMap);
+  if (!spentKeys.length || fundedCount === 0) {
+    qsAvgEl.textContent = fmtCurrency(0, 'USD');
+  } else if (spentKeys.length === 1) {
+    var cur0 = spentKeys[0];
+    qsAvgEl.textContent = fmtCurrency(spentMap[cur0] / fundedCount, cur0);
+  } else {
+    qsAvgEl.innerHTML = spentKeys.map(function(cur) {
+      return '<span style="display:block;">' + fmtCurrency(spentMap[cur] / fundedCount, cur) + '</span>';
+    }).join('');
+  }
+}
+
+// ============ PROJECTS LIST ============
+function renderProjects() {
+  try {
+    if (PROJECTS.length === 0) {
+      document.getElementById('projects-list').innerHTML = '<p style="color:rgba(13,33,69,0.5);text-align:center;padding:32px 20px;font-size:14px;">No projects yet. <a href="/browse.html" style="color:#2d8a5e;font-weight:600;">Browse freelancers</a> to get started.</p>';
+      return;
+    }
+    document.getElementById('projects-list').innerHTML = PROJECTS.map(function(p) {
+      var s = STATUS[p.status] || STATUS.in_progress;
+      return '<div class="proj-row">'
+        +'<div style="min-width:0;flex:1;">'
+          +'<div class="proj-title">'+escapeHtml(p.title)+'</div>'
+          +'<div class="proj-buyer">'+escapeHtml(p.freelancer)+'</div>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:10px;">'
+          +'<span class="badge '+s.cls+'">'+s.label+'</span>'
+          +'<span style="font-size:14px;font-weight:800;color:#0d2145;">'+fmtCurrency(Number(p.amount)||0, p.currency || 'USD')+'</span>'
+        +'</div>'
+        +'<div class="proj-actions">'+ getActions(p) +'</div>'
+      +'</div>';
+    }).join('');
+  } catch(e) {
+    console.error('[renderProjects]', e);
+    document.getElementById('projects-list').innerHTML =
+      '<p style="padding:20px;color:#c81e1e;font-size:13px;">Could not display projects. Please refresh.</p>';
+  }
+}
+
+// ============ RECENT PURCHASES ============
+function renderRecentPurchases() {
+  try {
+    var el = document.getElementById('recent-purchases-list');
+    if (!el) return;
+    if (PURCHASES.length === 0) {
+      el.innerHTML = '<p style="color:rgba(13,33,69,0.5);text-align:center;padding:32px 20px;font-size:14px;">No purchases yet.</p>';
+      return;
+    }
+    el.innerHTML = PURCHASES.slice(0, 3).map(function(pur) {
+      var delivered = pur.deliveryStatus === 'delivered' && pur.deliveryContent;
+      var badgeCls  = delivered ? 'badge-green' : 'badge-grey';
+      var badgeTxt  = delivered ? 'Delivered' : 'Pending';
+      var safeUrl = (typeof pur.deliveryContent === 'string' &&
+        (pur.deliveryContent.startsWith('https://') || pur.deliveryContent.startsWith('http://')))
+        ? pur.deliveryContent
+        : '#';
+      var accessBtn = delivered
+        ? '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#6c3fc5;background:#f0eaff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;text-decoration:none;white-space:nowrap;">'
+            + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+            + 'Access Product</a>'
+        : '<span style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.4);">Awaiting delivery</span>';
+      return '<div class="proj-row">'
+        + '<div style="min-width:0;flex:1;">'
+          + '<div class="proj-title">' + escapeHtml(pur.title) + '</div>'
+          + '<div class="proj-buyer">' + escapeHtml(pur.seller) + ' &middot; ' + escapeHtml(pur.date) + '</div>'
+        + '</div>'
+        + '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:10px;">'
+          + '<span class="badge ' + badgeCls + '">' + badgeTxt + '</span>'
+          + '<span style="font-size:14px;font-weight:800;color:#0d2145;">' + fmtCurrency(Number(pur.amount)||0, pur.currency || 'USD') + '</span>'
+        + '</div>'
+        + '<div class="proj-actions">' + accessBtn + '</div>'
+      + '</div>';
+    }).join('');
+  } catch(e) {
+    console.error('[renderRecentPurchases]', e);
+    var el = document.getElementById('recent-purchases-list');
+    if (el) el.innerHTML =
+      '<p style="padding:20px;color:#c81e1e;font-size:13px;">Could not display purchases. Please refresh.</p>';
+  }
+}
+
+// ============ ACTION BUTTONS PER STATUS ============
+function getActions(p) {
+  if (p.escrowStatus === 'unfunded' && p.signed) {
+    return '<button class="btn-green" style="font-size:12px;padding:8px 16px;" onclick="makePayment(\''+p.id+'\')" id="pay-btn-'+p.id+'">'
+      +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>'
+      +'Make Payment</button>';
+  }
+  if (p.status === 'delivered') {
+    return '<button class="btn-green" style="font-size:12px;padding:8px 16px;" onclick="approveDelivery(\''+p.id+'\')" id="approve-btn-'+p.id+'">'
+      +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      +'Approve Delivery</button>'
+      +'<button class="btn-ghost" style="padding:8px 16px;" onclick="raiseDispute(\''+p.id+'\')">Raise Dispute</button>';
+  }
+  if (p.status === 'in_progress') {
+    return '<button class="btn-secondary" onclick="viewContract(\''+p.id+'\')">View Contract</button>'
+      +'<button class="btn-ghost" style="padding:8px 16px;" onclick="raiseDispute(\''+p.id+'\')">Raise Dispute</button>';
+  }
+  if (p.status === 'completed' || p.status === 'disputed') {
+    return '<button class="btn-secondary" onclick="viewContract(\''+p.id+'\')">View Contract</button>';
+  }
+  if (p.status === 'unsigned') {
+    return '<span style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.45);">Awaiting both signatures</span>';
+  }
+  return '';
+}
+
+// ============ MAKE PAYMENT ============
+async function makePayment(id) {
+  var btn = document.getElementById('pay-btn-'+id);
+  if (!btn) return;
+  var original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting...';
+
+  try {
+    // Step 1: Read platform settings to know which gateway is active
+    var fsQ = window._fsQ;
+    var settingsSnap = await fsQ.getDoc(fsQ.doc(window.db, 'config', 'platform'));
+    var settings = settingsSnap.exists() ? settingsSnap.data() : {};
+    var stripeEnabled      = !!settings.stripeEnabled;
+    var flutterwaveEnabled = !!settings.flutterwaveEnabled;
+
+    // Step 2: Get project data
+    var project = PROJECTS.find(function(p) { return p.id === id; });
+    if (!project) throw new Error('Project not found.');
+
+    // Step 3: Pick the right gateway (Flutterwave > Stripe > Crypto fallback)
+    var endpoint, payload;
+
+    if (flutterwaveEnabled) {
+      endpoint = '/.netlify/functions/create-flutterwave-payment';
+      payload = {
+        orderId:      id,
+        amount:       project.totalAmount || project.budget || project.amount,
+        description:  'Escrow payment for: ' + (project.title || id),
+        buyerEmail:   currentUser.email || '',
+        projectTitle: project.title || id
+      };
+    } else if (stripeEnabled) {
+      endpoint = '/.netlify/functions/create-stripe-payment';
+      payload = {
+        orderId:      id,
+        amount:       project.totalAmount || project.budget || project.amount,
+        description:  'Escrow payment for: ' + (project.title || id),
+        buyerEmail:   currentUser.email || '',
+        projectTitle: project.title || id
+      };
+    } else {
+      endpoint = '/.netlify/functions/create-crypto-payment';
+      payload = {
+        orderId:      id,
+        amount:       project.totalAmount || project.budget || project.amount,
+        description:  'Escrow payment for: ' + (project.title || id),
+        buyerEmail:   currentUser.email || ''
+      };
+    }
+
+    // Step 4: Call the chosen endpoint
+    var res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+
+    if (!res.ok || (!data.checkoutUrl && !data.invoiceUrl)) {
+      throw new Error(data.error || 'Payment initiation failed.');
+    }
+
+    window.location.href = data.checkoutUrl || data.invoiceUrl;
+
+  } catch (err) {
+    showToast(err.message || 'Could not start payment. Try again.');
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
+// ============ APPROVE DELIVERY ============
+async function approveDelivery(id) {
+  var btn = document.getElementById('approve-btn-'+id);
+  if (!btn || btn.disabled) return;
+  var original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Approving...';
+
+  var _idToken = window.auth && window.auth.currentUser ? await window.auth.currentUser.getIdToken() : '';
+  fetch('/.netlify/functions/approve-delivery', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _idToken },
+    body: JSON.stringify({ projectId: id, buyerUid: currentUser.uid })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success || data.message) {
+      var p = PROJECTS.find(function(x){ return x.id === id; });
+      if (p) { p.status = 'completed'; p.escrowStatus = 'released'; }
+      renderProjects();
+      renderStats();
+      showToast('Payment released to freelancer');
+    } else {
+      showToast(data.error || 'Could not approve delivery. Try again.');
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  })
+  .catch(function() {
+    showToast('Network error. Check your connection and try again.');
+    btn.disabled = false;
+    btn.innerHTML = original;
+  });
+}
+
+// ============ RAISE DISPUTE ============
+function raiseDispute(id) {
+  // Redirect to the projects page where the full dispute modal lives
+  window.location.href = '/buyer-projects.html?dispute=' + encodeURIComponent(id);
+}
+
+// ============ VIEW CONTRACT ============
+function viewContract(id) {
+  window.location.href = '/dashboard-contracts.html?id=' + encodeURIComponent(id);
+}
+
+// ============ TOAST ============
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+// ── Fix 6: Refer & Earn card functions ───────────────────────────────────────
+window.copyReferralLink = function() {
+  var uid = (window._currentBuyerUid) || '';
+  if (!uid) return;
+  var url = window.location.origin + '/browse.html?ref=' + uid;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() { showToast('Referral link copied!'); });
+  } else { showToast(url); }
+};
+
+function populateReferCard(userData, uid) {
+  var affiliateOn  = userData && userData.affiliateEnabled === true;
+  var earnCard     = document.getElementById('refer-earn-card');
+  var discoverCard = document.getElementById('refer-discover-card');
+
+  if (affiliateOn) {
+    if (earnCard)    earnCard.style.display    = 'block';
+    if (discoverCard)discoverCard.style.display = 'none';
+
+    var earned = Number((userData && userData.affiliateTotalEarned) || 0);
+    var earnedEl = document.getElementById('refer-earned-val');
+    if (earnedEl) earnedEl.textContent = '$' + earned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    var linkEl = document.getElementById('refer-link-display');
+    if (linkEl && uid) {
+      linkEl.textContent = 'kreddlo.space/browse?ref=' + uid.slice(0, 8) + '…';
+    }
+  } else {
+    if (earnCard)    earnCard.style.display    = 'none';
+    if (discoverCard)discoverCard.style.display = 'block';
+  }
+}
+// ──────────────────────────────────────────────────────────────────────────────
+
+// ============ ESCAPE KEY ============
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  closeMobileMenu();
+});
+
+// ============ LOAD BUYER DASHBOARD FROM FIRESTORE ============
+async function loadBuyerDashboard(uid) {
+  if (_dashboardLoading) return;
+  _dashboardLoading = true;
+  if (!window.db || !window._fsQ) { _dashboardLoading = false; return; }
+
+  // Session cache — render instantly on repeat visits, then refresh in background
+  try {
+    var _cached = sessionStorage.getItem('krd_dash_' + uid);
+    if (_cached) {
+      var _c = JSON.parse(_cached);
+      PROJECTS = _c.projects || [];
+      PURCHASES = _c.purchases || [];
+      DISPUTES_COUNT = PROJECTS.filter(function(p){ return p.status === 'disputed'; }).length;
+      renderStats(); renderProjects(); renderRecentPurchases();
+      document.body.style.visibility = 'visible';
+    }
+  } catch(e) { /* cache miss, continue to Firestore */ }
+
+  var fsQ = window._fsQ;
+  try {
+    var q = fsQ.query(
+      fsQ.collection(window.db, 'projects'),
+      fsQ.where('buyerUid', '==', uid),
+      fsQ.orderBy('createdAt', 'desc'),
+      fsQ.limit(20)
+    );
+    var snap = await fsQ.getDocs(q);
+
+    // Fetch freelancer names in parallel
+    var flUids = [];
+    snap.docs.forEach(function(d) { if (d.data().freelancerUid) flUids.push(d.data().freelancerUid); });
+    var uniqueFlUids = flUids.filter(function(v, i, a) { return a.indexOf(v) === i; });
+    var flMap = {};
+    await Promise.all(uniqueFlUids.map(async function(fuid) {
+      try {
+        var fsnap = await fsQ.getDoc(fsQ.doc(window.db, 'users', fuid));
+        if (fsnap.exists()) {
+          var fd = fsnap.data();
+          flMap[fuid] = fd.displayName || fd.name || fd.email || 'Freelancer';
+        }
+      } catch(e) { /* non-fatal */ }
+    }));
+
+    PROJECTS = snap.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.createdAt;
+      var dateStr = ts ? new Date(ts.toDate ? ts.toDate() : ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      var amt = data.amount || data.netAmount || 0;
+      return {
+        id:            d.id,
+        title:         data.title          || 'Untitled Project',
+        freelancer:    flMap[data.freelancerUid] || data.freelancerName || 'Freelancer',
+        freelancerUid: data.freelancerUid,
+        amount:        amt,
+        netAmount:     data.netAmount      || amt,
+        currency:      (data.currency || 'USD').toUpperCase(),
+        status:        data.status         || 'in_progress',
+        signed:        data.freelancerSigned && data.buyerSigned,
+        escrowStatus:  data.escrowStatus   || 'unfunded',
+        date:          dateStr,
+        desc:          data.description    || '',
+      };
+    });
+    DISPUTES_COUNT = PROJECTS.filter(function(p){ return p.status === 'disputed'; }).length;
+
+    // ---- Recent Purchases (product-orders) ----
+    try {
+      var pq = fsQ.query(
+        fsQ.collection(window.db, 'product-orders'),
+        fsQ.where('buyerUid', '==', uid),
+        fsQ.where('paymentStatus', '==', 'paid'),
+        fsQ.orderBy('createdAt', 'desc'),
+        fsQ.limit(3)
+      );
+      var psnap = await fsQ.getDocs(pq);
+      PURCHASES = psnap.docs.map(function(d) {
+        var data = d.data();
+        var ts = data.createdAt;
+        var dateStr = ts ? new Date(ts.toDate ? ts.toDate() : ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        return {
+          id:              d.id,
+          title:           data.productTitle   || 'Untitled Product',
+          seller:          data.sellerName      || 'Seller',
+          amount:          data.amount          || 0,
+          currency:        (data.chargedCurrency || data.currency || 'USD').toUpperCase(),
+          deliveryStatus:  data.deliveryStatus  || 'pending',
+          deliveryContent: data.deliveryContent || '',
+          date:            dateStr,
+        };
+      });
+    } catch(pe) {
+      console.warn('[purchases]', pe);
+      PURCHASES = [];
+    }
+
+    // Write to session cache after successful load
+    try {
+      sessionStorage.setItem('krd_dash_' + uid, JSON.stringify({
+        projects: PROJECTS,
+        purchases: PURCHASES
+      }));
+    } catch(e) { /* storage full, non-fatal */ }
+  } catch(err) {
+    if (err && (err.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(err.message || ''))) {
+      console.error('[loadBuyerDashboard] missing composite index on projects.buyerUid+createdAt or product-orders.buyerUid+paymentStatus+createdAt — see FIRESTORE_INDEXES.md, or check this error for a Firebase auto-create link:', err);
+      showToast('Setting up — try again in a minute.');
+    } else {
+      console.error('[loadBuyerDashboard]', err);
+      showToast('Could not load dashboard data. Pull to refresh.');
+    }
+  } finally {
+    renderStats();
+    renderProjects();
+    renderRecentPurchases();
+    document.body.style.visibility = 'visible';
+    _dashboardLoading = false;
+  }
+}
+
+// ============ BOOT ============
+window._boot = async function(user, userData) {
+  currentUser.uid   = user.uid;
+  currentUser.email = user.email || '';
+  currentUser.name  = user.displayName || (userData && userData.name) || user.email || 'User';
+  window._currentBuyerUid = user.uid; // Fix 6: expose uid for copyReferralLink
+
+  // Welcome heading
+  var firstName = currentUser.name.trim().split(' ')[0];
+  document.getElementById('welcome-heading').textContent = 'Welcome back, ' + firstName + '.';
+
+  // Avatar initials
+  var parts = currentUser.name.trim().split(' ');
+  document.getElementById('user-avatar').textContent =
+    parts.length >= 2 ? parts[0][0]+parts[parts.length-1][0] : currentUser.name.slice(0,2).toUpperCase();
+
+  setGreeting();
+
+  // ── Fix 6: Default affiliateEnabled to true for new users ─────────────────
+  if (!userData || userData.affiliateEnabled === undefined || userData.affiliateEnabled === null) {
+    try {
+      var _fsQ2 = window._fsQ;
+      if (_fsQ2 && _fsQ2.setDoc && _fsQ2.doc && window.db) {
+        await _fsQ2.setDoc(_fsQ2.doc(window.db, 'users', user.uid), { affiliateEnabled: true }, { merge: true });
+      }
+      if (!userData) userData = {};
+      userData.affiliateEnabled = true;
+    } catch(e) { /* non-fatal */ }
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
+  buildNav(userData && userData.affiliateEnabled === true);
+  populateReferCard(userData, user.uid); // Fix 6
+
+  // Bell dot — only show when there are unread notifications
+  try {
+    var fsQ = window._fsQ;
+    var bellSnap = await fsQ.getDocs(fsQ.query(
+      fsQ.collection(window.db, 'users', user.uid, 'notifications'),
+      fsQ.where('read', '==', false),
+      fsQ.orderBy('createdAt', 'desc'),
+      fsQ.limit(1)
+    ));
+    document.getElementById('bell-dot').style.display = bellSnap.empty ? 'none' : 'block';
+  } catch (e) {
+    document.getElementById('bell-dot').style.display = 'none';
+  }
+
+  loadBuyerDashboard(user.uid);
+};
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+<script>
+// Safety: force-hide loading overlay after 10s if auth/boot stalls
+(function() {
+  var _safetyTimer = setTimeout(function() {
+    document.body.style.visibility = 'visible';
+  }, 10000);
+  window._clearSafetyTimer = function() { clearTimeout(_safetyTimer); };
+})();
+</script>
+
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, collection, query, where, orderBy, getDocs, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+    authDomain:        'kreddlo.firebaseapp.com',
+    projectId:         'kreddlo',
+    storageBucket:     'kreddlo.firebasestorage.app',
+    messagingSenderId: '764500458567',
+    appId:             '1:764500458567:web:2389d5cf8c688caafd0562',
+  };
+  const app  = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  window.handleLogout = function() {
+    signOut(auth).then(function(){ window.location.href = '/login.html'; })
+      .catch(function(){ window.location.href = '/login.html'; });
+  };
+  document.getElementById('mb-signout').onclick = window.handleLogout;
+  document.getElementById('dt-signout').onclick = window.handleLogout;
+  const db   = getFirestore(app);
+  window.db  = db;
+  window.auth = auth;
+  window._fsQ = { collection, query, where, orderBy, getDocs, getDoc, setDoc, doc, limit };
+  onAuthStateChanged(auth, function(user) {
+    if (!user) { window.location.href = '/login.html'; return; }
+    getDoc(doc(db, 'users', user.uid)).then(function(snap) {
+      if (!snap.exists()) { window.location.href = '/login.html'; return; }
+      var role = snap.data().role;
+      if (role !== 'buyer') {
+        if (role === 'admin') window.location.href = '/admin.html';
+        else if (role === 'freelancer') window.location.href = '/dashboard.html';
+        else window.location.href = '/login.html';
+        return;
+      }
+      if (typeof window._boot === 'function') window._boot(user, snap.data());
+    }).catch(function() { window.location.href = '/login.html'; });
+  });
+</script>
+</body>
+</html>

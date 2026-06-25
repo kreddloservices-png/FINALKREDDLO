@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Invoices — Kreddlo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-green:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#0d2145;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(13,33,69,0.20);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-primary:hover{background:#162f5e;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s,background .15s}
+.btn-ghost:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+
+.btn-red{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#c81e1e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,background .15s}
+.btn-red:hover{background:#a31818;transform:translateY(-1px)}
+
+.icon-btn{width:36px;height:36px;background:rgba(13,33,69,0.05);border:1px solid #e2e8f0;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,border-color .15s;flex-shrink:0}
+.icon-btn:hover{background:rgba(13,33,69,0.09);border-color:#cdd5e0}
+.icon-btn:disabled{opacity:.4;cursor:not-allowed}
+
+.badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+.badge-red{background:#fff0f0;color:#c81e1e}
+.badge-gray{background:rgba(13,33,69,0.06);color:rgba(13,33,69,0.55)}
+
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(9,24,48,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:24px;box-shadow:0 24px 80px rgba(13,33,69,0.20);width:100%;max-width:620px;margin:20px auto;padding:28px}
+
+.inp{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:500;color:#0d2145;outline:none;transition:border-color .2s,box-shadow .2s;background:rgba(255,255,255,0.9);-webkit-appearance:none}
+.inp:focus{border-color:#2d8a5e;box-shadow:0 0 0 3px rgba(45,138,94,0.11)}
+.inp::placeholder{color:rgba(13,33,69,0.32)}
+textarea.inp{resize:vertical;min-height:64px}
+select.inp{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d2145' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:38px}
+
+.field-row{margin-bottom:14px}
+.field-row label{display:block;font-size:12px;font-weight:600;color:rgba(13,33,69,0.62);margin-bottom:6px}
+
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(13,33,69,0.45);padding:0 10px 10px;white-space:nowrap}
+td{padding:11px 10px;border-top:1px solid #f0f2f6;font-weight:500;color:#0d2145;vertical-align:middle}
+tr:last-child td{border-bottom:1px solid #f0f2f6}
+
+.blob-n{position:fixed;top:-120px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(13,33,69,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+.blob-g{position:fixed;bottom:-100px;left:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0d2145;color:#fff;padding:11px 22px;border-radius:50px;font-size:13px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:9999;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(min-width:900px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px}
+}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:18px;box-shadow:0 4px 20px rgba(13,33,69,0.07);padding:18px 18px 16px}
+
+.sec-hd{font-size:15px;font-weight:700;color:#0d2145;margin:0 0 14px}
+
+.empty{text-align:center;padding:40px 20px}
+.empty svg{margin:0 auto 12px;display:block;opacity:.3}
+.empty p{font-size:13px;font-weight:500;color:rgba(13,33,69,0.48);margin:0}
+
+/* line item row */
+.li-row{display:grid;grid-template-columns:1fr;gap:8px;padding:12px;background:rgba(13,33,69,0.025);border:1px solid #f0f2f6;border-radius:14px;margin-bottom:10px}
+@media(min-width:560px){.li-row{grid-template-columns:2fr 64px 84px 84px 36px;align-items:center;gap:8px}}
+.li-total{font-size:13px;font-weight:700;color:#0d2145;text-align:right}
+@media(max-width:559px){.li-total{text-align:left}}
+
+/* card list (mobile) */
+.inv-card{background:#fff;border:1px solid #f0f2f6;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 10px rgba(13,33,69,0.04)}
+
+/* hide both during load */
+.inv-hidden{display:none!important}
+
+/* responsive: show cards on mobile, table on desktop */
+#inv-cards-wrap:not(.inv-hidden){display:block}
+#inv-table-wrap:not(.inv-hidden){display:none}
+@media(min-width:640px){
+  #inv-cards-wrap:not(.inv-hidden){display:none}
+  #inv-table-wrap:not(.inv-hidden){display:block}
+}
+/* Invoice form action buttons: full-width stacked on mobile so long labels
+   like "Save & Send to Client" never get squeezed into a cramped pill. */
+.inv-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.inv-actions .btn-ghost,.inv-actions .btn-green{width:100%}
+@media(min-width:480px){
+  .inv-actions{flex-direction:row}
+  .inv-actions .btn-ghost,.inv-actions .btn-green{width:auto;flex:1}
+}
+</style>
+</head>
+<body style="visibility:hidden" class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<!-- MOBILE SLIDE-IN MENU -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;background:rgba(9,24,48,0.45);z-index:399;"></div>
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:260px;height:100%;background:#091830;z-index:400;padding:30px 18px;display:flex;flex-direction:column;overflow-y:auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;">
+    <a href="/dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+    <button onclick="closeMobileMenu()" style="width:32px;height:32px;background:rgba(255,255,255,0.07);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="mb-signout" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="window.handleSignOut && window.handleSignOut()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;">
+  <a href="/dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="dt-signout" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="window.handleSignOut && window.handleSignOut()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrap" style="min-height:100vh;display:flex;flex-direction:column;">
+
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Invoices</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="window.location.href='/notifications.html'" style="position:relative;width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;"></div>
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main style="flex:1;padding:22px 18px;width:100%;position:relative;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;max-width:1000px;margin:0 auto;">
+
+      <!-- Header row -->
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px;">
+        <div>
+          <h2 style="font-size:20px;font-weight:800;color:#0d2145;margin:0 0 4px;">Your Invoices</h2>
+          <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.50);margin:0;">Bill clients and get paid directly — no account needed on their end.</p>
+        </div>
+        <button class="btn-green" onclick="openCreateModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Invoice
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:22px;">
+        <div class="stat-card">
+          <p class="lbl" style="margin:0 0 6px;">Outstanding</p>
+          <p id="stat-outstanding" style="font-size:18px;font-weight:800;color:#0d2145;margin:0;">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="lbl" style="margin:0 0 6px;">Paid (All Time)</p>
+          <p id="stat-paid" style="font-size:18px;font-weight:800;color:#2d8a5e;margin:0;">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="lbl" style="margin:0 0 6px;">Drafts</p>
+          <p id="stat-drafts" style="font-size:18px;font-weight:800;color:#0d2145;margin:0;">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="lbl" style="margin:0 0 6px;">Total Invoices</p>
+          <p id="stat-total" style="font-size:18px;font-weight:800;color:#0d2145;margin:0;">—</p>
+        </div>
+      </div>
+
+      <!-- Free-plan monthly invoice limit banner (shown/hidden by JS) -->
+      <div id="inv-limit-banner" style="display:none;background:#fff;border:1.5px solid #fde8b4;border-radius:16px;padding:16px 20px;margin-bottom:18px;box-shadow:0 2px 10px rgba(13,33,69,0.05);"></div>
+
+      <!-- Invoice list -->
+      <div class="glass" style="padding:20px;margin-bottom:20px;">
+        <h3 class="sec-hd">All Invoices</h3>
+
+        <div id="inv-loading" style="padding:16px 0;">
+          <div class="sk" style="height:48px;border-radius:12px;margin-bottom:10px;"></div>
+          <div class="sk" style="height:48px;border-radius:12px;margin-bottom:10px;"></div>
+          <div class="sk" style="height:48px;border-radius:12px;"></div>
+        </div>
+
+        <div id="inv-empty" class="empty" style="display:none;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <p>No invoices yet.<br>Create your first invoice to bill a client.</p>
+          <button class="btn-green" style="margin-top:14px;font-size:13px;" onclick="openCreateModal()">Create Invoice</button>
+        </div>
+
+        <!-- Mobile card list (visible < 640px) -->
+        <div id="inv-cards-wrap" class="inv-hidden"></div>
+
+        <!-- Desktop table (visible >= 640px) -->
+        <div id="inv-table-wrap" class="inv-hidden">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Client</th>
+                  <th>Due Date</th>
+                  <th style="text-align:right;">Total</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inv-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- CREATE / EDIT INVOICE MODAL -->
+<div id="invoice-modal" class="modal">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 id="modal-title" style="font-size:18px;font-weight:800;color:#0d2145;margin:0;">New Invoice</h3>
+      <button onclick="closeInvoiceModal()" style="width:32px;height:32px;background:rgba(13,33,69,0.05);border:none;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <input type="hidden" id="f-invoice-id" value=""/>
+
+    <!-- Read-only invoice number shown only when editing an existing invoice.
+         Hidden on create. invoiceNumber is set once at creation and never
+         editable — this label gives the user clear context of which invoice
+         they are editing without exposing a field that would silently fail. -->
+    <div id="f-invoice-number-row" style="display:none;align-items:center;justify-content:space-between;background:rgba(13,33,69,0.04);border-radius:10px;padding:8px 14px;margin-bottom:14px;">
+      <span class="lbl" style="margin:0;">Invoice</span>
+      <span id="f-invoice-number-display" style="font-size:13px;font-weight:700;color:#0d2145;"></span>
+    </div>
+
+    <div class="field-row">
+      <label>Client Name</label>
+      <input type="text" id="f-client-name" class="inp" placeholder="e.g. Jane Cooper"/>
+    </div>
+    <div class="field-row">
+      <label>Client Email</label>
+      <input type="email" id="f-client-email" class="inp" placeholder="client@example.com"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="field-row">
+        <label>Due Date</label>
+        <input type="date" id="f-due-date" class="inp"/>
+      </div>
+      <div class="field-row">
+        <label>Currency</label>
+        <select id="f-currency" class="inp">
+          <option value="USD">USD</option>
+          <option value="GBP">GBP</option>
+          <option value="EUR">EUR</option>
+          <option value="NGN">NGN</option>
+          <option value="GHS">GHS</option>
+          <option value="KES">KES</option>
+          <option value="ZAR">ZAR</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <div class="field-row">
+      <label>Line Items</label>
+      <div id="li-list"></div>
+      <button type="button" class="btn-ghost" style="font-size:12px;padding:8px 16px;" onclick="addLineItem()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Line Item
+      </button>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;padding:12px 4px;border-top:1px solid #f0f2f6;margin-top:4px;">
+      <div style="text-align:right;">
+        <p class="lbl" style="margin:0 0 2px;">Total</p>
+        <p id="li-grand-total" style="font-size:22px;font-weight:800;color:#0d2145;margin:0;">0.00</p>
+      </div>
+    </div>
+
+    <div class="field-row" style="margin-top:10px;">
+      <label>Notes (optional)</label>
+      <textarea id="f-notes" class="inp" placeholder="Payment terms, thank-you note, etc."></textarea>
+    </div>
+
+    <div class="inv-actions">
+      <button class="btn-ghost" onclick="saveInvoice('draft')" id="save-draft-btn">Save as Draft</button>
+      <button class="btn-green" onclick="saveInvoice('sent')" id="send-btn">Save &amp; Send to Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- VOID CONFIRM MODAL -->
+<div id="void-modal" class="modal">
+  <div class="modal-box" style="max-width:380px;">
+    <h3 style="font-size:17px;font-weight:800;color:#0d2145;margin:0 0 10px;">Void this invoice?</h3>
+    <p style="font-size:13px;color:rgba(13,33,69,0.60);margin:0 0 20px;line-height:1.6;">The client will no longer be able to pay this invoice. This cannot be undone.</p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-ghost" style="flex:1;" onclick="closeVoidModal()">Cancel</button>
+      <button class="btn-red" style="flex:1;" onclick="confirmVoidInvoice()">Void Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upgrade modal — shown when a free user hits the 5/month invoice limit -->
+<div id="inv-upgrade-modal" class="modal">
+  <div class="modal-box" style="max-width:420px;text-align:center;padding:36px 28px;">
+    <div style="width:56px;height:56px;background:#e8f5ef;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <h3 style="font-size:20px;font-weight:800;color:#0d2145;margin:0 0 10px;">Monthly limit reached</h3>
+    <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.60);line-height:1.6;margin:0 0 8px;">You've sent <strong>5 invoices</strong> this month on the free plan.</p>
+    <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.60);line-height:1.6;margin:0 0 24px;">Upgrade to <strong>Kreddlo Pro</strong> for unlimited invoices, lower withdrawal fees, a verified Pro badge, and priority support.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <a href="/pricing.html" class="btn-green" style="width:100%;box-sizing:border-box;justify-content:center;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Upgrade to Pro
+      </a>
+      <button class="btn-ghost" style="width:100%;box-sizing:border-box;justify-content:center;" onclick="document.getElementById('inv-upgrade-modal').classList.remove('open');unlockBodyScroll();">Maybe Later</button>
+    </div>
+    <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.38);margin:16px 0 0;">Your limit resets on the 1st of next month.</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- SHARED JS (bell dot etc.) -->
+<script src="/assets/shared.js" defer></script>
+
+<script type="module">
+import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut }       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+         collection, query, where, orderBy, getDocs, onSnapshot,
+         addDoc, serverTimestamp }                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ── Firebase config ───────────────────────────────────────────────────────────
+var FIREBASE_CONFIG = {
+  apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+  authDomain:        'kreddlo.firebaseapp.com',
+  projectId:         'kreddlo',
+  storageBucket:     'kreddlo.firebasestorage.app',
+  messagingSenderId: '764500458567',
+  appId:             '1:764500458567:web:2389d5cf8c688caafd0562'
+};
+
+var app  = initializeApp(FIREBASE_CONFIG);
+var auth = getAuth(app);
+var db   = getFirestore(app);
+
+window.auth = auth;
+window.db   = db;
+window.onAuthStateChanged = onAuthStateChanged;
+window.handleSignOut = function() { signOut(auth).then(function(){ window.location.href = '/login.html'; }); };
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var _uid           = null;
+var _userData      = {};
+var _invoices      = [];
+var _lineItemSeq   = 0;
+var _voidTargetId  = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmt(n, cur) {
+  var v = Number(n) || 0;
+  return (cur || 'USD') + ' ' + v.toFixed(2);
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  var dt = (d && d.toDate) ? d.toDate() : new Date(d);
+  if (isNaN(dt.getTime())) return '—';
+  return dt.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function genInvoiceNumber() {
+  var n = Math.floor(1000 + Math.random() * 9000);
+  return 'INV-' + new Date().getFullYear() + '-' + n;
+}
+
+// ── NAV (freelancer-only page — invoices are a freelancer billing tool) ───────
+var NAV_FREELANCER = [
+  { label:'Dashboard',    href:'/dashboard.html',          icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Earnings',     href:'/dashboard-earnings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { label:'Projects',     href:'/dashboard-projects.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Store',        href:'/store.html',              icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Products',     href:'/dashboard-products.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { label:'Invoices',     href:'/dashboard-invoices.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+  { label:'Purchases',    href:'/buyer-purchases.html',    icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',    href:'/dashboard-affiliate.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Contracts',    href:'/dashboard-contracts.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Withdraw',     href:'/dashboard-withdraw.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' },
+  { label:'Browse',       href:'/browse.html',             icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Settings',     href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+];
+
+function buildNav(uid) {
+  var cur = (window.location.pathname.split('/').pop() || 'dashboard-invoices.html');
+  var html = NAV_FREELANCER.map(function(n) {
+    var href = n.href;
+    if (n.label === 'Store'   && uid) href = '/store.html?uid=' + uid;
+    if (n.label === 'Profile' && uid) href = '/profile.html?uid=' + uid;
+    var active = cur === n.href.replace('/','') ? ' active' : '';
+    return '<a href="' + href + '" class="nav-link' + active + '">' + n.icon + n.label + '</a>';
+  }).join('');
+  document.getElementById('mobile-nav').innerHTML  = html;
+  document.getElementById('desktop-nav').innerHTML = html;
+}
+
+// ── Body scroll lock (touch-safe, fixes iOS background shift) ─────────────────
+// overflow:hidden on <body> does not reliably stop background scroll/bounce on
+// iOS Safari while a modal or menu is open. This fixed-position technique pins
+// the body at its current scroll offset instead, which iOS respects, and
+// restores the exact scroll position on unlock.
+window.lockBodyScroll = function() {
+  if (document.body.classList.contains('body-scroll-locked')) return;
+  window._scrollLockY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + window._scrollLockY + 'px';
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.classList.add('body-scroll-locked');
+};
+window.unlockBodyScroll = function() {
+  if (!document.body.classList.contains('body-scroll-locked')) return;
+  document.body.classList.remove('body-scroll-locked');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  window.scrollTo(0, window._scrollLockY || 0);
+  window._scrollLockY = 0;
+};
+
+// ── Mobile menu ───────────────────────────────────────────────────────────────
+window.openMobileMenu  = function() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  lockBodyScroll();
+};
+window.closeMobileMenu = function() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  unlockBodyScroll();
+};
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+window.showToast = function(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+};
+
+// ── Line items (dynamic add/remove, auto-calculated totals) ───────────────────
+var _lineItems = []; // { id, description, qty, rate }
+
+function renderLineItems() {
+  var wrap = document.getElementById('li-list');
+  wrap.innerHTML = _lineItems.map(function(li) {
+    var total = (Number(li.qty) || 0) * (Number(li.rate) || 0);
+    return '' +
+      '<div class="li-row" data-id="' + li.id + '">' +
+        '<input type="text" class="inp" placeholder="Description" value="' + escHtml(li.description) + '" oninput="updateLineItem(\'' + li.id + '\',\'description\',this.value)"/>' +
+        '<input type="number" min="0" step="1" class="inp" placeholder="Qty" value="' + li.qty + '" oninput="updateLineItem(\'' + li.id + '\',\'qty\',this.value)"/>' +
+        '<input type="number" min="0" step="0.01" class="inp" placeholder="Rate" value="' + li.rate + '" oninput="updateLineItem(\'' + li.id + '\',\'rate\',this.value)"/>' +
+        '<span class="li-total">' + total.toFixed(2) + '</span>' +
+        '<button type="button" class="icon-btn" onclick="removeLineItem(\'' + li.id + '\')" ' + (_lineItems.length <= 1 ? 'disabled' : '') + '>' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>' +
+        '</button>' +
+      '</div>';
+  }).join('');
+  updateGrandTotal();
+}
+
+function updateGrandTotal() {
+  var sum = _lineItems.reduce(function(acc, li) {
+    return acc + ((Number(li.qty) || 0) * (Number(li.rate) || 0));
+  }, 0);
+  document.getElementById('li-grand-total').textContent = sum.toFixed(2);
+  return sum;
+}
+
+window.addLineItem = function() {
+  _lineItemSeq += 1;
+  _lineItems.push({ id: 'li' + _lineItemSeq, description: '', qty: 1, rate: 0 });
+  renderLineItems();
+};
+window.removeLineItem = function(id) {
+  if (_lineItems.length <= 1) return;
+  _lineItems = _lineItems.filter(function(li){ return li.id !== id; });
+  renderLineItems();
+};
+window.updateLineItem = function(id, field, value) {
+  var li = _lineItems.find(function(x){ return x.id === id; });
+  if (!li) return;
+  li[field] = (field === 'qty' || field === 'rate') ? value : value;
+  // Update just the affected row's total without a full re-render (keeps focus in inputs)
+  var sum = 0;
+  _lineItems.forEach(function(item) {
+    var t = (Number(item.qty) || 0) * (Number(item.rate) || 0);
+    sum += t;
+    var row = document.querySelector('.li-row[data-id="' + item.id + '"] .li-total');
+    if (row) row.textContent = t.toFixed(2);
+  });
+  document.getElementById('li-grand-total').textContent = sum.toFixed(2);
+};
+
+// ── Create / edit modal ─────────────────────────────────────────────────────
+/* ── Free-plan invoice limit ──────────────────────────────────────────────────
+   Free users may create up to 5 invoices per calendar month.
+   Pro users (plan === 'pro') have no limit.
+   Limit is enforced purely client-side based on the already-loaded _invoices
+   array — no extra Firestore read needed. The count includes all non-void
+   invoices created in the current UTC calendar month.
+   Firestore rules + KYC already prevent unauthenticated writes; this is a
+   UX gate, not a security gate. ── */
+var FREE_INVOICE_LIMIT = 5;
+
+function _isProUser() {
+  return _userData && (_userData.plan === 'pro' || _userData.premiumStatus === 'active');
+}
+
+function _thisMonthInvoiceCount() {
+  var now = new Date();
+  var yr  = now.getUTCFullYear();
+  var mo  = now.getUTCMonth(); // 0-indexed
+  return _invoices.filter(function(inv) {
+    if (inv.status === 'void') return false; // voided invoices don't count
+    // createdAt may be a Firestore Timestamp or a plain JS date/number
+    var ts = inv.createdAt;
+    var d;
+    if (ts && typeof ts.toDate === 'function') {
+      d = ts.toDate();
+    } else if (ts && ts.seconds) {
+      d = new Date(ts.seconds * 1000);
+    } else if (ts) {
+      d = new Date(ts);
+    } else {
+      return false;
+    }
+    return d.getUTCFullYear() === yr && d.getUTCMonth() === mo;
+  }).length;
+}
+
+/* Render/hide the limit banner below the header row. Called each time
+   the invoice list refreshes so the count stays accurate. */
+function _updateLimitBanner() {
+  var banner = document.getElementById('inv-limit-banner');
+  if (!banner) return;
+  if (_isProUser()) {
+    banner.style.display = 'none';
+    return;
+  }
+  var used = _thisMonthInvoiceCount();
+  var remaining = Math.max(0, FREE_INVOICE_LIMIT - used);
+  if (used >= FREE_INVOICE_LIMIT) {
+    banner.style.display = 'block';
+    banner.innerHTML =
+      '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
+          '<div style="flex-shrink:0;width:36px;height:36px;background:#fff3e0;border-radius:50%;display:flex;align-items:center;justify-content:center;">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          '</div>' +
+          '<div>' +
+            '<p style="margin:0;font-size:14px;font-weight:700;color:#0d2145;">Free plan limit reached</p>' +
+            '<p style="margin:2px 0 0;font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);">You\'ve used all ' + FREE_INVOICE_LIMIT + ' free invoices for this month. Upgrade to Pro for unlimited invoices.</p>' +
+          '</div>' +
+        '</div>' +
+        '<a href="/pricing.html" class="btn-green" style="flex-shrink:0;white-space:nowrap;font-size:13px;padding:9px 20px;">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>' +
+          'Upgrade to Pro' +
+        '</a>' +
+      '</div>';
+  } else if (used === FREE_INVOICE_LIMIT - 1) {
+    // One remaining — soft warning
+    banner.style.display = 'block';
+    banner.innerHTML =
+      '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
+          '<div style="flex-shrink:0;width:36px;height:36px;background:#fff9c4;border-radius:50%;display:flex;align-items:center;justify-content:center;">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          '</div>' +
+          '<div>' +
+            '<p style="margin:0;font-size:14px;font-weight:700;color:#0d2145;">Last free invoice this month</p>' +
+            '<p style="margin:2px 0 0;font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);">You have 1 free invoice left this month. Upgrade to Pro for unlimited.</p>' +
+          '</div>' +
+        '</div>' +
+        '<a href="/pricing.html" class="btn-ghost" style="flex-shrink:0;white-space:nowrap;font-size:13px;padding:9px 20px;">View Pro Plans</a>' +
+      '</div>';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+window.openCreateModal = function() {
+  // Gate: free users capped at FREE_INVOICE_LIMIT invoices per calendar month
+  if (!_isProUser() && _thisMonthInvoiceCount() >= FREE_INVOICE_LIMIT) {
+    // Show upgrade modal instead of the invoice form
+    var upModal = document.getElementById('inv-upgrade-modal');
+    if (upModal) { upModal.classList.add('open'); lockBodyScroll(); }
+    return;
+  }
+  document.getElementById('modal-title').textContent = 'New Invoice';
+  document.getElementById('f-invoice-id').value = '';
+  document.getElementById('f-client-name').value = '';
+  document.getElementById('f-client-email').value = '';
+  document.getElementById('f-due-date').value = '';
+  document.getElementById('f-currency').value = 'USD';
+  document.getElementById('f-notes').value = '';
+  var invNumRow = document.getElementById('f-invoice-number-row');
+  if (invNumRow) { invNumRow.style.display = 'none'; document.getElementById('f-invoice-number-display').textContent = ''; }
+  _lineItemSeq = 0;
+  _lineItems = [{ id: 'li0', description: '', qty: 1, rate: 0 }];
+  renderLineItems();
+  document.getElementById('invoice-modal').classList.add('open');
+  lockBodyScroll();
+};
+
+window.openEditModal = function(invoiceId) {
+  var inv = _invoices.find(function(i){ return i.id === invoiceId; });
+  if (!inv) return;
+  document.getElementById('modal-title').textContent = 'Edit Invoice';
+  document.getElementById('f-invoice-id').value = inv.id;
+  document.getElementById('f-client-name').value = inv.clientName || '';
+  document.getElementById('f-client-email').value = inv.clientEmail || '';
+  document.getElementById('f-due-date').value = inv.dueDate || '';
+  document.getElementById('f-currency').value = inv.currency || 'USD';
+  document.getElementById('f-notes').value = inv.notes || '';
+  // Show read-only invoice number so the user knows which invoice they're editing.
+  // invoiceNumber is set once on creation and cannot be changed — displaying it
+  // here avoids silent confusion without exposing an editable field.
+  var invNumRow = document.getElementById('f-invoice-number-row');
+  var invNumDisplay = document.getElementById('f-invoice-number-display');
+  if (invNumRow && invNumDisplay) {
+    invNumDisplay.textContent = inv.invoiceNumber || inv.id;
+    invNumRow.style.display = 'flex';
+  }
+  _lineItemSeq = 0;
+  _lineItems = (inv.lineItems && inv.lineItems.length ? inv.lineItems : [{ description:'', qty:1, rate:0 }]).map(function(li) {
+    _lineItemSeq += 1;
+    return { id: 'li' + _lineItemSeq, description: li.description || '', qty: li.qty || 1, rate: li.rate || 0 };
+  });
+  renderLineItems();
+  document.getElementById('invoice-modal').classList.add('open');
+  lockBodyScroll();
+};
+
+window.closeInvoiceModal = function() {
+  document.getElementById('invoice-modal').classList.remove('open');
+  unlockBodyScroll();
+};
+
+window.saveInvoice = async function(targetStatus) {
+  var clientName  = document.getElementById('f-client-name').value.trim();
+  var clientEmail = document.getElementById('f-client-email').value.trim().toLowerCase();
+  var dueDate     = document.getElementById('f-due-date').value;
+  var currency    = document.getElementById('f-currency').value;
+  var notes       = document.getElementById('f-notes').value.trim();
+  var invoiceId   = document.getElementById('f-invoice-id').value;
+
+  if (!clientName) { showToast('Client name is required.'); return; }
+  if (!clientEmail || clientEmail.indexOf('@') === -1) { showToast('A valid client email is required.'); return; }
+
+  var cleanItems = _lineItems
+    .map(function(li){ return { description: (li.description||'').trim(), qty: Number(li.qty)||0, rate: Number(li.rate)||0 }; })
+    .filter(function(li){ return li.description && li.qty > 0; });
+
+  if (cleanItems.length === 0) { showToast('Add at least one valid line item.'); return; }
+
+  var total = cleanItems.reduce(function(acc, li){ return acc + (li.qty * li.rate); }, 0);
+  if (total <= 0) { showToast('Invoice total must be greater than zero.'); return; }
+
+  var draftBtn = document.getElementById('save-draft-btn');
+  var sendBtn  = document.getElementById('send-btn');
+  draftBtn.disabled = true; sendBtn.disabled = true;
+  var prevSendLabel = sendBtn.textContent;
+  if (targetStatus === 'sent') sendBtn.textContent = 'Sending…';
+
+  try {
+    var payload = {
+      uid:           _uid,
+      clientName:    clientName,
+      clientEmail:   clientEmail,
+      dueDate:       dueDate || null,
+      currency:      currency,
+      lineItems:     cleanItems,
+      notes:         notes,
+      total:         Math.round(total * 100) / 100,
+      status:        targetStatus, // 'draft' | 'sent'
+      updatedAt:     serverTimestamp()
+    };
+
+    var savedId = invoiceId;
+
+    if (invoiceId) {
+      await updateDoc(doc(db, 'invoices', invoiceId), payload);
+    } else {
+      /* BUG 2 FIX — server-side invoice limit check (new invoices only).
+         The UI gate in openCreateModal() is a UX convenience only and can be
+         bypassed via DevTools. This check runs a live Firestore query with
+         the authenticated user's UID before addDoc, so it cannot be skipped
+         from the browser regardless of how the UI is manipulated.
+
+         We query for non-void invoices created in the current UTC calendar
+         month — the same definition used by _thisMonthInvoiceCount() — but
+         against the live Firestore collection, not the in-memory cache. The
+         Firestore rule already enforces request.auth.uid == data.uid on reads
+         of this collection, so the count can never be spoofed by another user.
+
+         Pro users bypass the check entirely, same as the UI gate.           */
+      if (!_isProUser()) {
+        var now         = new Date();
+        var monthStart  = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        var monthEnd    = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+        var countSnap   = await getDocs(
+          query(
+            collection(db, 'invoices'),
+            where('uid',        '==',  _uid),
+            where('createdAt',  '>=',  monthStart),
+            where('createdAt',  '<',   monthEnd)
+          )
+        );
+        // Filter out voided invoices (same logic as _thisMonthInvoiceCount)
+        var liveCount = countSnap.docs.filter(function(d) {
+          return d.data().status !== 'void';
+        }).length;
+
+        if (liveCount >= FREE_INVOICE_LIMIT) {
+          showToast('Monthly invoice limit reached. Upgrade to Pro for unlimited invoices.');
+          var upModal = document.getElementById('inv-upgrade-modal');
+          if (upModal) { upModal.classList.add('open'); lockBodyScroll(); }
+          return; // abort — buttons are re-enabled in finally block below
+        }
+      }
+
+      payload.invoiceNumber = genInvoiceNumber();
+      payload.createdAt     = serverTimestamp();
+      payload.lastOrderId   = null;
+      var ref = await addDoc(collection(db, 'invoices'), payload);
+      savedId = ref.id;
+    }
+
+    // Queue client email via existing email-queue → process-email-queue → send-email pattern
+    if (targetStatus === 'sent') {
+      try {
+        await addDoc(collection(db, 'email-queue'), {
+          userUid:    _uid,
+          templateId: 'invoice-sent',
+          emailData: {
+            name:          clientName,
+            invoiceNumber: payload.invoiceNumber || (invoiceId ? (_invoices.find(function(i){return i.id===invoiceId;})||{}).invoiceNumber : ''),
+            amount:        fmt(payload.total, currency),
+            freelancerName: _userData.displayName || _userData.name || 'Your Kreddlo freelancer',
+            payLink:       window.location.origin + '/invoice.html?invoiceId=' + savedId,
+            dueDate:       dueDate || ''
+          },
+          to:         clientEmail,
+          toName:     clientName,
+          sendAfter:  Date.now(),
+          sent:       false,
+          createdAt:  serverTimestamp()
+        });
+      } catch (emailErr) {
+        console.warn('[dashboard-invoices] Failed to queue invoice email:', emailErr.message);
+        // Non-fatal — invoice is saved either way
+      }
+    }
+
+    showToast(targetStatus === 'sent' ? 'Invoice sent to client.' : 'Draft saved.');
+    closeInvoiceModal();
+
+  } catch (err) {
+    console.error('[dashboard-invoices] Save failed:', err);
+    showToast('Could not save invoice. Please try again.');
+  } finally {
+    draftBtn.disabled = false; sendBtn.disabled = false;
+    sendBtn.textContent = prevSendLabel;
+  }
+};
+
+// ── Void flow ─────────────────────────────────────────────────────────────────
+window.openVoidModal = function(invoiceId) {
+  _voidTargetId = invoiceId;
+  document.getElementById('void-modal').classList.add('open');
+  lockBodyScroll();
+};
+window.closeVoidModal = function() {
+  _voidTargetId = null;
+  document.getElementById('void-modal').classList.remove('open');
+  unlockBodyScroll();
+};
+window.confirmVoidInvoice = async function() {
+  if (!_voidTargetId) return;
+  try {
+    await updateDoc(doc(db, 'invoices', _voidTargetId), { status: 'void', updatedAt: serverTimestamp() });
+    showToast('Invoice voided.');
+    closeVoidModal();
+  } catch (err) {
+    console.error('[dashboard-invoices] Void failed:', err);
+    showToast('Could not void invoice.');
+  }
+};
+
+window.copyPayLink = function(invoiceId) {
+  var link = window.location.origin + '/invoice.html?invoiceId=' + invoiceId;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(function(){ showToast('Pay link copied.'); });
+  } else {
+    showToast(link);
+  }
+};
+
+window.markInvoiceDelivered = async function(invoiceId) {
+  if (!confirm('Mark this invoice as delivered? The client will be emailed a confirmation link to release payment.')) return;
+  try {
+    const idToken = await auth.currentUser.getIdToken();
+    const res = await fetch('/.netlify/functions/submit-invoice-delivery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body: JSON.stringify({ invoiceId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to submit delivery.');
+    showToast('Invoice marked as delivered. Client has been notified.');
+  } catch (err) {
+    showToast(err.message || 'Could not mark as delivered. Please try again.');
+  }
+};
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+function statusBadge(status) {
+  if (status === 'paid' || status === 'completed') return '<span class="badge badge-green">Paid</span>';
+  if (status === 'escrow')    return '<span class="badge badge-amber" style="background:#fff3e0;color:#e65100;">In Escrow</span>';
+  if (status === 'delivered') return '<span class="badge badge-amber">Awaiting Confirmation</span>';
+  if (status === 'sent')      return '<span class="badge badge-amber">Sent</span>';
+  if (status === 'void')      return '<span class="badge badge-red">Void</span>';
+  return '<span class="badge badge-gray">Draft</span>';
+}
+
+// ── Load + render invoice list ──────────────────────────────────────────────
+var _invoicesUnsubscribe = null;
+
+function loadInvoices() {
+  // Tear down any existing listener before creating a new one
+  if (_invoicesUnsubscribe) { _invoicesUnsubscribe(); _invoicesUnsubscribe = null; }
+
+  document.getElementById('inv-loading').style.display = 'block';
+  document.getElementById('inv-empty').style.display = 'none';
+  document.getElementById('inv-table-wrap').classList.add('inv-hidden');
+  document.getElementById('inv-cards-wrap').classList.add('inv-hidden');
+
+  var q = query(collection(db, 'invoices'), where('uid', '==', _uid), orderBy('createdAt', 'desc'));
+
+  _invoicesUnsubscribe = onSnapshot(q, function(snap) {
+    _invoices = snap.docs.map(function(d){ return Object.assign({ id: d.id }, d.data()); });
+    document.getElementById('inv-loading').style.display = 'none';
+
+  // Stats
+  var outstanding = 0, paid = 0, drafts = 0;
+  _invoices.forEach(function(inv) {
+    if (inv.status === 'paid' || inv.status === 'completed') paid += (inv.total || 0);
+    else if (inv.status === 'draft') drafts += 1;
+    else if (inv.status === 'sent' || inv.status === 'escrow' || inv.status === 'delivered') outstanding += (inv.total || 0);
+  });
+  document.getElementById('stat-outstanding').textContent = fmt(outstanding, _settingsCurrency());
+  document.getElementById('stat-paid').textContent        = fmt(paid, _settingsCurrency());
+  document.getElementById('stat-drafts').textContent       = String(drafts);
+  document.getElementById('stat-total').textContent        = String(_invoices.length);
+
+  // Update the free-plan limit banner whenever the invoice list changes
+  _updateLimitBanner();
+
+  if (_invoices.length === 0) {
+    document.getElementById('inv-empty').style.display = 'block';
+    return;
+  }
+
+  // ── Render action buttons (shared by both views) ──────────────────────────
+  function buildActions(inv) {
+    var a = '';
+    if (inv.status === 'draft' || inv.status === 'sent') {
+      a += '<button class="icon-btn" title="Edit" onclick="openEditModal(\'' + inv.id + '\')" style="display:inline-flex;margin-right:6px;">' +
+           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>';
+    }
+    if (inv.status === 'sent') {
+      a += '<button class="icon-btn" title="Copy pay link" onclick="copyPayLink(\'' + inv.id + '\')" style="display:inline-flex;margin-right:6px;">' +
+           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>';
+    }
+    if (inv.status === 'escrow') {
+      a += '<button class="btn-deliver-invoice" title="Mark as Delivered" onclick="markInvoiceDelivered(\'' + inv.id + '\')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#2d8a5e;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-right:6px;">' +
+           '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Mark Delivered</button>';
+    }
+    if (inv.status !== 'paid' && inv.status !== 'completed' && inv.status !== 'void' && inv.status !== 'delivered') {
+      a += '<button class="icon-btn" title="Void" onclick="openVoidModal(\'' + inv.id + '\')" style="display:inline-flex;">' +
+           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></button>';
+    }
+    return a;
+  }
+
+  // ── Reveal list containers (CSS handles mobile/desktop breakpoint) ────────
+  document.getElementById('inv-table-wrap').classList.remove('inv-hidden');
+  document.getElementById('inv-cards-wrap').classList.remove('inv-hidden');
+
+  // ── Desktop table (≥640px) ────────────────────────────────────────────────
+  document.getElementById('inv-tbody').innerHTML = _invoices.map(function(inv) {
+    return '<tr>' +
+      '<td style="font-weight:600;">' + escHtml(inv.invoiceNumber || '—') + '</td>' +
+      '<td>' + escHtml(inv.clientName || '—') + '</td>' +
+      '<td>' + (inv.dueDate ? fmtDate(inv.dueDate) : '—') + '</td>' +
+      '<td style="text-align:right;font-weight:700;">' + fmt(inv.total, inv.currency) + '</td>' +
+      '<td>' + statusBadge(inv.status) + '</td>' +
+      '<td style="text-align:right;white-space:nowrap;">' + buildActions(inv) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  // ── Mobile cards (<640px) ─────────────────────────────────────────────────
+  document.getElementById('inv-cards-wrap').innerHTML = _invoices.map(function(inv) {
+    return '<div class="inv-card">' +
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">' +
+        '<div>' +
+          '<p style="font-size:13px;font-weight:700;color:#0d2145;margin:0 0 3px;">' + escHtml(inv.clientName || '—') + '</p>' +
+          '<p style="font-size:11px;font-weight:600;color:rgba(13,33,69,0.45);margin:0;">' + escHtml(inv.invoiceNumber || '') + '</p>' +
+        '</div>' +
+        statusBadge(inv.status) +
+      '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+        '<div>' +
+          '<p style="font-size:18px;font-weight:800;color:#0d2145;margin:0 0 2px;">' + fmt(inv.total, inv.currency) + '</p>' +
+          '<p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);margin:0;">' +
+            (inv.dueDate ? 'Due ' + fmtDate(inv.dueDate) : 'No due date') +
+          '</p>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;">' + buildActions(inv) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  }, function(err) {
+    document.getElementById('inv-loading').style.display = 'none';
+    if (err && (err.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(err.message || ''))) {
+      console.error('[loadInvoices] missing composite index on invoices.uid + invoices.createdAt — see FIRESTORE_INDEXES.md, or check this error for a Firebase auto-create link:', err);
+      showToast('Setting up — try again in a minute.');
+    } else {
+      console.error('[loadInvoices]', err);
+      showToast('Could not load invoices. Please refresh.');
+    }
+    document.getElementById('inv-empty').style.display = 'block';
+    document.body.style.visibility = 'visible';
+  });
+}
+
+function _settingsCurrency() {
+  return (_userData && _userData.platformCurrency) || 'USD';
+}
+
+// ── Auth guard + boot ─────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async function(user) {
+  if (!user) {
+    window.location.href = '/login.html';
+    return;
+  }
+  _uid = user.uid;
+
+  var userSnap = await getDoc(doc(db, 'users', user.uid));
+  _userData = userSnap.exists() ? userSnap.data() : {};
+
+  // Invoices are a freelancer billing tool — buyers without freelancer context
+  // are redirected to their dashboard rather than seeing an empty/broken page.
+  var role = _userData.role || 'freelancer';
+  if (role === 'buyer') {
+    window.location.href = '/buyer-dashboard.html';
+    return;
+  }
+
+  buildNav(user.uid);
+
+  var initials = ((_userData.displayName || _userData.name || 'U').trim().charAt(0) || 'U').toUpperCase();
+  document.getElementById('user-avatar').textContent = initials;
+
+  loadInvoices();
+  document.body.style.visibility = 'visible';
+});
+
+// Close modals on backdrop click
+document.getElementById('invoice-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeInvoiceModal();
+});
+document.getElementById('void-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeVoidModal();
+});
+document.getElementById('inv-upgrade-modal').addEventListener('click', function(e) {
+  if (e.target === this) { this.classList.remove('open'); unlockBodyScroll(); }
+});
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+<script>
+// Safety: force-show body after 10s if auth/boot stalls
+(function() {
+  setTimeout(function() {
+    document.body.style.visibility = 'visible';
+  }, 10000);
+})();
+</script>
+</body>
+</html>

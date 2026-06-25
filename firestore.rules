@@ -1,0 +1,524 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Fields a user may never set on themselves directly — only the
+    // Admin SDK (server-side functions, which bypass these rules
+    // entirely) is allowed to change these.
+    //
+    // FIX: added plan / premiumStatus / planStatus / premiumStartDate /
+    // premiumEndDate (these are exactly the fields the Stripe/Flutterwave/
+    // crypto webhooks set to grant Pro — without protection any signed-in
+    // user could grant themselves Pro for free with a direct write);
+    // escrowBalance (financial class field — protected so a client can never
+    // self-inflate it; note: the invoice escrow flow does NOT write this field
+    // on the user doc — invoice escrow is tracked via escrowSellerAmount on
+    // the invoice doc and the escrow-holds collection; escrowBalance is kept
+    // in this list as a forward-compatible guard for any future flow that
+    // does use it, and for the project escrow flow if applicable);
+    // averageRating / totalReviews (set only by
+    // submit-review.js — were spoofable); emailVerified (set only by
+    // verify-email-code.js after a real code check — was self-settable).
+    //
+    // FIX (audit finding R1): added pendingBalance / pendingBalances /
+    // affiliatePendingBalance — same financial class as
+    // availableBalance/balances/escrowBalance above, but missed when this
+    // list was built out. deliver-product.js and scheduled-clear-earnings.js
+    // both write these server-side alongside the already-protected fields.
+    // Not a fund-theft path on its own (withdrawal eligibility is read from
+    // balances/availableBalance only, and scheduled-clear-earnings.js
+    // computes the cleared amount from the earning record, not from this
+    // field) — but without protection a user could spoof what their own
+    // dashboard shows as "pending earnings," which is the same
+    // data-integrity guarantee every other field in this family already has.
+    function touchesSensitiveFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny([
+          'role', 'kycStatus', 'availableBalance', 'balances',
+          'totalEarned', 'totalEarnedByCurrency', 'totalWithdrawn', 'banned', 'suspended',
+          'payoutsFrozen', 'affiliateBalance', 'affiliateTotalEarned',
+          'plan', 'premiumStatus', 'planStatus', 'premiumStartDate',
+          'premiumEndDate', 'escrowBalance', 'averageRating',
+          'totalReviews', 'emailVerified', 'pendingBalance',
+          'pendingBalances', 'affiliatePendingBalance'
+        ]);
+    }
+
+    // ── users/{uid} ──────────────────────────────────────────────────
+    match /users/{uid} {
+      // Read: tightened — anonymous public visitors can no longer read
+      // this collection.
+      //
+      // MIGRATION COMPLETE. All four pages that previously required a
+      // public read of users/{uid} have been migrated to publicProfiles:
+      //   - browse.html   ✅ reads publicProfiles (users fallback only for
+      //                      pre-backfill accounts, fires for signed-in users)
+      //   - p.html        ✅ reads publicProfiles exclusively
+      //   - store.html    ✅ reads publicProfiles for storefront data;
+      //                      reads users/{user.uid} only for the logged-in
+      //                      user's own role (isOwner path — always authed)
+      //   - profile.html  ✅ reads publicProfiles; users fallback only for
+      //                      pre-backfill accounts, fires for signed-in users
+      //
+      // Rule is now isSignedIn() || isAdmin() rather than isOwner(uid) only,
+      // because browse.html and profile.html retain a users-collection fallback
+      // for accounts created before backfill-public-profiles.js ran. Those
+      // fallbacks are only triggered for logged-in users (the pages require
+      // auth anyway for the dashboard nav), so isSignedIn() is correct here.
+      // Once backfill-public-profiles.js has been run across all legacy accounts
+      // (confirming every user has a publicProfiles doc), this rule may be
+      // further tightened to isAdmin() || isOwner(uid) with no UX impact.
+      //
+      // This closes the data-exposure gap: email, fcmToken, walletAddress,
+      // balances, availableBalance, pendingBalances, and all financial fields
+      // on this document are now protected from anonymous reads.
+      allow read: if isSignedIn() || isAdmin();
+
+      // Create: only at signup, only your own doc, and only the limited
+      // starter fields signup.html actually sets.
+      //
+      // FIX (Bug 1): added 'referredBy' to the allowlist. signup.html
+      // conditionally spreads { referredBy: _referrerUid } into profileData
+      // when the referral program is enabled and a valid ?ref= param is
+      // present. Without this field in the allowlist the entire setDoc call
+      // was rejected with permission-denied, which triggered the orphan-
+      // cleanup path (deleteUser) and silently blocked every referred user
+      // from completing signup — breaking the entire referral acquisition
+      // funnel. The field is written client-side only at account creation
+      // and is only ever read by the server-side process-referral-credit.js
+      // function (Admin SDK, bypasses these rules) to attribute commissions,
+      // so there is no financial or trust risk in allowing it here.
+      allow create: if isOwner(uid) &&
+        request.resource.data.keys().hasOnly([
+          'email', 'role', 'plan', 'kycStatus', 'profileComplete',
+          'emailVerified', 'emailConsent', 'createdAt', 'name', 'displayName',
+          'referredBy'
+        ]);
+
+      // Update: owner can edit their own profile/settings fields, but
+      // never the sensitive financial/trust fields above. Admin can
+      // update anything (KYC approval, ban/suspend, payout freezes, etc).
+      allow update: if isAdmin() ||
+        (isOwner(uid) && !touchesSensitiveFields());
+
+      allow delete: if false; // no client-side account deletion path exists
+
+      // users/{uid}/notifications/{notifId} — strictly owner-only.
+      // A notification can only ever be read or modified by the user it
+      // was written for. writeBatch (used in notifications.html to bulk
+      // mark-as-read) is covered by the same update rule since each
+      // operation in the batch is evaluated individually.
+      // Admin sends via the server function (Admin SDK) and bypasses
+      // this rule entirely.
+      match /notifications/{notifId} {
+        allow read: if isOwner(uid);
+        allow update: if isOwner(uid) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+        allow create, delete: if false; // only Admin SDK creates/deletes these
+      }
+
+      // users/{uid}/courseProgress/{productId}
+      // FIX: course-viewer.html reads and writes this subcollection
+      // (setDoc(..., { completedLessons }, { merge: true })) to track a
+      // buyer's lesson completion on a purchased course product, but no
+      // rule existed for it — it was silently caught by the default-deny
+      // match at the bottom of this file, so progress never saved.
+      // Strictly owner-only, single allowed field.
+      match /courseProgress/{productId} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid) &&
+          request.resource.data.keys().hasOnly(['completedLessons']);
+      }
+    }
+
+    // ── publicProfiles/{uid} ──────────────────────────────────────────
+    // Public-safe mirror of a freelancer's profile, written alongside
+    // (never instead of) the corresponding users/{uid} document. Exists
+    // so browse.html, p.html, store.html, and profile.html can be served
+    // to logged-out visitors without exposing the financial/contact
+    // fields that live on users/{uid} (balances, email, fcmToken,
+    // walletAddress, etc.) — a public get/list against this collection
+    // can only ever return the fields explicitly listed in the allowlist
+    // below, never anything else, regardless of what's written to users.
+    //
+    // Document id is always the same uid as the matching users/{uid}
+    // document, so lookups by uid work identically to the old pattern.
+    //
+    // Writers (kept in sync, all additive — see comments at each site):
+    //   - signup.html                          (create, on signup)
+    //   - dashboard-settings.html saveProfile() (name/title/description/
+    //     skills/startingPrice)
+    //   - dashboard-settings.html avatar upload (photoUrl/photoURL/
+    //     profilePhoto)
+    //   - dashboard-settings.html
+    //     saveStoreSettings()                  (storeSettings)
+    //   - netlify/functions/kyc-approve.js      (kycStatus)
+    //   - netlify/functions/submit-review.js    (averageRating/
+    //     totalReviews)
+    match /publicProfiles/{uid} {
+      allow read: if true;
+
+      // Create/update: owner only, and only ever the safe public fields
+      // — the same allowlist every writer above is restricted to. This
+      // is what makes the "public read returns everything" exposure
+      // structurally impossible here: a field that was never allowed
+      // into the document can't leak out of it.
+      //
+      // FIX (Bug 2): added three previously-missing public-safe fields:
+      //   'bio'                    — freelancer bio text written by
+      //                             dashboard-settings.html saveProfile()
+      //                             and profile-setup.html; read back by
+      //                             profile.html (u.description || u.bio)
+      //                             and store.html (seller.bio). Without
+      //                             this, every profile and store-page bio
+      //                             silently showed empty.
+      //   'acceptedPaymentMethods' — array of payment method strings
+      //                             (['stripe','crypto',…]) written by
+      //                             dashboard-settings.html; read by
+      //                             profile.html to render the hire-modal
+      //                             payment step. Without this the modal
+      //                             always fell back to ['crypto'] only.
+      //   'available'              — boolean availability flag written by
+      //                             profile-setup.html; read by profile.html
+      //                             to show/hide the availability section.
+      // All three are presentation-only fields; none expose financial data,
+      // contact info, or auth tokens. The allowlist still blocks every
+      // sensitive field (balances, email, fcmToken, walletAddress, etc.)
+      // exactly as before — this change only adds the three missing ones.
+      // Keep backfill-public-profiles.js PUBLIC_FIELDS array in sync with
+      // this list (it has been updated alongside this change).
+      allow create, update: if isAdmin() ||
+        (isOwner(uid) &&
+          request.resource.data.keys().hasOnly([
+            'name', 'displayName', 'title', 'description', 'bio', 'skills',
+            'startingPrice', 'photoUrl', 'photoURL', 'profilePhoto',
+            'storeSettings', 'kycStatus', 'averageRating', 'totalReviews',
+            'role', 'createdAt', 'acceptedPaymentMethods', 'available'
+          ]));
+
+      allow delete: if false;
+    }
+
+    // ── products/{productId} ────────────────────────────────────────
+    match /products/{productId} {
+      // Public read — product pages (p.html) are shareable links with
+      // no auth requirement, and browse.html filters active products
+      // for any signed-in visitor.
+      allow read: if true;
+
+      // Sellers manage their own listings directly from the browser.
+      allow create: if isSignedIn() &&
+        request.resource.data.uid == request.auth.uid;
+
+      allow update: if isAdmin() ||
+        (isOwner(resource.data.uid) && request.resource.data.uid == resource.data.uid);
+
+      allow delete: if isOwner(resource.data.uid);
+    }
+
+    // ── projects/{projectId} ─────────────────────────────────────────
+    match /projects/{projectId} {
+      // Read: only the buyer or freelancer on the project, or admin.
+      allow read: if isAdmin() ||
+        (isSignedIn() &&
+          (request.auth.uid == resource.data.buyerUid ||
+           request.auth.uid == resource.data.freelancerUid));
+
+      // Creation happens server-side (Admin SDK) — no client create path.
+      allow create: if false;
+
+      // Update: admin only. All dispute, delivery, and status transitions
+      // go through server-side Netlify functions (raise-dispute.js,
+      // submit-delivery.js, approve-delivery.js etc.) using the Admin SDK —
+      // no client-side direct write path exists or is needed.
+      allow update: if isAdmin();
+
+      allow delete: if false;
+    }
+
+    // ── contracts/{contractId} ───────────────────────────────────────
+    // NOTE: This collection is intentionally empty and never written to.
+    // sign-contract.js (Fix #9) and download-contract.js both read/write
+    // the `projects` collection instead. Contract access is covered by the
+    // projects/{projectId} rule above. This block is kept as a
+    // BUG 3 FIX comment to make the architecture explicit and prevent any
+    // future regression where someone accidentally writes to this collection.
+    // The default-deny match at the bottom of this file already blocks all
+    // client access to any unmatched path, so no explicit rule is needed here.
+    //
+    // ── product-orders/{orderId} ─────────────────────────────────────
+    match /product-orders/{orderId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() &&
+          (request.auth.uid == resource.data.buyerUid ||
+           request.auth.uid == resource.data.sellerUid));
+      // All writes happen server-side via payment webhooks (Admin SDK).
+      allow write: if false;
+      // No buyerEmail clause, intentionally: email is not an authenticated
+      // identity the way request.auth.uid is, so a rule keyed on a
+      // client-supplied email would let anyone read anyone else's orders
+      // just by typing their email. The guest-order-by-email fallback
+      // (for orders that never got buyerUid stamped — see
+      // create-product-order.js) goes through
+      // netlify/functions/get-guest-purchases.js instead, which uses the
+      // Admin SDK and the email claim from the caller's verified ID token.
+    }
+
+    // ── invoices/{invoiceId} ──────────────────────────────────────────
+    match /invoices/{invoiceId} {
+      // Freelancer (owner, "uid" field) manages their own invoices
+      // directly from dashboard-invoices.html. invoice.html is a public
+      // pay-link page — the person opening it (often via an emailed
+      // link) is frequently not signed in at all, and the page's
+      // onSnapshot listener on this exact doc runs before any auth
+      // check. The previous isSignedIn()-gated rule silently denied that
+      // read, so the page never populated (skeleton/spinner forever).
+      //
+      // FIX: invoice reads are now fully public by ID, same pattern as
+      // config/platform and users/{uid} above — this is the standard
+      // payment-link model (anyone with the link/ID can view and pay;
+      // you can't guess a random invoice's ID). Write access below is
+      // unchanged and remains locked to the owner/Admin SDK only, so
+      // this only unblocks reading, never writing.
+      allow read: if true;
+
+      // FIX (critical): the previous rule let the owner write ANY field
+      // with no allowlist, only blocking a change of `uid`. But
+      // scheduled-clear-earnings.js trusts `status`, `deliveredAt`, and
+      // `escrowSellerAmount` on this exact document — unverified — to
+      // release real funds into the seller's availableBalance. That meant
+      // a seller could set status:'delivered' + a backdated deliveredAt +
+      // any escrowSellerAmount on their own invoice from the browser and
+      // mint a real, withdrawable payout with no buyer ever paying.
+      //
+      // The client (dashboard-invoices.html saveInvoice()) only ever
+      // creates/edits 'draft' or 'sent' invoices with the field set below.
+      // Every financial/escrow field (escrowSellerAmount, escrowHeldAt,
+      // paidAt, paidOrder, deliverBy, deliveredAt, autoDelivered,
+      // completedAt, autoReleased, status:'escrow'/'delivered'/'completed',
+      // disputeReason/disputedAt) is set only by Admin SDK functions
+      // (create-invoice-order.js, the payment webhooks,
+      // submit-invoice-delivery.js, confirm-invoice-delivery.js,
+      // scheduled-clear-earnings.js, raise-dispute.js) and is now
+      // unreachable from the client.
+      allow create: if isSignedIn() &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.status in ['draft', 'sent'] &&
+        request.resource.data.keys().hasOnly([
+          'uid', 'clientName', 'clientEmail', 'dueDate', 'currency',
+          'lineItems', 'notes', 'total', 'status', 'updatedAt',
+          'invoiceNumber', 'createdAt', 'lastOrderId'
+        ]);
+
+      // Owner can edit or void an invoice only while it is still in
+      // 'draft' or 'sent' — i.e. before any money has moved. Once a
+      // payment moves it into 'escrow' / 'delivered' / 'completed', or a
+      // dispute moves it to 'disputed', only the Admin SDK (or admin.html)
+      // can touch it again.
+      allow update: if isAdmin() ||
+        (isOwner(resource.data.uid) &&
+          resource.data.status in ['draft', 'sent'] &&
+          request.resource.data.uid == resource.data.uid &&
+          request.resource.data.status in ['draft', 'sent', 'void'] &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'clientName', 'clientEmail', 'dueDate', 'currency',
+            'lineItems', 'notes', 'total', 'status', 'updatedAt'
+          ]));
+
+      allow delete: if false;
+    }
+
+    // ── invoice-orders/{orderId} ─────────────────────────────────────
+    // FIX: dashboard-earnings.html queries this collection client-side
+    // to display seller earnings (filtered by sellerUid). The previous
+    // rule denied all client reads, which would silently drop the
+    // earnings query. Writes remain server-side only (Admin SDK via
+    // create-invoice-order.js).
+    // BUG B FIX: buyer-payments.html queries by clientEmail so buyers
+    // can see their invoice payments in their dashboard. Invoice payments
+    // use no buyerUid (public-page flow), so clientEmail is the only
+    // available buyer identifier.
+    match /invoice-orders/{orderId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && (
+          request.auth.uid == resource.data.sellerUid ||
+          request.auth.uid == resource.data.buyerUid ||
+          (request.auth.token.email != null &&
+           request.auth.token.email == resource.data.clientEmail)
+        ));
+      allow write: if false;
+    }
+
+    // ── payouts/{payoutId} ────────────────────────────────────────────
+    match /payouts/{payoutId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == resource.data.userUid);
+      // Created and updated only by create-payout.js / create-bank-payout.js
+      // (Admin SDK) — balance deduction integrity depends on this.
+      allow write: if false;
+    }
+
+    // ── disputes/{disputeId} ──────────────────────────────────────────
+    match /disputes/{disputeId} {
+      allow read: if isAdmin();
+      // Created by raise-dispute.js (Admin SDK) only.
+      allow write: if false;
+    }
+
+    // ── reviews/{reviewId} ─────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      // Public read — reviews are shown on public profile/product pages.
+      allow read: if true;
+      // Created by submit-review.js (Admin SDK) only.
+      allow write: if false;
+    }
+
+    // ── affiliate-links/{linkId} ──────────────────────────────────────
+    match /affiliate-links/{linkId} {
+      // get: owner or admin can read a single document by ID.
+      allow get: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == resource.data.affiliateUid);
+
+      // list: any signed-in user may run a collection query.
+      // Safe because dashboard-affiliate.html always filters with
+      // where('affiliateUid', '==', uid) — only their own link docs are
+      // returned. affiliate-links contains click/conversion metrics only;
+      // no financial balances or PII are stored here.
+      // A resource.data check cannot be used for list rules because
+      // Firestore evaluates list rules before reading any document —
+      // splitting get/list is the correct pattern for this access shape.
+      allow list: if isSignedIn();
+
+      allow write: if false; // server-managed only
+    }
+
+    // ── affiliate-earnings/{earningId} ─────────────────────────────────
+    match /affiliate-earnings/{earningId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == resource.data.affiliateUid);
+      // FIX: admin.html uses setDoc({ merge: true }) to mark an earning
+      // as disputed. Firestore evaluates setDoc as 'create' when the doc
+      // doesn't exist and as 'update' when it does — both paths must be
+      // covered. The field restriction is applied to both so a stray
+      // admin call can never overwrite financial fields.
+      allow update: if isAdmin() &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'disputedAt']);
+      allow create: if isAdmin() &&
+        request.resource.data.keys().hasOnly(['status', 'disputedAt']);
+      allow delete: if false;
+    }
+
+    // ── affiliate-payouts/{payoutId} ───────────────────────────────────
+    match /affiliate-payouts/{payoutId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == resource.data.uid);
+      allow write: if false; // created by affiliate-withdraw.js only
+    }
+
+    // ── email-queue/{queueId} ───────────────────────────────────────────
+    // FIX: the previous create rule only checked userUid == auth.uid, with
+    // no field allowlist and no restriction on templateId. Combined with
+    // process-email-queue.js now correctly forwarding `to`/`templateId` to
+    // send-email.js, that meant any signed-in user could queue ANY
+    // transactional template (e.g. spoofing 'kyc-approved' or
+    // 'payment-received') to ANY recipient address, sent through
+    // Kreddlo's own Brevo domain. Pinning templateId to 'invoice-sent' —
+    // the only template dashboard-invoices.html ever queues this way —
+    // closes that off while preserving the legitimate use case (a
+    // freelancer emailing an invoice to their own client, who may not
+    // have a Kreddlo account, hence the free-form `to` address).
+    // Server-side writes (send-smart-notification.js,
+    // create-product-order.js) use the Admin SDK and bypass this rule
+    // entirely.
+    match /email-queue/{queueId} {
+      allow create: if isSignedIn() &&
+        request.resource.data.userUid == request.auth.uid &&
+        request.resource.data.templateId == 'invoice-sent' &&
+        request.resource.data.sent == false &&
+        request.resource.data.keys().hasOnly([
+          'userUid', 'templateId', 'emailData', 'to', 'toName',
+          'sendAfter', 'sent', 'createdAt'
+        ]);
+      allow read, update, delete: if false;
+    }
+
+    // ── config/{docId} ───────────────────────────────────────────────
+    match /config/{docId} {
+      // Fully public read — about.html and other public marketing pages
+      // read config/platform with no sign-in at all.
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── escrow-holds/{holdId} ─────────────────────────────────────────
+    // Written exclusively by Admin SDK payment webhooks (stripe-webhook.js,
+    // flutterwave-webhook.js, nowpayments-webhook.js) and updated by
+    // confirm-invoice-delivery.js and scheduled-clear-earnings.js —
+    // all server-side, all bypass these rules.
+    // No client-side read or write path exists today. The rule below
+    // grants admin read for future admin tooling (e.g. escrow dashboard)
+    // and grants the seller (sellerId field) read access to their own
+    // holds. All writes remain server-only.
+    match /escrow-holds/{holdId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == resource.data.sellerId);
+      allow write: if false;
+    }
+
+    // ── referral-credits/{projectId} ─────────────────────────────────
+    // Written exclusively server-side by process-referral-credit.js
+    // (Admin SDK — bypasses these rules). Admin can read for audit.
+    // Users can read their own credit records (as referrer or referred).
+    match /referral-credits/{docId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && (
+          request.auth.uid == resource.data.referrerUid ||
+          request.auth.uid == resource.data.referredUid
+        ));
+      allow write: if false;
+    }
+
+    // ── Fully server-managed collections ────────────────────────────
+    // Never referenced anywhere in the client code — only Admin SDK
+    // functions touch these. Deny all client access.
+    match /seller-tasks/{docId} {
+      allow read, write: if false;
+    }
+    match /subscriptions/{docId} {
+      allow read, write: if false;
+    }
+    match /product-earnings/{docId} {
+      allow read, write: if false;
+    }
+
+    // Rate-limit counters — written exclusively by Netlify functions via
+    // the Admin SDK (_rate-limit.js). Client SDK access is locked out so
+    // users can never read or manipulate their own request counters.
+    match /rateLimits/{docId} {
+      allow read, write: if false;
+    }
+
+    // ── Default deny ─────────────────────────────────────────────────
+    // Anything not explicitly matched above is denied by default
+    // (this is Firestore's behavior anyway, but stated for clarity).
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

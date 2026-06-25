@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Payment History — Kreddlo</title>
+<meta id="meta-description" name="description" content="View your complete payment history on Kreddlo."/>
+<meta id="og-title" property="og:title" content="Payment History — Kreddlo"/>
+<meta id="og-description" property="og:description" content="View your complete payment history on Kreddlo."/>
+<meta id="og-url" property="og:url" content="https://kreddlo.space/buyer-payments.html"/>
+<meta id="og-image" property="og:image" content="/assets/kreddlo-og-banner.png"/>
+<meta id="og-type" property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link id="canonical" rel="canonical" href="https://kreddlo.space/buyer-payments.html"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily:{ sans:['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+/* ── GLASS ── */
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+/* ── BUTTONS ── */
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-green:disabled{opacity:.6;cursor:default;transform:none}
+
+.btn-navy{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#0d2145;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(13,33,69,0.20);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-navy:hover{background:#162f5e;transform:translateY(-1px)}
+.btn-navy:active{transform:translateY(0)}
+.btn-navy:disabled{opacity:.5;cursor:default;transform:none}
+
+.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:9px 18px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s,background .15s}
+.btn-outline:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap;flex-shrink:0}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-blue{background:#e8f0fe;color:#1a56db}
+.badge-red{background:#fde8e8;color:#c81e1e}
+.badge-grey{background:rgba(13,33,69,0.07);color:rgba(13,33,69,0.55)}
+
+/* ── LABEL ── */
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+/* ── SKELETON ── */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── NAV ── */
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+/* ── MOBILE MENU ── */
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+/* ── STAT CARDS ── */
+.stat-card{border-radius:20px;padding:22px;transition:box-shadow .2s,transform .2s}
+.stat-card:hover{box-shadow:0 10px 40px rgba(13,33,69,0.13);transform:translateY(-2px)}
+.stat-val{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.stat-lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48);margin-top:5px}
+.stat-sub{font-size:12px;font-weight:500;margin-top:8px;display:flex;align-items:center;gap:4px;color:rgba(13,33,69,0.45)}
+
+/* ── TABLE (desktop) ── */
+.tbl-header{display:grid;gap:12px;padding:12px 20px;border-bottom:1px solid #e2e8f0;align-items:center}
+.tbl-row{display:grid;gap:12px;padding:14px 20px;border-bottom:1px solid #f0f2f6;align-items:center;transition:background .15s}
+.tbl-row:last-child{border-bottom:none}
+.tbl-row:hover{background:rgba(13,33,69,0.02)}
+.tbl-cols{grid-template-columns:2fr 1.2fr 90px 80px 80px 90px 80px 100px 80px}
+
+/* ── MOBILE PAYMENT CARD ── */
+.pay-card{border-radius:20px;padding:20px;margin-bottom:12px;transition:box-shadow .2s}
+.pay-card:hover{box-shadow:0 10px 40px rgba(13,33,69,0.12)}
+.pay-details{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0}
+.pay-detail-item{display:flex;flex-direction:column;gap:3px}
+.pay-detail-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:rgba(13,33,69,0.42)}
+.pay-detail-val{font-size:13px;font-weight:700;color:#0d2145}
+
+/* ── TOGGLE DETAILS BTN ── */
+.toggle-btn{background:none;border:none;padding:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#2d8a5e;cursor:pointer;display:flex;align-items:center;gap:5px;transition:color .15s}
+.toggle-btn:hover{color:#236b49}
+.toggle-chevron{transition:transform .22s ease}
+.toggle-chevron.open{transform:rotate(180deg)}
+
+/* ── PAGINATION ── */
+.page-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border-radius:50px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:transparent;color:#0d2145;transition:all .15s}
+.page-btn:hover:not(:disabled){border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+.page-btn:disabled{opacity:.38;cursor:default}
+.page-indicator{font-size:13px;font-weight:600;color:rgba(13,33,69,0.55)}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:56px 24px}
+
+/* ── BLOBS ── */
+.blob-n{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(13,33,69,0.09) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.blob-g{position:absolute;width:440px;height:440px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-60px;left:-80px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+/* ── FADE UP ── */
+.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.12s}.fu-3{animation-delay:.19s}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(min-width:1024px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px;width:calc(100% - 248px);max-width:none;overflow-x:visible}
+}
+@media(min-width:768px){
+  #page-content{padding:32px!important;width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box}
+  .stat-val{font-size:40px}
+  #stats-grid{grid-template-columns:repeat(3,1fr)!important}
+  #mobile-cards{display:none!important}
+  #desktop-table{display:block!important}
+}
+</style>
+<style id="mobile-first-patch">
+/* 1. BODY — no horizontal scroll on mobile */
+body { overflow-x: hidden !important; }
+
+/* 2. SIDEBAR — safe area on desktop */
+#sidebar {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding-top: max(30px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+
+/* 3. PAGE CONTENT — proper mobile padding, no bleed */
+#page-content {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  min-height: 100dvh !important;
+}
+
+/* 4. HAMBURGER — always visible on mobile, proper tap size */
+#hamburger {
+  display: flex !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+@media (min-width: 1024px) {
+  #hamburger { display: none !important; }
+  #sidebar { display: flex !important; }
+}
+
+/* 5. LOADING OVERLAY — full screen properly */
+
+
+/* 6. NAV LINKS — prevent text overflow in sidebar */
+.nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 7. TOAST — above safe area on mobile */
+#toast {
+  bottom: max(24px, env(safe-area-inset-bottom, 24px)) !important;
+}
+
+/* 7b. PAYMENT SUCCESS BANNER */
+#payment-success-banner {
+  display: none;
+  align-items: flex-start;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(45,138,94,0.10), rgba(45,138,94,0.06));
+  border: 1.5px solid rgba(45,138,94,0.28);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  position: relative;
+  animation: bannerSlideIn .35s ease;
+}
+#payment-success-banner.visible { display: flex; }
+@keyframes bannerSlideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#payment-success-banner .banner-icon {
+  width: 38px; height: 38px; flex-shrink: 0;
+  background: rgba(45,138,94,0.14);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+#payment-success-banner .banner-body { flex: 1; min-width: 0; }
+#payment-success-banner .banner-title {
+  font-size: 14px; font-weight: 700; color: #0d2145;
+  margin: 0 0 3px;
+}
+#payment-success-banner .banner-sub {
+  font-size: 13px; font-weight: 500;
+  color: rgba(13,33,69,0.60);
+  margin: 0;
+  line-height: 1.5;
+}
+#payment-success-banner .banner-dismiss {
+  width: 28px; height: 28px; flex-shrink: 0;
+  background: transparent; border: none;
+  border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  color: rgba(13,33,69,0.40);
+  margin-left: auto;
+}
+#payment-success-banner .banner-dismiss:hover {
+  background: rgba(13,33,69,0.07);
+  color: #0d2145;
+}
+@media (max-width: 480px) {
+  #payment-success-banner {
+    padding: 14px 14px;
+    gap: 12px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+  }
+  #payment-success-banner .banner-icon {
+    width: 34px; height: 34px;
+  }
+  #payment-success-banner .banner-title { font-size: 13px; }
+  #payment-success-banner .banner-sub   { font-size: 12px; }
+}
+
+/* 8. MODALS — full width on mobile */
+@media (max-width: 600px) {
+  .modal-box {
+    max-width: 100% !important;
+    border-radius: 18px !important;
+    padding: 24px 16px !important;
+  }
+}
+
+/* A2. STATS GRID — 2-col on tablets before 3-col kicks in */
+@media (min-width: 480px) and (max-width: 767px) {
+  #stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* A2. STAT CARDS — shrink font on small phones */
+@media (max-width: 479px) {
+  .stat-val { font-size: 26px !important; letter-spacing: -0.5px !important; }
+  .stat-card { padding: 16px !important; }
+}
+</style>
+</head>
+<body style="visibility:hidden" class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+
+<!-- LOADING OVERLAY — hidden by JS after boot -->
+
+
+
+<!-- ══ MOBILE BACKDROP ══ -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- ══ MOBILE SLIDE-IN MENU ══ -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:272px;height:100%;height:100dvh;background:#091830;z-index:500;padding:30px 22px;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;margin-top:2px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="mb-signout" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- ══ DESKTOP SIDEBAR ══ -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;height:100dvh;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;">
+  <a href="/buyer-dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="dt-signout" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- ══ MAIN WRAPPER ══ -->
+<div id="main-wrap" style="min-height:100dvh;display:flex;flex-direction:column;">
+
+  <!-- TOP BAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 id="page-title" style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Payments</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="window.location.href='/notifications.html'" style="position:relative;width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;">CD</div>
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main id="page-content" style="flex:1;padding:22px 18px;width:100%;position:relative;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;">
+
+      <!-- ── PAYMENT SUCCESS BANNER (shown when redirected back after checkout) ── -->
+      <div id="payment-success-banner" role="alert" aria-live="polite">
+        <div class="banner-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="banner-body">
+          <p class="banner-title">Payment successful!</p>
+          <p class="banner-sub" id="payment-success-sub">Your payment was confirmed. Your purchase is being processed and will appear in your history shortly.</p>
+        </div>
+        <button class="banner-dismiss" onclick="dismissSuccessBanner()" aria-label="Dismiss">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- ── SECTION A: STAT CARDS ── -->
+      <div id="stats-grid" class="fu fu-1" style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:28px;">
+
+        <!-- Total Spent -->
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(13,33,69,0.04),rgba(255,255,255,0.85));border:1px solid rgba(255,255,255,0.55);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(13,33,69,0.07);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <span class="badge badge-navy">All time</span>
+          </div>
+          <div class="stat-val" id="stat-total-spent">--</div>
+          <div class="stat-lbl">Total Spent</div>
+          <div class="stat-sub">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            Across all completed payments
+          </div>
+        </div>
+
+        <!-- Total Transactions -->
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(26,86,219,0.06),rgba(255,255,255,0.85));border:1px solid rgba(26,86,219,0.12);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(26,86,219,0.10);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <span class="badge badge-blue">Lifetime</span>
+          </div>
+          <div class="stat-val" id="stat-tx-count" style="color:#1a56db;">0</div>
+          <div class="stat-lbl">Total Transactions</div>
+          <div class="stat-sub">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            Completed payments made
+          </div>
+        </div>
+
+        <!-- Average Project Value -->
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(45,138,94,0.08),rgba(255,255,255,0.85));border:1px solid rgba(45,138,94,0.16);box-shadow:0 4px 24px rgba(45,138,94,0.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(45,138,94,0.12);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <span class="badge badge-green">Per project</span>
+          </div>
+          <div class="stat-val" id="stat-avg-val" style="color:#2d8a5e;">--</div>
+          <div class="stat-lbl">Avg Project Value</div>
+          <div class="stat-sub" style="color:#2d8a5e;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            Based on all your payments
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── SECTION B: PAYMENT RECORDS ── -->
+
+      <!-- DESKTOP TABLE (hidden on mobile) -->
+      <div id="desktop-table" class="glass fu fu-2" style="display:none;overflow:hidden;margin-bottom:24px;">
+
+        <!-- Table heading row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;">
+          <div>
+            <h2 style="font-size:17px;font-weight:700;color:#0d2145;margin:0 0 2px;">Payment History</h2>
+            <p id="dt-count-label" class="lbl" style="margin:0;font-size:11px;">Loading...</p>
+          </div>
+          <button class="btn-outline" onclick="exportCSV()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
+        <div style="height:1px;background:#e2e8f0;"></div>
+
+        <!-- Column headers -->
+        <div class="tbl-header tbl-cols" style="background:rgba(13,33,69,0.02);">
+          <span class="lbl">Project</span>
+          <span class="lbl">Freelancer</span>
+          <span class="lbl" style="text-align:right;">You Paid</span>
+          <span class="lbl" style="text-align:right;">Platform Fee</span>
+          <span class="lbl" style="text-align:right;">Protection</span>
+          <span class="lbl" style="text-align:right;">Freelancer Gets</span>
+          <span class="lbl">Method</span>
+          <span class="lbl">Date</span>
+          <span class="lbl">Status</span>
+        </div>
+
+        <!-- Table rows injected here -->
+        <div id="table-body"></div>
+
+        <!-- Desktop empty state -->
+        <div id="table-empty" class="empty-state" style="display:none;">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.25)" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 14px;display:block;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <h3 style="font-size:16px;font-weight:700;color:#0d2145;margin:0 0 6px;">No payments yet</h3>
+          <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);margin:0 0 20px;">Your completed payments will appear here.</p>
+          <a href="/browse.html" class="btn-green">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Browse Freelancers
+          </a>
+        </div>
+      </div>
+
+      <!-- MOBILE CARDS (hidden on desktop) -->
+      <div id="mobile-cards" class="fu fu-2">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:17px;font-weight:700;color:#0d2145;margin:0;">Payment History</h2>
+          <button class="btn-outline" style="padding:8px 14px;font-size:12px;" onclick="exportCSV()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            CSV
+          </button>
+        </div>
+        <div id="mobile-cards-body"></div>
+
+        <!-- Mobile empty state -->
+        <div id="mobile-empty" class="empty-state glass" style="display:none;">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.25)" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 14px;display:block;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <h3 style="font-size:16px;font-weight:700;color:#0d2145;margin:0 0 6px;">No payments yet</h3>
+          <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);margin:0 0 20px;">Your completed payments will appear here.</p>
+          <a href="/browse.html" class="btn-green">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Browse Freelancers
+          </a>
+        </div>
+      </div>
+
+      <!-- ── PAGINATION ── -->
+      <div id="pagination" class="fu fu-3" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;padding-bottom:32px;">
+        <button id="prev-btn" class="page-btn" onclick="changePage(-1)" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Previous
+        </button>
+        <span class="page-indicator" id="page-label">Page 1 of 1</span>
+        <button id="next-btn" class="page-btn" onclick="changePage(1)">
+          Next
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  DEMO USER
+// ══════════════════════════════════════════
+var DEMO_USER = { name: '', role: 'buyer', uid: null };
+
+// ══════════════════════════════════════════
+//  LIVE DATA — populated by loadBuyerPayments() in _boot
+// ══════════════════════════════════════════
+var PAYMENTS = [];
+
+// Status display config
+// 'completed' = funds released to the freelancer (escrowStatus: 'released',
+//   or a product order that's simply paid — products settle immediately,
+//   there's no escrow hold step for them).
+// 'escrow' = buyer has paid but the project is still held in escrow
+//   (escrowStatus: 'funded') — money has left the buyer's card but has NOT
+//   yet been released to the freelancer. Must never be shown as Completed.
+// 'disputed' = a dispute is open on the project; distinct from both of the
+//   above so a buyer never sees a disputed payment styled as a success.
+var STATUS_CONFIG = {
+  completed:    { label:'Completed',              cls:'badge-green' },
+  escrow:       { label:'In Escrow',               cls:'badge-navy'  },
+  pending:      { label:'Pending',                cls:'badge-amber' },
+  refunded:     { label:'Refunded',               cls:'badge-blue'  },
+  failed:       { label:'Failed',                 cls:'badge-red'   },
+  disputed:     { label:'Disputed',               cls:'badge-red'   },
+  'needs-review': { label:'Under review — contact support', cls:'badge-red' }
+};
+
+// ══════════════════════════════════════════
+//  PAGINATION STATE
+// ══════════════════════════════════════════
+var PAGE_SIZE = 10;
+var currentPage = 1;
+var totalPages = 1; // recalculated after data loads
+var expandedCards = {};
+
+// ══════════════════════════════════════════
+//  NAV LINKS (buyer)
+// ══════════════════════════════════════════
+var NAV = [
+  { label:'Dashboard',    href:'/buyer-dashboard.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Projects',     href:'/buyer-projects.html',  icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Contracts',    href:'/dashboard-contracts.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Browse',       href:'/browse.html',          icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Payments',     href:'/buyer-payments.html',  icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' },
+  { label:'Purchases',    href:'/buyer-purchases.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',    href:'/dashboard-affiliate.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Settings',     href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' }
+];
+
+function buildNav(affiliateEnabled) {
+  var cur = (window.location.pathname.split('/').pop() || 'buyer-dashboard.html');
+  var items = NAV.filter(function(n) {
+    if (n.label === 'Affiliate') return affiliateEnabled === true;
+    return true;
+  });
+  var html = items.map(function(n) {
+    var active = (cur === n.href.replace(/^\//,'')) ? ' active' : '';
+    return '<a href="'+n.href+'" class="nav-link'+active+'" onclick="closeMobileMenu()">'+n.icon+n.label+'</a>';
+  }).join('');
+  document.getElementById('mobile-nav').innerHTML  = html;
+  document.getElementById('desktop-nav').innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+//  MOBILE MENU
+// ══════════════════════════════════════════
+function openMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// ══════════════════════════════════════════
+//  STAT CARDS
+// ══════════════════════════════════════════
+function renderStats() {
+  // "Spent" = money that has actually left the buyer's account, whether it's
+  // sitting in escrow, been released to the freelancer, or is under dispute.
+  // Excludes refunded/failed/pending/needs-review, since those are not
+  // confirmed, retained spend.
+  var completed = PAYMENTS.filter(function(p){
+    return p.status === 'completed' || p.status === 'escrow' || p.status === 'disputed';
+  });
+  var txCount = completed.length;
+
+  // Per-currency, never blended — a payment in USD and one in NGN must
+  // never be summed into a single raw number or shown with one hardcoded
+  // symbol.
+  var spentMap = {};
+  completed.forEach(function(p) {
+    var cur = (p.currency || 'USD').toUpperCase();
+    spentMap[cur] = (spentMap[cur] || 0) + Number(p.total || 0);
+  });
+  var spentKeys = Object.keys(spentMap);
+
+  if (spentKeys.length <= 1) {
+    // Common case — exactly one currency (or none yet). Keep the existing
+    // count-up animation, now using the real currency instead of a
+    // hardcoded symbol.
+    var cur0 = spentKeys[0] || 'USD';
+    var total0 = spentMap[cur0] || 0;
+    animateCount('stat-total-spent', total0, cur0);
+    var avg0 = txCount > 0 ? total0 / txCount : 0;
+    animateCount('stat-avg-val', avg0, cur0);
+  } else {
+    // Multiple currencies — show a real per-currency breakdown. Skips the
+    // count-up animation (animating several independent values at once
+    // adds complexity without adding value) but the figures are accurate.
+    document.getElementById('stat-total-spent').innerHTML = spentKeys.map(function(cur) {
+      return '<span style="display:block;font-size:0.6em;">' + formatCurrency(spentMap[cur], cur) + '</span>';
+    }).join('');
+    document.getElementById('stat-avg-val').innerHTML = spentKeys.map(function(cur) {
+      var avg = txCount > 0 ? spentMap[cur] / txCount : 0;
+      return '<span style="display:block;font-size:0.6em;">' + formatCurrency(avg, cur) + '</span>';
+    }).join('');
+  }
+
+  animateCount('stat-tx-count', txCount, null);
+}
+
+function animateCount(id, target, currency) {
+  var el = document.getElementById(id);
+  var start = 0;
+  var duration = 600;
+  var startTime = null;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    var progress = Math.min((ts - startTime) / duration, 1);
+    var ease = 1 - Math.pow(1 - progress, 3);
+    var val = start + (target - start) * ease;
+    el.textContent = currency ? formatCurrency(val, currency) : Math.round(val).toString();
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// Real currency-aware formatters — amount must always be shown in the
+// currency it was actually charged in, never a hardcoded symbol. Falls
+// back to USD only when no currency is available at all (e.g. malformed
+// legacy record), matching the fallback pattern used across the rest of
+// the platform.
+function formatCurrency(n, currency) {
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency: (currency || 'USD').toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n) || 0);
+  } catch(e) {
+    return (currency || 'USD') + ' ' + (Number(n) || 0).toFixed(2);
+  }
+}
+function formatCurrencyShort(n, currency) {
+  return formatCurrency(n, currency);
+}
+
+// ══════════════════════════════════════════
+//  DESKTOP TABLE RENDER
+// ══════════════════════════════════════════
+function renderDesktopTable() {
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var slice = PAYMENTS.slice(start, start + PAGE_SIZE);
+  var tbody = document.getElementById('table-body');
+  var empty = document.getElementById('table-empty');
+
+  if (PAYMENTS.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = slice.map(function(p) {
+    var cfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.completed;
+    var typeLabel = p._type === 'Invoice Payment' ? '<div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#1a56db;margin-top:2px;">Invoice</div>'
+      : p._type === 'Product' ? '<div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#7c3aed;margin-top:2px;">Product</div>'
+      : '';
+    var titleHtml = p.invoiceId
+      ? '<a href="/invoice.html?invoiceId='+p.invoiceId+'" target="_blank" style="font-size:13px;font-weight:700;color:#0d2145;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:underline;text-underline-offset:2px;" title="'+p.project+'">'+p.project+'</a>'
+      : '<div style="font-size:13px;font-weight:700;color:#0d2145;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="'+p.project+'">'+p.project+'</div>';
+    return '<div class="tbl-row tbl-cols">'
+      + '<div style="min-width:0;">'
+        + titleHtml
+        + typeLabel
+        + '<div style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);margin-top:2px;">'+p.id+'</div>'
+      + '</div>'
+      + '<span style="font-size:13px;font-weight:600;color:#0d2145;">'+p.freelancer+'</span>'
+      + '<span style="font-size:13px;font-weight:700;color:#0d2145;text-align:right;">'+formatCurrencyShort(p.total, p.currency)+'</span>'
+      + '<span style="font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);text-align:right;">'+formatCurrencyShort(p.fee, p.currency)+'</span>'
+      + '<span style="font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);text-align:right;">'+(p.protection > 0 ? formatCurrencyShort(p.protection, p.currency) : '—')+'</span>'
+      + '<span style="font-size:14px;font-weight:800;color:#0d2145;text-align:right;">'+formatCurrencyShort(p.netToFreelancer, p.currency)+'</span>'
+      + '<span style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.60);">'+p.method+'</span>'
+      + '<span style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.60);">'+p.date+'</span>'
+      + '<span><span class="badge '+cfg.cls+'">'+cfg.label+'</span></span>'
+    + '</div>';
+  }).join('');
+
+  var label = document.getElementById('dt-count-label');
+  if (label) {
+    label.textContent = PAYMENTS.length + ' payment' + (PAYMENTS.length !== 1 ? 's' : '') + ' total';
+  }
+}
+
+// ══════════════════════════════════════════
+//  MOBILE CARDS RENDER
+// ══════════════════════════════════════════
+function renderMobileCards() {
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var slice = PAYMENTS.slice(start, start + PAGE_SIZE);
+  var container = document.getElementById('mobile-cards-body');
+  var empty = document.getElementById('mobile-empty');
+
+  if (PAYMENTS.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  container.innerHTML = slice.map(function(p) {
+    var cfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.completed;
+    var isExpanded = !!expandedCards[p.id];
+    var typePill = p._type === 'Invoice Payment'
+      ? '<div style="margin-bottom:5px;"><span style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#1a56db;background:rgba(26,86,219,0.10);padding:2px 8px;border-radius:50px;">Invoice</span></div>'
+      : p._type === 'Product'
+      ? '<div style="margin-bottom:5px;"><span style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#7c3aed;background:rgba(124,58,237,0.10);padding:2px 8px;border-radius:50px;">Product</span></div>'
+      : '';
+    var invoiceLinkRow = p.invoiceId
+      ? '<div style="margin-top:10px;"><a href="/invoice.html?invoiceId='+p.invoiceId+'" target="_blank" style="font-size:12px;font-weight:700;color:#2d8a5e;text-decoration:underline;text-underline-offset:2px;">View Invoice \u2192</a></div>'
+      : '';
+    return '<div class="glass pay-card" id="card-'+p.id+'" style="padding:18px;margin-bottom:12px;border-radius:16px;">'
+      // Row 1: type pill + title + badge
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">'
+        + '<div style="flex:1;min-width:0;">'
+          + typePill
+          + '<div style="font-size:14px;font-weight:700;color:#0d2145;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">'+p.project+'</div>'
+        + '</div>'
+        + '<span class="badge '+cfg.cls+'" style="flex-shrink:0;margin-top:1px;">'+cfg.label+'</span>'
+      + '</div>'
+      // Row 2: total + date
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">'
+        + '<div style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;">'+formatCurrencyShort(p.total, p.currency)+'</div>'
+        + '<div style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.48);">'+p.date+'</div>'
+      + '</div>'
+      // Invoice link (invoice payments only)
+      + invoiceLinkRow
+      // Toggle
+      + '<div style="margin-top:14px;">'
+        + '<button class="toggle-btn" onclick="toggleCard(\''+p.id+'\')">'
+          + (isExpanded ? 'Hide Details' : 'Show Details')
+          + '<svg class="toggle-chevron'+(isExpanded?' open':'')+'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>'
+        + '</button>'
+      + '</div>'
+      // Expanded details
+      + '<div id="details-'+p.id+'" style="display:'+(isExpanded?'grid':'none')+';" class="pay-details">'
+        + '<div class="pay-detail-item"><span class="pay-detail-label">Freelancer</span><span class="pay-detail-val">'+p.freelancer+'</span></div>'
+        + '<div class="pay-detail-item"><span class="pay-detail-label">You Paid</span><span class="pay-detail-val">'+formatCurrencyShort(p.total, p.currency)+'</span></div>'
+        + '<div class="pay-detail-item"><span class="pay-detail-label">Platform Fee</span><span class="pay-detail-val">'+formatCurrencyShort(p.fee, p.currency)+'</span></div>'
+        + '<div class="pay-detail-item"><span class="pay-detail-label">Protection</span><span class="pay-detail-val">'+(p.protection > 0 ? formatCurrencyShort(p.protection, p.currency) : '\u2014')+'</span></div>'
+        + '<div class="pay-detail-item"><span class="pay-detail-label">Freelancer Gets</span><span class="pay-detail-val">'+formatCurrencyShort(p.netToFreelancer, p.currency)+'</span></div>'
+        + '<div class="pay-detail-item"><span class="pay-detail-label">Method</span><span class="pay-detail-val">'+p.method+'</span></div>'
+        + '<div class="pay-detail-item"><span class="pay-detail-label">Payment ID</span><span class="pay-detail-val" style="font-size:11px;">'+p.id+'</span></div>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function toggleCard(id) {
+  expandedCards[id] = !expandedCards[id];
+  renderMobileCards();
+}
+
+// ══════════════════════════════════════════
+//  PAGINATION
+// ══════════════════════════════════════════
+function renderPagination() {
+  totalPages = Math.ceil(PAYMENTS.length / PAGE_SIZE) || 1;
+  document.getElementById('page-label').textContent = 'Page ' + currentPage + ' of ' + totalPages;
+  document.getElementById('prev-btn').disabled = currentPage <= 1;
+  document.getElementById('next-btn').disabled = currentPage >= totalPages;
+  if (PAYMENTS.length <= PAGE_SIZE) {
+    document.getElementById('pagination').style.display = 'none';
+  } else {
+    document.getElementById('pagination').style.display = 'flex';
+  }
+}
+
+function changePage(dir) {
+  var next = currentPage + dir;
+  if (next < 1 || next > totalPages) return;
+  currentPage = next;
+  expandedCards = {};
+  renderPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderPage() {
+  renderDesktopTable();
+  renderMobileCards();
+  renderPagination();
+}
+
+// ══════════════════════════════════════════
+//  CSV EXPORT
+// ══════════════════════════════════════════
+function exportCSV() {
+  var headers = ['Payment ID','Project','Freelancer','Total Paid','Platform Fee','Protection Fee','Freelancer Gets','Method','Date','Status'];
+  var rows = PAYMENTS.map(function(p) {
+    return [
+      p.id,
+      '"'+p.project+'"',
+      '"'+p.freelancer+'"',
+      p.total.toFixed(2),
+      p.fee.toFixed(2),
+      p.protection.toFixed(2),
+      p.netToFreelancer.toFixed(2),
+      '"'+p.method+'"',
+      p.date,
+      p.status
+    ].join(',');
+  });
+  var csv = [headers.join(',')].concat(rows).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'kreddlo-payments.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded');
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+// ══════════════════════════════════════════
+//  ESCAPE KEY
+// ══════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeMobileMenu();
+});
+
+// ══════════════════════════════════════════
+//  LIVE PLATFORM FEE CONFIG (config/platform)
+// ══════════════════════════════════════════
+// Defaults match the rates previously hardcoded here, so display is
+// unchanged unless an admin has actually updated config/platform.
+var _platformFeePct   = 2.5;
+var _protectionFeePct = 1.0;
+var _feeConfigLoaded  = false;
+
+async function loadPlatformFeeConfigForPayments() {
+  if (_feeConfigLoaded) return;
+  if (!window.db || !window._fsQ || !window._fsQ.getDoc || !window._fsQ.doc) return;
+  try {
+    var snap = await window._fsQ.getDoc(window._fsQ.doc(window.db, 'config', 'platform'));
+    if (snap.exists()) {
+      var d = snap.data();
+      if (typeof d.platformFeePercent === 'number')         _platformFeePct   = d.platformFeePercent;
+      if (typeof d.projectProtectionPercent === 'number')  _protectionFeePct = d.projectProtectionPercent;
+    }
+  } catch (e) {
+    console.warn('[buyer-payments] platform fee config load failed, using defaults:', e.message);
+  }
+  _feeConfigLoaded = true;
+}
+
+// ══════════════════════════════════════════
+//  LOAD BUYER PAYMENTS FROM FIRESTORE
+// ══════════════════════════════════════════
+async function loadBuyerPayments(uid) {
+  if (!window.db || !window._fsQ) return;
+  var fsQ = window._fsQ;
+  await loadPlatformFeeConfigForPayments();
+
+  // Resolve the buyer's email (needed to query invoice-orders which use
+  // clientEmail as the buyer identifier — public invoice payments have no
+  // buyerUid because they don't require a logged-in account).
+  var buyerEmail = '';
+  try {
+    if (window.auth && window.auth.currentUser) {
+      buyerEmail = (window.auth.currentUser.email || '').trim().toLowerCase();
+    }
+  } catch(e) { /* non-fatal */ }
+
+  try {
+    // Query projects where buyer is the logged-in user
+    var q = fsQ.query(
+      fsQ.collection(window.db, 'projects'),
+      fsQ.where('buyerUid', '==', uid),
+      fsQ.orderBy('createdAt', 'desc')
+    );
+    var snap = await fsQ.getDocs(q);
+
+    // Also query product-orders where buyer is the logged-in user
+    var q2 = fsQ.query(
+      fsQ.collection(window.db, 'product-orders'),
+      fsQ.where('buyerUid', '==', uid),
+      fsQ.orderBy('createdAt', 'desc')
+    );
+    var snap2 = await fsQ.getDocs(q2);
+
+    // Also query invoice-orders by clientEmail. Invoice payments are made on
+    // a public page (no auth required) — there is no buyerUid field — so
+    // we match on the email address the buyer entered when paying the invoice.
+    var snap3 = { docs: [] };
+    if (buyerEmail) {
+      try {
+        var q3 = fsQ.query(
+          fsQ.collection(window.db, 'invoice-orders'),
+          fsQ.where('clientEmail', '==', buyerEmail),
+          fsQ.where('paymentStatus', '==', 'paid'),
+          fsQ.orderBy('createdAt', 'desc')
+        );
+        snap3 = await fsQ.getDocs(q3);
+      } catch(invErr) {
+        // Missing index or permission — log and continue without invoice rows
+        console.warn('[loadBuyerPayments] invoice-orders query failed (non-fatal):', invErr.message);
+      }
+    }
+
+    // Fetch freelancer names for projects
+    var flUids = [];
+    snap.docs.forEach(function(d) { if (d.data().freelancerUid) flUids.push(d.data().freelancerUid); });
+    var uniqueFlUids = flUids.filter(function(v, i, a) { return a.indexOf(v) === i; });
+    var flMap = {};
+    await Promise.all(uniqueFlUids.map(async function(fuid) {
+      try {
+        var fsnap = await fsQ.getDoc(fsQ.doc(window.db, 'users', fuid));
+        if (fsnap.exists()) {
+          var fd = fsnap.data();
+          flMap[fuid] = fd.displayName || fd.name || fd.email || 'Freelancer';
+        }
+      } catch(e) { /* non-fatal */ }
+    }));
+
+    // Map projects to payment records
+    var projectPayments = snap.docs
+      .filter(function(d) { return d.data().escrowStatus === 'funded' || d.data().escrowStatus === 'released'; })
+      .map(function(d) {
+        var data = d.data();
+        var ts = data.createdAt;
+        var dateStr = ts ? new Date(ts.toDate ? ts.toDate() : ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        // chargedAmount is the authoritative amount the buyer was actually
+        // billed, written by the webhook at escrow-funding time (covers
+        // currency-converted charges too). totalAmount is the same value
+        // computed at project-creation time, used as a fallback for any
+        // edge case where chargedAmount wasn't written.
+        var total = typeof data.chargedAmount === 'number'
+          ? data.chargedAmount
+          : (typeof data.totalAmount === 'number' ? data.totalAmount : (data.amount || 0));
+        // platformFee/protectionFee are the buyer-paid fee components the
+        // webhook wrote at funding time (percentages of the charged total).
+        var fee = typeof data.platformFee === 'number'
+          ? data.platformFee
+          : parseFloat((total * (_platformFeePct / 100)).toFixed(2));
+        var protection = typeof data.protectionFee === 'number'
+          ? data.protectionFee
+          : (data.withProtection ? parseFloat((total * (_protectionFeePct / 100)).toFixed(2)) : 0);
+        // The freelancer's net payout — the budget they agreed to, after the
+        // webhook deducts platformFee/protectionFee from the charged total.
+        var netToFreelancer = typeof data.netAmount === 'number'
+          ? data.netAmount
+          : parseFloat((total - fee - protection).toFixed(2));
+        var ts0 = data.createdAt;
+        return {
+          id:         d.id,
+          project:    data.title || 'Untitled Project',
+          freelancer: flMap[data.freelancerUid] || data.freelancerName || 'Freelancer',
+          amount:     data.budget || data.amount || netToFreelancer,
+          fee:        fee,
+          protection: protection,
+          total:      total,
+          netToFreelancer: netToFreelancer,
+          currency:   (data.chargedCurrency || data.currency || 'USD').toUpperCase(),
+          method:     data.paymentMethod || 'Card / Crypto',
+          date:       dateStr,
+          status:     data.status === 'disputed' ? 'disputed' : (data.escrowStatus === 'released' ? 'completed' : 'escrow'),
+          _type:      'Project',
+          invoiceId:  null,
+          _ts:        ts0 ? (ts0.toMillis ? ts0.toMillis() : new Date(ts0).getTime()) : 0
+        };
+      });
+
+    // Map product orders to payment records
+    var productPayments = snap2.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.createdAt;
+      var dateStr = ts ? new Date(ts.toDate ? ts.toDate() : ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      // data.amount is the fee-inclusive charge (see create-product-order.js —
+      // chargeAmount = listed price uplifted so the seller still nets the
+      // full listed price). data.chargedAmount is the same value confirmed
+      // by the webhook (covers any currency conversion).
+      var total = typeof data.chargedAmount === 'number' ? data.chargedAmount : (data.amount || 0);
+      var prodFee = typeof data.platformFee === 'number'
+        ? data.platformFee
+        : parseFloat((total * (_platformFeePct / 100)).toFixed(2));
+      var sellerNet = typeof data.sellerAmount === 'number'
+        ? data.sellerAmount
+        : parseFloat((total - prodFee).toFixed(2));
+      var ts1 = data.createdAt;
+      return {
+        id:         d.id,
+        project:    data.productTitle || 'Product Purchase',
+        freelancer: data.sellerName   || 'Seller',
+        amount:     data.originalAmount || sellerNet,
+        fee:        prodFee,
+        protection: 0,
+        total:      total,
+        netToFreelancer: sellerNet,
+        currency:   (data.chargedCurrency || data.currency || 'USD').toUpperCase(),
+        method:     data.paymentMethod || 'Card / Crypto',
+        date:       dateStr,
+        status:     data.paymentStatus === 'paid' ? 'completed' : (data.paymentStatus === 'needs-review' ? 'needs-review' : 'pending'),
+        _type:      'Product',
+        invoiceId:  null,
+        _ts:        ts1 ? (ts1.toMillis ? ts1.toMillis() : new Date(ts1).getTime()) : 0
+      };
+    });
+
+    // Map invoice-orders to payment records.
+    // invoice-orders shape written by create-invoice-order.js:
+    //   invoiceId, sellerUid, clientEmail, clientName, payerName,
+    //   originalAmount, originalCurrency, chargedAmount, chargedCurrency,
+    //   platformFee, sellerAmount, paymentMethod, paymentStatus, createdAt.
+    // There is no netToFreelancer / protection split for invoices — the
+    // seller receives their listed amount (originalAmount) directly.
+    var invoicePayments = snap3.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.createdAt;
+      var dateStr = ts ? new Date(ts.toDate ? ts.toDate() : ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      // Use chargedAmount/chargedCurrency (confirmed by webhook) when available,
+      // fall back to amount/currency (estimated at order-creation time).
+      var total = typeof data.chargedAmount === 'number' ? data.chargedAmount : (data.amount || 0);
+      var currency = (data.chargedCurrency || data.originalCurrency || data.currency || 'USD').toUpperCase();
+      var fee = typeof data.platformFee === 'number' ? data.platformFee
+        : parseFloat((total * (_platformFeePct / 100)).toFixed(2));
+      var sellerNet = typeof data.sellerAmount === 'number' ? data.sellerAmount
+        : parseFloat((total - fee).toFixed(2));
+      // Resolve a display name for the seller — fall back chain covers old orders
+      // that may not have a sellerName field written yet.
+      var sellerDisplay = data.sellerName || data.freelancerName || 'Freelancer';
+      // Resolve a display title for the invoice
+      var invoiceTitle = data.invoiceTitle || ('Invoice #' + (data.invoiceNumber || d.id.slice(-6).toUpperCase()));
+      var ts2 = data.createdAt;
+      return {
+        id:              d.id,
+        project:         invoiceTitle,
+        freelancer:      sellerDisplay,
+        amount:          typeof data.originalAmount === 'number' ? data.originalAmount : sellerNet,
+        fee:             fee,
+        protection:      0,
+        total:           total,
+        netToFreelancer: sellerNet,
+        currency:        currency,
+        method:          data.paymentMethod || 'Card / Crypto',
+        date:            dateStr,
+        status:          'completed',
+        // Extra context for the type badge shown in mobile cards + desktop table
+        _type:           'Invoice Payment',
+        invoiceId:       data.invoiceId || null,
+        _ts:             ts2 ? (ts2.toMillis ? ts2.toMillis() : new Date(ts2).getTime()) : 0
+      };
+    });
+
+    PAYMENTS = projectPayments.concat(productPayments).concat(invoicePayments);
+    // Sort all records newest-first by raw timestamp stored on each doc.
+    // Firestore returns results ordered within each collection already, but
+    // after merging three collections we need a combined sort. We compare
+    // createdAt timestamp millis where available; fall back to doc order.
+    PAYMENTS.sort(function(a, b) {
+      return (b._ts || 0) - (a._ts || 0);
+    });
+    totalPages = Math.ceil(PAYMENTS.length / PAGE_SIZE) || 1;
+    currentPage = 1;
+
+  } catch(err) {
+    if (err && (err.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(err.message || ''))) {
+      console.error('[loadBuyerPayments] missing composite index on projects.buyerUid+createdAt or product-orders.buyerUid+createdAt — see FIRESTORE_INDEXES.md, or check this error for a Firebase auto-create link:', err);
+      showToast('Setting up — try again in a minute.');
+    } else {
+      console.error('[loadBuyerPayments]', err);
+      showToast('Could not load payments. Pull to refresh.');
+    }
+  }
+  renderStats();
+  renderPage();
+  document.getElementById('bell-dot').style.display = 'block';
+  document.body.style.visibility = 'visible';
+}
+
+// ══════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════
+// ── Payment success banner logic ──────────────────────────────────
+(function() {
+  var params  = new URLSearchParams(window.location.search);
+  var status  = params.get('payment');
+  var orderId = params.get('orderId');
+  var method  = params.get('method') || '';
+
+  // Flutterwave uses a single redirect_url for both success and cancellation,
+  // appending its own ?status= param (e.g. status=successful or status=cancelled).
+  // When status=cancelled arrives from Flutterwave, our URL still says
+  // payment=success — so we check Flutterwave's own status param and treat
+  // anything other than 'successful' as a cancellation.
+  var flwStatus = params.get('status') || '';
+  var isFlutterwaveCancelled = method === 'flutterwave' && flwStatus && flwStatus !== 'successful';
+
+  if (status === 'success' && !isFlutterwaveCancelled) {
+    var banner = document.getElementById('payment-success-banner');
+    var sub    = document.getElementById('payment-success-sub');
+    if (banner) {
+      if (sub) {
+        var methodLabel = method === 'stripe' ? 'card' : method === 'flutterwave' ? 'Flutterwave' : method === 'crypto' ? 'crypto' : '';
+        sub.textContent = 'Your' + (methodLabel ? ' ' + methodLabel : '') + ' payment was confirmed.'
+          + ' Your purchase is being processed and will appear in your history below.';
+      }
+      banner.classList.add('visible');
+      // Auto-dismiss after 10s — long enough to read on mobile
+      setTimeout(function() { dismissSuccessBanner(); }, 10000);
+    }
+
+    // Clean the URL so a refresh doesn't re-show the banner
+    try {
+      var cleanUrl = window.location.pathname;
+      window.history.replaceState(null, '', cleanUrl);
+    } catch(e) {}
+  }
+
+  if (status === 'cancelled' || isFlutterwaveCancelled) {
+    showToast('Payment cancelled — no charge was made.');
+    try {
+      window.history.replaceState(null, '', window.location.pathname);
+    } catch(e) {}
+  }
+})();
+
+function dismissSuccessBanner() {
+  var banner = document.getElementById('payment-success-banner');
+  if (banner) {
+    banner.style.transition = 'opacity .25s, transform .25s';
+    banner.style.opacity    = '0';
+    banner.style.transform  = 'translateY(-8px)';
+    setTimeout(function() { banner.classList.remove('visible'); banner.style = ''; }, 280);
+  }
+}
+
+window._boot = function(user, userData) {
+  DEMO_USER.uid  = user.uid;
+  DEMO_USER.name = user.displayName || (userData && userData.name) || user.email || 'User';
+
+  // Avatar initials
+  var parts = DEMO_USER.name.trim().split(' ');
+  document.getElementById('user-avatar').textContent =
+    parts.length >= 2 ? parts[0][0] + parts[parts.length-1][0] : DEMO_USER.name.slice(0,2).toUpperCase();
+
+  var affiliateEnabled = userData && userData.affiliateEnabled === true;
+  buildNav(affiliateEnabled);
+  loadBuyerPayments(user.uid);
+};
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+<script>
+// Safety: force-hide loading overlay after 10s if auth/boot stalls
+(function() {
+  var _safetyTimer = setTimeout(function() {
+    document.body.style.visibility = 'visible';
+  }, 10000);
+  window._clearSafetyTimer = function() { clearTimeout(_safetyTimer); };
+})();
+</script>
+
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, collection, query, where, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+    authDomain:        'kreddlo.firebaseapp.com',
+    projectId:         'kreddlo',
+    storageBucket:     'kreddlo.firebasestorage.app',
+    messagingSenderId: '764500458567',
+    appId:             '1:764500458567:web:2389d5cf8c688caafd0562',
+  };
+  const app  = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  window.auth = auth;
+  window.handleLogout = function() {
+    signOut(auth).then(function(){ window.location.href = '/login.html'; })
+      .catch(function(){ window.location.href = '/login.html'; });
+  };
+  document.getElementById('mb-signout').onclick = window.handleLogout;
+  document.getElementById('dt-signout').onclick = window.handleLogout;
+  const db   = getFirestore(app);
+  window.db  = db;
+  window._fsQ = { collection, query, where, orderBy, getDocs, getDoc, doc };
+  onAuthStateChanged(auth, function(user) {
+    if (!user) { window.location.href = '/login.html'; return; }
+    getDoc(doc(db, 'users', user.uid)).then(function(snap) {
+      if (!snap.exists()) { window.location.href = '/login.html'; return; }
+      var role = snap.data().role;
+      if (role !== 'buyer') {
+        if (role === 'admin') window.location.href = '/admin.html';
+        else if (role === 'freelancer') window.location.href = '/dashboard.html';
+        else window.location.href = '/login.html';
+        return;
+      }
+      if (typeof window._boot === 'function') window._boot(user, snap.data());
+    }).catch(function() { window.location.href = '/login.html'; });
+  });
+</script>
+</body>
+</html>

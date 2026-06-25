@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Kreddlo</title>
+<script src="/assets/shared.js" defer></script>
+
+<!-- Dynamic SEO -->
+<meta name="description" content=""/>
+<meta property="og:title" content=""/>
+<meta property="og:description" content=""/>
+<meta property="og:image" content=""/>
+<meta property="og:type" content="product"/>
+<meta name="twitter:card" content="summary_large_image"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, query, where, getDocs, orderBy, limit, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+    authDomain: "kreddlo.firebaseapp.com",
+    projectId: "kreddlo",
+    storageBucket: "kreddlo.firebasestorage.app",
+    messagingSenderId: "764500458567",
+    appId: "1:764500458567:web:2389d5cf8c688caafd0562"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  window._db = db;
+  window.db  = db;
+  window._auth = auth;
+  window._fsQuery = { collection, query, where, getDocs, orderBy, limit, doc, getDoc };
+
+  // Swaps a broken avatar image for an initial-letter fallback, using real DOM
+  // APIs instead of building HTML in a string (avoids fragile nested-quote escaping).
+  function handleAvatarImgError(imgEl, initial) {
+    const fallback = document.createElement('div');
+    fallback.style.cssText = 'width:34px;height:34px;border-radius:50%;background:#2d8a5e;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+    fallback.textContent = initial;
+    imgEl.replaceWith(fallback);
+  }
+  window.handleAvatarImgError = handleAvatarImgError;
+
+  // Update nav based on auth state
+  onAuthStateChanged(auth, (user) => {
+    const navActions = document.getElementById('nav-actions');
+    if (user) {
+      // Pre-fill the checkout name/email fields from the logged-in account
+      // so a logged-in buyer never has to retype (or risk mistyping) the
+      // email that links their purchase back to their own account. Only
+      // fills fields that are still empty — never overwrites something
+      // the buyer already typed themselves.
+      const nameEl  = document.getElementById('buyer-name');
+      const emailEl = document.getElementById('buyer-email');
+      if (nameEl && !nameEl.value.trim() && user.displayName) {
+        nameEl.value = user.displayName;
+      }
+      if (emailEl && !emailEl.value.trim() && user.email) {
+        emailEl.value = user.email;
+      }
+    }
+    if (!navActions) return;
+    if (user) {
+      // Logged in — show avatar + Dashboard link
+      const photoURL = user.photoURL || '';
+      const initial  = (user.displayName || user.email || '?')[0].toUpperCase();
+      const avatarHtml = photoURL
+        ? `<img src="${photoURL}" alt="avatar" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.3);flex-shrink:0;" onerror="handleAvatarImgError(this, ${JSON.stringify(initial)})">`
+        : `<div style="width:34px;height:34px;border-radius:50%;background:#2d8a5e;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initial}</div>`;
+      navActions.innerHTML = `<a href="/dashboard.html" style="display:inline-flex;align-items:center;gap:8px;background:#0d2145;color:#fff;border-radius:50px;padding:5px 16px 5px 5px;font-size:13px;font-weight:600;text-decoration:none;">${avatarHtml}<span>Dashboard</span></a>`;
+    } else {
+      // Logged out — Log In + Get Started only (no duplicate Sign Up)
+      navActions.innerHTML = `
+        <a class="btn-login" href="/login.html">Log In</a>
+        <a class="btn-get-started" href="/signup.html" style="display:inline-flex;align-items:center;justify-content:center;">Get Started</a>`;
+    }
+    navActions.style.visibility = 'visible';
+  });
+
+  document.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ── Variables ── */
+:root{
+  --navy:#0d2145;
+  --navy-deep:#091830;
+  --navy-mid:#162f5e;
+  --green:#2d8a5e;
+  --green-light:#3dbd7a;
+  --green-pale:#e8f5ef;
+  --cream:#f8f9fb;
+  --border:#e2e8f0;
+  --muted:rgba(13,33,69,0.48);
+  --muted-light:rgba(13,33,69,0.32);
+}
+
+/* ── Navbar ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(248,249,251,0.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-size:20px;font-weight:800;color:var(--navy);letter-spacing:-0.5px}
+.nav-logo-dot{width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;margin-left:2px}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.btn-login{background:transparent;border:1.5px solid var(--border);color:var(--navy);border-radius:50px;padding:8px 18px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s}
+.btn-login:hover{border-color:var(--navy);background:rgba(13,33,69,0.04)}
+.btn-signup{background:var(--navy);color:#fff;border:none;border-radius:50px;padding:8px 18px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,transform .15s}
+.btn-signup:hover{background:var(--navy-mid);transform:translateY(-1px)}
+.btn-get-started{background:var(--green);color:#fff;border:none;border-radius:50px;padding:9px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s,transform .15s;display:none}
+.btn-get-started:hover{background:#236b49;transform:translateY(-1px)}
+
+@media(max-width:640px){
+  .nav-desktop-actions{display:none}
+  .btn-get-started{display:inline-flex;align-items:center;justify-content:center}
+}
+@media(min-width:641px){
+  .btn-get-started{display:none}
+}
+
+/* ── Page layout ── */
+.page{max-width:1100px;margin:0 auto;padding:28px 16px 60px}
+
+/* ── Two column ── */
+.product-grid{display:grid;grid-template-columns:1fr;gap:24px}
+
+@media(min-width:768px){
+  .product-grid{grid-template-columns:60fr 40fr;align-items:start;gap:32px}
+  /* On desktop: content left, card right (natural DOM order is card first for mobile) */
+  .product-content{order:1}
+  .purchase-col{order:2}
+}
+
+/* ── Cover image ── */
+.cover-wrap{margin-bottom:20px}
+.cover-img{width:100%;border-radius:16px;display:block;object-fit:cover;max-height:420px;background:#f0f2f6}
+.cover-placeholder{width:100%;aspect-ratio:16/9;border-radius:16px;background:linear-gradient(135deg,rgba(13,33,69,0.06) 0%,rgba(45,138,94,0.09) 100%);display:flex;align-items:center;justify-content:center}
+
+/* ── Seller row ── */
+.seller-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.seller-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#e2e8f0;flex-shrink:0;border:2px solid #fff;box-shadow:0 2px 8px rgba(13,33,69,0.12)}
+.seller-avatar-init{width:40px;height:40px;border-radius:50%;background:var(--green-pale);color:var(--green);font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.seller-name{font-size:14px;font-weight:700;color:var(--navy)}
+.badge-verified{display:inline-flex;align-items:center;gap:4px;background:#e8f5ef;color:#2d8a5e;border-radius:50px;padding:2px 9px;font-size:10px;font-weight:700;letter-spacing:.3px;margin-left:6px}
+
+/* ── Product title & description ── */
+.product-title{font-size:24px;font-weight:800;color:var(--navy);letter-spacing:-0.5px;margin:0 0 12px;line-height:1.25}
+@media(min-width:768px){.product-title{font-size:32px}}
+.product-desc{font-size:15px;font-weight:400;color:rgba(13,33,69,0.62);line-height:1.7;margin:0 0 28px;white-space:pre-wrap}
+
+/* ── Purchase card ── */
+/* Fix E: order:-1 removed — DOM order now controls mobile stacking (content first, card second) */
+@media(min-width:768px){.purchase-col{order:2;position:sticky;top:80px}}
+
+.purchase-card{background:var(--green-pale);border:1.5px solid rgba(45,138,94,0.18);border-radius:20px;padding:24px;box-shadow:0 8px 32px rgba(45,138,94,0.10)}
+@media(min-width:768px){.purchase-card{padding:28px}}
+
+.price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:4px}
+.price-amount{font-size:32px;font-weight:800;color:var(--green);letter-spacing:-1px;line-height:1}
+.price-currency{font-size:14px;font-weight:600;color:var(--muted)}
+.price-fx-estimate{font-size:12px;font-weight:500;color:var(--muted);margin:2px 0 0;display:none;line-height:1.4}
+.delivery-hint{font-size:13px;font-weight:500;color:var(--muted);margin:0 0 20px}
+
+/* ── Input fields ── */
+.input-field{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;color:var(--navy);outline:none;transition:border-color .15s,box-shadow .15s;margin-bottom:12px;display:block}
+.input-field::placeholder{color:rgba(13,33,69,0.35);font-weight:400}
+.input-field:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(45,138,94,0.12)}
+.input-field.error{border-color:#e53e3e;box-shadow:0 0 0 3px rgba(229,62,62,0.10)}
+
+/* ── Buy button ── */
+.btn-buy{display:flex;align-items:center;justify-content:center;width:100%;background:var(--green);color:#fff;border:none;border-radius:50px;padding:15px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(45,138,94,0.32);transition:background .15s,transform .15s,box-shadow .15s;margin-top:4px;letter-spacing:-0.2px}
+.btn-buy:hover{background:#236b49;transform:translateY(-2px);box-shadow:0 8px 28px rgba(45,138,94,0.38)}
+.btn-buy:active{transform:translateY(0)}
+.btn-buy:disabled{opacity:.65;pointer-events:none}
+.btn-buy-crypto{background:var(--navy);box-shadow:0 6px 24px rgba(13,33,69,0.22);margin-top:10px}
+.btn-buy-crypto:hover{background:var(--navy-mid);box-shadow:0 8px 28px rgba(13,33,69,0.28)}
+.btn-buy-spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Payment unavailable message ── */
+.payment-unavailable{font-size:13px;font-weight:500;color:#c53030;text-align:center;margin:10px 0 0;padding:10px 14px;background:#fff5f5;border:1px solid #fed7d7;border-radius:10px;line-height:1.5}
+
+/* ── Secure text ── */
+.secure-text{font-size:12px;font-weight:500;color:var(--muted);text-align:center;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:5px}
+
+/* ── Payment icons row ── */
+.payment-icons{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pay-icon{height:22px;opacity:.65}
+
+/* ── Share row ── */
+.share-row{display:flex;align-items:center;gap:10px;margin-top:20px}
+.share-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;flex-shrink:0}
+.share-btn{width:36px;height:36px;border-radius:50%;background:rgba(13,33,69,0.06);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .15s;flex-shrink:0}
+.share-btn:hover{background:rgba(13,33,69,0.12);transform:scale(1.08)}
+
+/* ── Reviews section ── */
+.reviews-section{margin-top:40px}
+.reviews-heading{font-size:18px;font-weight:700;color:var(--navy);margin:0 0 6px}
+.rating-summary{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.stars-display{display:flex;gap:2px}
+.star-svg{width:16px;height:16px}
+.rating-avg{font-size:20px;font-weight:800;color:var(--navy);letter-spacing:-0.5px}
+.rating-count{font-size:13px;font-weight:500;color:var(--muted)}
+.review-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px}
+.review-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.review-avatar{width:36px;height:36px;border-radius:50%;background:var(--green-pale);color:var(--green);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.review-author{font-size:13px;font-weight:700;color:var(--navy)}
+.review-date{font-size:11px;font-weight:500;color:var(--muted);margin-top:1px}
+.review-stars{display:flex;gap:2px;margin-left:auto}
+.review-text{font-size:13px;font-weight:400;color:rgba(13,33,69,0.65);line-height:1.65}
+.empty-reviews{text-align:center;padding:36px 20px;color:var(--muted);font-size:14px;font-weight:500}
+
+/* ── 404 / error state ── */
+.not-found{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 20px;min-height:50vh}
+.not-found-icon{margin-bottom:20px;opacity:.35}
+.not-found h2{font-size:22px;font-weight:800;color:var(--navy);margin:0 0 8px}
+.not-found p{font-size:14px;font-weight:500;color:var(--muted);margin:0}
+
+/* ── Skeleton ── */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── Fade-up ── */
+.fu{opacity:0;transform:translateY(16px);animation:fu .4s ease forwards}
+.fu-1{animation-delay:.06s}.fu-2{animation-delay:.13s}.fu-3{animation-delay:.20s}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+
+/* ── Loading skeleton layout ── */
+.sk-cover{width:100%;aspect-ratio:16/9;border-radius:16px;margin-bottom:20px}
+.sk-line{height:14px;margin-bottom:10px}
+.sk-title{height:28px;width:75%;margin-bottom:14px}
+.sk-para{height:12px;margin-bottom:8px}
+.sk-para:last-child{width:60%}
+.sk-card-inner{background:#fff;border-radius:20px;padding:24px}
+.sk-price{height:36px;width:50%;margin-bottom:12px}
+.sk-input{height:46px;border-radius:12px;margin-bottom:12px}
+.sk-btn{height:52px;border-radius:50px;margin-top:8px}
+</style>
+</head>
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<!-- ── Navbar ── -->
+<nav class="nav">
+  <a class="nav-logo" href="/">
+    <span style="letter-spacing:-0.5px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></span>
+  </a>
+  <div class="nav-actions" id="nav-actions" style="visibility:hidden">
+    <div class="nav-desktop-actions" style="display:flex;align-items:center;gap:10px;">
+      <a class="btn-login" href="/login.html">Log In</a>
+      <a class="btn-signup" href="/signup.html">Sign Up</a>
+    </div>
+    <a class="btn-get-started" href="/signup.html">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── Main content ── -->
+<main class="page" id="main-content">
+  <!-- Loading skeleton -->
+  <div id="skeleton" class="product-grid">
+    <!-- Content skeleton (first on mobile) -->
+    <div class="product-content">
+      <div class="sk sk-cover"></div>
+      <div class="sk sk-title"></div>
+      <div class="sk sk-para"></div>
+      <div class="sk sk-para" style="width:90%;"></div>
+      <div class="sk sk-para"></div>
+      <div class="sk sk-para"></div>
+    </div>
+    <!-- Card skeleton -->
+    <div class="purchase-col">
+      <div class="sk-card-inner" style="border:1px solid #e2e8f0;">
+        <div class="sk sk-price"></div>
+        <div class="sk sk-line" style="width:70%;margin-bottom:20px;"></div>
+        <div class="sk sk-input"></div>
+        <div class="sk sk-input"></div>
+        <div class="sk sk-btn"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Not found -->
+  <div id="not-found" style="display:none;">
+    <div class="not-found">
+      <div class="not-found-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+      <h2>This product is no longer available</h2>
+      <p>The link may have expired or the seller has removed this product.</p>
+    </div>
+  </div>
+
+  <!-- Product content -->
+  <div id="product-root" style="display:none;" class="product-grid fu">
+
+    <!-- ── PRODUCT CONTENT (first on mobile — Fix E) ── -->
+    <div class="product-content fu fu-2">
+
+      <!-- Cover image -->
+      <div class="cover-wrap" id="cover-wrap"></div>
+
+      <!-- Seller row -->
+      <div class="seller-row" id="seller-row"></div>
+
+      <!-- Title -->
+      <h1 class="product-title" id="product-title"></h1>
+
+      <!-- Description -->
+      <p class="product-desc" id="product-desc"></p>
+
+    </div>
+
+    <!-- ── PURCHASE CARD (second on mobile, right column on desktop via order:2) ── -->
+    <div class="purchase-col">
+      <div class="purchase-card fu fu-1" id="purchase-card">
+        <div class="price-row">
+          <span class="price-amount" id="price-amount">$0</span>
+          <span class="price-currency" id="price-currency">USD</span>
+        </div>
+        <!-- Shown to international buyers when product is priced in a Stripe-unsupported
+             currency (e.g. NGN). Displays the live USD equivalent so buyers know
+             what they will actually be charged at Stripe checkout. -->
+        <p class="price-fx-estimate" id="price-fx-estimate"></p>
+        <p class="delivery-hint" id="delivery-hint"></p>
+
+        <input class="input-field" id="buyer-name" type="text" placeholder="Full Name" autocomplete="name" required/>
+        <input class="input-field" id="buyer-email" type="email" placeholder="Email Address" autocomplete="email" required/>
+
+        <button class="btn-buy" id="btn-buy" onclick="handleBuyNow()" style="display:none;">
+          <span class="btn-buy-spinner" id="buy-spinner"></span>
+          <span id="btn-card-text">Pay Now</span>
+        </button>
+
+        <button class="btn-buy btn-buy-crypto" id="btn-crypto" onclick="handleCryptoBuy()" style="display:none;">
+          <span class="btn-buy-spinner" id="crypto-spinner"></span>
+          <span id="btn-crypto-text">Pay with Crypto</span>
+        </button>
+
+        <p class="payment-unavailable" id="payment-unavailable" style="display:none;">
+          Payment is currently unavailable for this product. Please contact the seller.
+        </p>
+
+        <p class="secure-text">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Secured by Kreddlo. Instant delivery after payment.
+        </p>
+
+        <!-- Payment method icons -->
+        <div class="payment-icons" id="payment-icons"></div>
+      </div>
+
+      <!-- Share row -->
+      <div class="share-row fu fu-2">
+        <span class="share-label">Share</span>
+        <button class="share-btn" title="Share on X / Twitter" onclick="shareTwitter()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#0d2145"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.733-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </button>
+        <button class="share-btn" title="Share on WhatsApp" onclick="shareWhatsApp()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zm-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884zm8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+        </button>
+        <button class="share-btn" title="Copy link" onclick="copyLink()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /product-root -->
+
+  <!-- ── REVIEWS ── -->
+  <div id="reviews-root" style="display:none;" class="reviews-section fu fu-3">
+    <h2 class="reviews-heading">Verified Reviews</h2>
+    <div class="rating-summary" id="rating-summary"></div>
+    <div id="reviews-list"></div>
+  </div>
+
+</main>
+
+<script>
+// ── State ──────────────────────────────────────────
+let _product = null;
+let _productId = null;
+let _platformSettings = {};
+
+// ── Toast ──────────────────────────────────────────
+function showToast(msg, dur = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// Mirrors the uplift formula in netlify/functions/create-product-order.js:
+// chargeAmount = amount / (1 - platformFeePercent/100). Used so the price
+// shown on the page always matches what the buyer will actually be charged.
+function payableTotal(base) {
+  const pct = typeof _platformSettings.platformFeePercent === 'number' ? _platformSettings.platformFeePercent : 2.5;
+  return pct < 100 ? (Number(base) || 0) / (1 - pct / 100) : (Number(base) || 0);
+}
+
+// ── Stars helper ───────────────────────────────────
+function renderStars(rating, size = 16) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    const full = i <= Math.floor(rating);
+    const partial = !full && i === Math.ceil(rating) && rating % 1 > 0;
+    const pct = partial ? Math.round((rating % 1) * 100) : (full ? 100 : 0);
+    html += `<svg width="${size}" height="${size}" class="star-svg" viewBox="0 0 24 24">
+      <defs><linearGradient id="sg${i}"><stop offset="${pct}%" stop-color="#f5a623"/><stop offset="${pct}%" stop-color="#e2e8f0"/></linearGradient></defs>
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="url(#sg${i})" stroke="none"/>
+    </svg>`;
+  }
+  return html;
+}
+
+// ── Init ────────────────────────────────────────────
+document.addEventListener('firebase-ready', async () => {
+  const slug = new URLSearchParams(window.location.search).get('slug');
+  if (!slug) { show404(); return; }
+
+  try {
+    const db = window._db;
+    const { collection, query, where, getDocs, doc, getDoc } = window._fsQuery;
+
+    // Load product and platform settings in parallel
+    const [snap, settingsSnap] = await Promise.all([
+      getDocs(query(collection(db, 'products'), where('slug', '==', slug))),
+      getDoc(doc(db, 'config', 'platform'))
+    ]);
+
+    if (snap.empty) { show404(); return; }
+
+    _platformSettings = settingsSnap.exists() ? settingsSnap.data() : {};
+
+    const docSnap = snap.docs[0];
+    _productId = docSnap.id;
+    _product = { id: docSnap.id, ...docSnap.data() };
+
+    if (_product.active === false || _product.status === 'removed_by_admin') { show404(); return; }
+
+    renderProduct(_product);
+    loadReviews(_productId);
+
+    // Track the click on the affiliate-links record (fresh referral visit only —
+    // i.e. the ?ref= param was present in the URL, not just stored from a prior visit).
+    try {
+      const refParam = new URLSearchParams(window.location.search).get('ref');
+      if (refParam) {
+        fetch('/.netlify/functions/track-affiliate-link', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ action: 'click', affiliateUid: refParam, productId: _productId })
+        }).catch(function() { /* non-fatal */ });
+      }
+    } catch (e) { /* non-fatal */ }
+  } catch (e) {
+    console.error(e);
+    show404();
+  }
+});
+
+// ── 404 ─────────────────────────────────────────────
+function show404() {
+  document.getElementById('skeleton').style.display = 'none';
+  document.getElementById('not-found').style.display = 'block';
+}
+
+// ── Render product ───────────────────────────────────
+async function renderProduct(p) {
+  document.getElementById('skeleton').style.display = 'none';
+  document.getElementById('product-root').style.display = 'grid';
+
+  // ── SEO — use stored sellerName as initial value (will be updated after live fetch) ──
+  const _seoSellerName = p.sellerName || p.displayName || 'Kreddlo Seller';
+  document.title = `${p.title} — ${_seoSellerName} | Kreddlo`;
+  document.querySelector('meta[name="description"]').setAttribute('content', (p.description || '').slice(0, 155));
+  document.querySelector('meta[property="og:title"]').setAttribute('content', `${p.title} — ${_seoSellerName} | Kreddlo`);
+  document.querySelector('meta[property="og:description"]').setAttribute('content', (p.description || '').slice(0, 155));
+  if (p.coverUrl) document.querySelector('meta[property="og:image"]').setAttribute('content', p.coverUrl);
+
+  // Dynamic SEO — updates all OG, Twitter and JSON-LD with real product data
+  if (typeof window.applySEO === 'function') {
+    window.applySEO({
+      title:       `${p.title} — ${_seoSellerName} | Kreddlo`,
+      description: (p.description || '').slice(0, 155),
+      url:         window.location.href,
+      image:       p.coverUrl || 'https://kreddlo.space/assets/og-image.png',
+      type:        'product',
+      name:        p.title,
+    });
+  }
+
+  // ── Cover image ──
+  const coverWrap = document.getElementById('cover-wrap');
+  if (p.coverUrl) {
+    coverWrap.innerHTML = `<img class="cover-img" src="${p.coverUrl}" alt="${escHtml(p.title)}" loading="eager" decoding="async" onerror="this.parentElement.innerHTML='<div class=\\'cover-placeholder\\'><svg width=\\'48\\' height=\\'48\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'rgba(13,33,69,0.2)\\' stroke-width=\\'1.5\\'><rect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'2\\'/><circle cx=\\'8.5\\' cy=\\'8.5\\' r=\\'1.5\\'/><path d=\\'M21 15l-5-5L5 21\\'/></svg></div>'"/>`;
+  } else {
+    coverWrap.innerHTML = `<div class="cover-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.2)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>`;
+  }
+
+  // ── Seller row — fetch live from publicProfiles for accurate name/photo ──
+  const sellerRow = document.getElementById('seller-row');
+  let sellerName = p.sellerName || p.displayName || 'Kreddlo Seller';
+  let sellerPhoto = p.sellerPhoto || null;
+  let kycVerified = p.kycStatus === 'verified';
+
+  if (p.uid) {
+    try {
+      const { doc, getDoc } = window._fsQuery;
+      const userSnap = await getDoc(doc(window._db, 'publicProfiles', p.uid));
+      if (userSnap.exists()) {
+        const u = userSnap.data();
+        if (u.displayName || u.name) sellerName = u.displayName || u.name;
+        if (u.photoURL)  sellerPhoto = u.photoURL;
+        if (u.kycStatus) kycVerified = u.kycStatus === 'verified';
+      }
+    } catch (_) { /* fall back to stored product fields */ }
+  }
+
+  const initials = sellerName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const avatarEl = sellerPhoto
+    ? `<img class="seller-avatar" src="${escHtml(sellerPhoto)}" alt="${escHtml(sellerName)}" loading="lazy" decoding="async"/>`
+    : `<div class="seller-avatar-init">${initials}</div>`;
+  const verifiedBadge = kycVerified
+    ? `<span class="badge-verified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>`
+    : '';
+  sellerRow.innerHTML = `${avatarEl}<span class="seller-name">${escHtml(sellerName)}</span>${verifiedBadge}`;
+
+  // ── Title & description ──
+  document.getElementById('product-title').textContent = p.title || '';
+  document.getElementById('product-desc').textContent = p.description || '';
+
+  // ── Price ──
+  const currency = (p.currency || 'USD').toUpperCase();
+  const price = payableTotal(Number(p.cardPrice || p.price) || 0);
+  const cryptoPrice = payableTotal(Number(p.cryptoPrice) || 0);
+  const formatter = new Intl.NumberFormat('en', { style: 'currency', currency: currency });
+  document.getElementById('price-amount').textContent = formatter.format(price);
+  document.getElementById('price-currency').textContent = currency;
+
+  // ── Crypto button ──
+  const cryptoBtn = document.getElementById('btn-crypto');
+  if (_platformSettings.cryptoEnabled && cryptoPrice > 0) {
+    const cryptoFormatter = new Intl.NumberFormat('en', { style: 'currency', currency: currency });
+    document.getElementById('btn-crypto-text').textContent = `Pay with Crypto — ${cryptoFormatter.format(cryptoPrice)}`;
+    cryptoBtn.style.display = 'flex';
+  } else {
+    cryptoBtn.style.display = 'none';
+  }
+
+  // ── Check if card payment is available ──
+  // Route by BUYER location (timezone), not product currency.
+  // Flutterwave is for African buyers; Stripe is for everyone else.
+  const buyerTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  const buyerIsAfrican = buyerTimezone.startsWith('Africa/');
+  let cardMethod = null;
+  if (buyerIsAfrican && _platformSettings.flutterwaveEnabled) {
+    cardMethod = 'flutterwave';
+  } else if (!buyerIsAfrican && _platformSettings.stripeEnabled) {
+    cardMethod = 'stripe';
+  } else if (_platformSettings.flutterwaveEnabled) {
+    cardMethod = 'flutterwave';
+  }
+
+  const cardBtn = document.getElementById('btn-buy');
+  const unavailableMsg = document.getElementById('payment-unavailable');
+  if (!cardMethod) {
+    cardBtn.style.display = 'none';
+    if (!(_platformSettings.cryptoEnabled && cryptoPrice > 0)) {
+      unavailableMsg.style.display = 'block';
+    }
+  } else {
+    // Update label with price before revealing button
+    document.getElementById('btn-card-text').textContent = `Pay Now — ${formatter.format(price)}`;
+    cardBtn.style.display = 'flex';
+    unavailableMsg.style.display = 'none';
+  }
+
+  // ── Delivery hint ──
+  const hint = p.deliveryType === 'instant-auto'
+    ? 'Delivered instantly after payment'
+    : 'Seller responds within 24 hours';
+  document.getElementById('delivery-hint').textContent = hint;
+
+  // ── Payment icons ──
+  renderPaymentIcons(p, _platformSettings, cardMethod);
+
+  // ── FX estimate for international buyers on Stripe-unsupported currencies ──
+  // When a UK/US/EU buyer lands on an NGN (or UGX/RWF/XOF/TZS) product,
+  // Fix 2 converts the amount to USD at Stripe checkout. Show a live estimate
+  // here so the buyer knows upfront what they will actually be charged.
+  fetchAndShowFxEstimate(p, buyerIsAfrican, cardMethod);
+
+  // ── Facebook Pixel ──
+  if (p.integrations && p.integrations.facebookPixelId) {
+    injectFBPixel(p.integrations.facebookPixelId);
+  }
+
+  // ── Google Tag Manager ──
+  if (p.integrations && p.integrations.googleTagManager) {
+    injectGTM(p.integrations.googleTagManager);
+  }
+
+  // ── Google Analytics ──
+  if (p.integrations && p.integrations.googleAnalytics) {
+    injectGA(p.integrations.googleAnalytics);
+  }
+
+  // ── Browser-side Purchase pixel on payment success (deduplication with CAPI) ──
+  const _urlParams = new URLSearchParams(window.location.search);
+  if (_urlParams.get('payment') === 'success' && window.fbq) {
+    const _successOrderId = _urlParams.get('orderId') || '';
+    try {
+      fbq('track', 'Purchase', {
+        content_ids:  [_productId],
+        content_type: 'product',
+        value:        Number(p.cardPrice || p.price) || 0,
+        currency:     (p.currency || 'USD').toUpperCase(),
+      }, { eventID: _successOrderId });
+    } catch(e) {}
+  }
+}
+
+// ── FX estimate for international buyers ────────────
+// Currencies Stripe cannot charge in (mirrors STRIPE_UNSUPPORTED_CURRENCIES in
+// create-product-order.js — keep both lists in sync if currencies are added).
+const _STRIPE_UNSUPPORTED = new Set(['NGN', 'UGX', 'RWF', 'XOF', 'TZS']);
+
+// Display-only timezone → likely local currency map. Used solely to decide
+// which currency symbol to show in the "≈" estimate text below — never sent
+// to any payment function and never used to pick a gateway. Gateway routing
+// (buyerIsAfrican / cardMethod, here and at checkout) is completely
+// untouched and unaffected by this map.
+const _TZ_LOCAL_CURRENCY = {
+  'Africa/Lagos':         'NGN',
+  'Africa/Abuja':         'NGN',
+  'Africa/Nairobi':       'KES',
+  'Africa/Johannesburg':  'ZAR',
+  'Africa/Accra':         'GHS',
+  'Africa/Cairo':         'EGP',
+  'Africa/Kampala':       'UGX',
+  'Africa/Dar_es_Salaam': 'TZS',
+  'Africa/Kigali':        'RWF',
+  'Africa/Abidjan':       'XOF',
+  'Africa/Dakar':         'XOF',
+};
+
+async function fetchAndShowFxEstimate(p, buyerIsAfrican, cardMethod) {
+  const el = document.getElementById('price-fx-estimate');
+  if (!el) return;
+
+  const productCurrency = (p.currency || 'USD').toUpperCase();
+  const price           = payableTotal(Number(p.cardPrice || p.price) || 0);
+
+  if (!cardMethod || price <= 0) {
+    el.textContent = '';
+    el.style.display = 'none';
+    return;
+  }
+
+  // FX buffer — same margin create-product-order.js / create-stripe-payment.js
+  // apply server-side, so the estimate shown here never drifts from the real
+  // charge. Default 0 (no buffer) if not configured.
+  const fxBuffer = (typeof _platformSettings.platformFxBuffer === 'number' && _platformSettings.platformFxBuffer > 0)
+    ? _platformSettings.platformFxBuffer
+    : 0;
+
+  let fromCurrency, toCurrency, suffix;
+
+  if (!buyerIsAfrican && _STRIPE_UNSUPPORTED.has(productCurrency)) {
+    // Direction 1 (existing, unchanged condition): NGN/UGX/RWF/XOF/TZS
+    // product, non-African buyer routed to Stripe — Stripe charges in USD.
+    // Show the USD equivalent.
+    fromCurrency = productCurrency;
+    toCurrency   = 'USD';
+    suffix       = 'USD at checkout';
+  } else if (buyerIsAfrican && cardMethod === 'flutterwave' && productCurrency !== 'USD' && !_STRIPE_UNSUPPORTED.has(productCurrency)) {
+    // Direction 2 (new): non-African-currency product (e.g. USD), African
+    // buyer routed to Flutterwave by the existing, untouched routing logic.
+    // Flutterwave still charges in the product's listed currency — this is
+    // purely an estimate of what that is in the buyer's likely local
+    // currency, derived from the same timezone signal the routing already
+    // uses. Never used to change routing or the actual charge.
+    const localCurrency = _TZ_LOCAL_CURRENCY[Intl.DateTimeFormat().resolvedOptions().timeZone];
+    if (!localCurrency || localCurrency === productCurrency) {
+      el.textContent = '';
+      el.style.display = 'none';
+      return;
+    }
+    fromCurrency = productCurrency;
+    toCurrency   = localCurrency;
+    suffix       = `${localCurrency} (estimate)`;
+  } else {
+    el.textContent = '';
+    el.style.display = 'none';
+    return;
+  }
+
+  // Show a loading state immediately so the layout doesn't jump
+  el.textContent = 'Fetching exchange estimate…';
+  el.style.display = 'block';
+
+  try {
+    // Frankfurter returns rates FROM the base currency.
+    // e.g. ?from=NGN&to=USD gives { rates: { USD: 0.000625 } }
+    const res  = await fetch(
+      `https://api.frankfurter.app/latest?from=${encodeURIComponent(fromCurrency)}&to=${encodeURIComponent(toCurrency)}`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if (!res.ok) throw new Error('rate fetch failed');
+    const data = await res.json();
+    const rate = data?.rates?.[toCurrency];
+    if (!rate || isNaN(rate)) throw new Error('no rate');
+
+    const bufferedRate = rate * (1 + fxBuffer / 100);
+    // Round up to 2dp — same as server-side Math.ceil logic in create-product-order.js
+    const converted = Math.ceil(price * bufferedRate * 100) / 100;
+    const convFmt    = new Intl.NumberFormat('en', { style: 'currency', currency: toCurrency }).format(converted);
+
+    el.textContent = `≈ ${convFmt} ${suffix} · rate varies`;
+    el.style.display = 'block';
+  } catch (_) {
+    // Non-fatal — hide silently; showing stale/wrong data is worse than showing nothing
+    el.textContent = '';
+    el.style.display = 'none';
+  }
+}
+
+// ── Payment icons ───────────────────────────────────
+// cardMethod is the gateway the buyer will actually use ('stripe', 'flutterwave', or null).
+// Icons reflect the buyer-based routing from Fix 1, not the product currency.
+function renderPaymentIcons(p, platformSettings, cardMethod) {
+  const container = document.getElementById('payment-icons');
+  let html = '';
+
+  // Show card brand icons only when card payment is actually available for this buyer
+  if (cardMethod) {
+    html += cardIcon('VISA') + cardIcon('MC') + cardIcon('AMEX');
+  }
+
+  if (platformSettings.cryptoEnabled && (Number(p.cryptoPrice) > 0)) {
+    html += `
+      <svg class="pay-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" aria-label="Bitcoin">
+        <rect width="38" height="24" rx="4" fill="#f7931a"/>
+        <text x="19" y="16" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">BTC</text>
+      </svg>
+      <svg class="pay-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" aria-label="Ethereum">
+        <rect width="38" height="24" rx="4" fill="#627eea"/>
+        <text x="19" y="16" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">ETH</text>
+      </svg>
+      <svg class="pay-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" aria-label="USDT">
+        <rect width="38" height="24" rx="4" fill="#26a17b"/>
+        <text x="19" y="16" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" font-family="sans-serif">USDT</text>
+      </svg>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function cardIcon(type) {
+  const colors = { VISA: '#1a1f71', MC: '#eb001b', AMEX: '#007bc1' };
+  const c = colors[type] || '#333';
+  return `<svg class="pay-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" aria-label="${type}">
+    <rect width="38" height="24" rx="4" fill="#f4f6f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="19" y="16" text-anchor="middle" font-size="${type === 'AMEX' ? 7 : 9}" font-weight="800" fill="${c}" font-family="sans-serif">${type}</text>
+  </svg>`;
+}
+
+// ── Facebook Pixel ───────────────────────────────────
+function injectFBPixel(pixelId) {
+  if (window._fbPixelInjected) return;
+  window._fbPixelInjected = true;
+  const s = document.createElement('script');
+  s.textContent = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${pixelId}');fbq('track','ViewContent',{content_name:'${escJs(_product ? _product.title : '')}',content_ids:['${escJs(_productId || '')}'],content_type:'product'});`;
+  document.head.appendChild(s);
+}
+
+// ── Google Tag Manager ───────────────────────────────
+function injectGTM(containerId) {
+  if (window._gtmInjected) return;
+  window._gtmInjected = true;
+  // Head script
+  const s = document.createElement('script');
+  s.textContent = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${containerId}');`;
+  document.head.appendChild(s);
+  // Body noscript fallback
+  const ns = document.createElement('noscript');
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.googletagmanager.com/ns.html?id=${containerId}`;
+  iframe.height = '0';
+  iframe.width = '0';
+  iframe.style.cssText = 'display:none;visibility:hidden';
+  ns.appendChild(iframe);
+  document.body.insertBefore(ns, document.body.firstChild);
+}
+
+// ── Google Analytics (GA4) ───────────────────────────
+function injectGA(measurementId) {
+  if (window._gaInjected) return;
+  window._gaInjected = true;
+  // Load gtag.js
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.appendChild(s);
+  // Initialise
+  const i = document.createElement('script');
+  i.textContent = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${measurementId}',{page_title:document.title,page_location:window.location.href});`;
+  document.head.appendChild(i);
+}
+
+// ── Buy Now (Card / Bank) ─────────────────────────────
+async function handleBuyNow() {
+  const nameEl = document.getElementById('buyer-name');
+  const emailEl = document.getElementById('buyer-email');
+  nameEl.classList.remove('error');
+  emailEl.classList.remove('error');
+
+  let valid = true;
+  if (!nameEl.value.trim()) { nameEl.classList.add('error'); nameEl.focus(); valid = false; }
+  if (!emailEl.value.trim() || !emailEl.value.includes('@')) { emailEl.classList.add('error'); if (valid) emailEl.focus(); valid = false; }
+  if (!valid) { showToast('Please fill in all fields correctly.'); return; }
+
+  const btn = document.getElementById('btn-buy');
+  const spinner = document.getElementById('buy-spinner');
+  const btnText = document.getElementById('btn-card-text');
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  btnText.textContent = 'Processing…';
+
+  // Fire pixel InitiateCheckout if configured
+  if (_product && _product.integrations && _product.integrations.facebookPixelId && window.fbq) {
+    try { fbq('track', 'InitiateCheckout', { content_ids: [_productId], content_type: 'product', value: _product.cardPrice || _product.price, currency: _product.currency || 'USD' }); } catch(e){}
+  }
+
+  try {
+    // Smart routing based on BUYER location (timezone), not product currency.
+    // A UK buyer on an NGN product must get Stripe, not Flutterwave.
+    const buyerTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    const buyerIsAfrican = buyerTimezone.startsWith('Africa/');
+
+    let paymentMethod = null;
+    if (buyerIsAfrican && _platformSettings.flutterwaveEnabled) {
+      paymentMethod = 'flutterwave';
+    } else if (!buyerIsAfrican && _platformSettings.stripeEnabled) {
+      paymentMethod = 'stripe';
+    } else if (_platformSettings.flutterwaveEnabled) {
+      paymentMethod = 'flutterwave';
+    }
+
+    if (!paymentMethod) {
+      throw new Error('Card payment is currently unavailable for this product. Please try crypto or contact the seller.');
+    }
+
+    const affiliateRef = (typeof window.getStoredAffiliateRef === 'function')
+      ? window.getStoredAffiliateRef()
+      : null;
+
+    // Fix E — if the buyer is logged in, send their verified ID token so
+    // the purchase gets linked to their real account, not just whatever
+    // email they typed into the form.
+    const authToken = (window._auth && window._auth.currentUser)
+      ? await window._auth.currentUser.getIdToken().catch(() => null)
+      : null;
+
+    const res = await fetch('/.netlify/functions/create-product-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+      },
+      body: JSON.stringify({
+        productId: _productId,
+        buyerEmail: emailEl.value.trim(),
+        buyerName: nameEl.value.trim(),
+        paymentMethod: paymentMethod,
+        // Sent so the server can convert USD-priced products to the buyer's
+        // local currency when routing through Flutterwave (which requires a
+        // local African currency, not USD). Ignored for Stripe and crypto.
+        buyerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        ...(affiliateRef ? { affiliateRef } : {})
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.checkoutUrl) {
+      throw new Error(data.error || 'Something went wrong. Please try again.');
+    }
+
+    window.location.href = data.checkoutUrl;
+  } catch (err) {
+    showToast(err.message || 'Payment failed. Please try again.');
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    const currency = (_product.currency || 'USD').toUpperCase();
+    const price = payableTotal(Number(_product.cardPrice || _product.price) || 0);
+    const formatter = new Intl.NumberFormat('en', { style: 'currency', currency: currency });
+    btnText.textContent = `Pay Now — ${formatter.format(price)}`;
+  }
+}
+
+// ── Buy with Crypto ───────────────────────────────────
+async function handleCryptoBuy() {
+  const nameEl = document.getElementById('buyer-name');
+  const emailEl = document.getElementById('buyer-email');
+  nameEl.classList.remove('error');
+  emailEl.classList.remove('error');
+
+  let valid = true;
+  if (!nameEl.value.trim()) { nameEl.classList.add('error'); nameEl.focus(); valid = false; }
+  if (!emailEl.value.trim() || !emailEl.value.includes('@')) { emailEl.classList.add('error'); if (valid) emailEl.focus(); valid = false; }
+  if (!valid) { showToast('Please fill in all fields correctly.'); return; }
+
+  const btn = document.getElementById('btn-crypto');
+  const spinner = document.getElementById('crypto-spinner');
+  const btnText = document.getElementById('btn-crypto-text');
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  btnText.textContent = 'Processing…';
+
+  try {
+    const affiliateRef = (typeof window.getStoredAffiliateRef === 'function')
+      ? window.getStoredAffiliateRef()
+      : null;
+
+    // Fix E — same as the card-payment path above: send the buyer's
+    // verified ID token, if logged in, so the purchase links to their
+    // real account.
+    const authToken = (window._auth && window._auth.currentUser)
+      ? await window._auth.currentUser.getIdToken().catch(() => null)
+      : null;
+
+    const res = await fetch('/.netlify/functions/create-product-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+      },
+      body: JSON.stringify({
+        productId: _productId,
+        buyerEmail: emailEl.value.trim(),
+        buyerName: nameEl.value.trim(),
+        paymentMethod: 'crypto',
+        ...(affiliateRef ? { affiliateRef } : {})
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.checkoutUrl) {
+      throw new Error(data.error || 'Something went wrong. Please try again.');
+    }
+
+    window.location.href = data.checkoutUrl;
+  } catch (err) {
+    showToast(err.message || 'Crypto payment failed. Please try again.');
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    const currency = (_product.currency || 'USD').toUpperCase();
+    const cryptoPrice = payableTotal(Number(_product.cryptoPrice) || 0);
+    const formatter = new Intl.NumberFormat('en', { style: 'currency', currency: currency });
+    btnText.textContent = `Pay with Crypto — ${formatter.format(cryptoPrice)}`;
+  }
+}
+
+// ── Share helpers ─────────────────────────────────────
+function shareTwitter() {
+  const text = encodeURIComponent(`Check out ${_product ? _product.title : 'this product'}`);
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'noopener');
+}
+
+function shareWhatsApp() {
+  const title = _product ? _product.title : 'this product';
+  const msg = encodeURIComponent(`Check out ${title} ${window.location.href}`);
+  window.open(`whatsapp://send?text=${msg}`, '_blank');
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => showToast('Link copied!')).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = window.location.href;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Link copied!');
+  });
+}
+
+// ── Reviews ───────────────────────────────────────────
+async function loadReviews(productId) {
+  const db = window._db;
+  const { collection, query, where, getDocs, orderBy, limit } = window._fsQuery;
+
+  try {
+    // Reviews are stored with targetUid (seller's uid) — not productId.
+    // Use the seller uid from the product doc for an accurate query.
+    const sellerUid = window._product && window._product.uid;
+    if (!sellerUid) { renderReviews([]); return; }
+
+    const q = query(
+      collection(db, 'reviews'),
+      where('targetUid', '==', sellerUid),
+      where('sourceType', '==', 'product'),
+      orderBy('createdAt', 'desc'),
+      limit(10)
+    );
+    const snap = await getDocs(q);
+    const reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderReviews(reviews);
+  } catch(e) {
+    console.warn('Reviews error:', e);
+    // Fallback: try without sourceType filter in case index isn't built yet
+    try {
+      const sellerUid = window._product && window._product.uid;
+      if (!sellerUid) { renderReviews([]); return; }
+      const { collection, query, where, getDocs, orderBy, limit } = window._fsQuery;
+      const qFallback = query(
+        collection(db, 'reviews'),
+        where('targetUid', '==', sellerUid),
+        orderBy('createdAt', 'desc'),
+        limit(10)
+      );
+      const snap2 = await getDocs(qFallback);
+      renderReviews(snap2.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (_) {
+      renderReviews([]);
+    }
+  }
+}
+
+function renderReviews(reviews) {
+  const root = document.getElementById('reviews-root');
+  const list = document.getElementById('reviews-list');
+  const ratingSummary = document.getElementById('rating-summary');
+  root.style.display = 'block';
+
+  if (reviews.length === 0) {
+    ratingSummary.innerHTML = '';
+    list.innerHTML = `<div class="empty-reviews">No reviews yet</div>`;
+    return;
+  }
+
+  const avg = reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length;
+  ratingSummary.innerHTML = `
+    <span class="rating-avg">${avg.toFixed(1)}</span>
+    <div class="stars-display">${renderStars(avg, 18)}</div>
+    <span class="rating-count">(${reviews.length} review${reviews.length !== 1 ? 's' : ''})</span>`;
+
+  list.innerHTML = reviews.map(r => {
+    const name = r.reviewerName || 'Anonymous';
+    const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const date = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+    return `<div class="review-card">
+      <div class="review-header">
+        <div class="review-avatar">${initials}</div>
+        <div>
+          <div class="review-author">${escHtml(name)}</div>
+          ${date ? `<div class="review-date">${date}</div>` : ''}
+        </div>
+        <div class="review-stars">${renderStars(r.rating || 0, 14)}</div>
+      </div>
+      ${r.comment ? `<p class="review-text">${escHtml(r.comment)}</p>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Escape helpers ────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escJs(s) {
+  return String(s).replace(/'/g, "\\'").replace(/\\/g, '\\\\');
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

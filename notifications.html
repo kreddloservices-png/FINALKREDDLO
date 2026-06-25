@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Notifications — Kreddlo</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+/* Glass */
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+/* Buttons */
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:9px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.28);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:transparent;color:rgba(13,33,69,0.52);border:1.5px solid #e2e8f0;border-radius:50px;padding:8px 18px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+.btn-ghost:hover{border-color:#0d2145;color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-blue{background:#e8f0fe;color:#1a56db}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-red{background:#fde8e8;color:#c81e1e}
+.badge-grey{background:rgba(13,33,69,0.07);color:rgba(13,33,69,0.55)}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+
+/* Label */
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+/* Skeleton */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Nav */
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+/* Mobile menu */
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Blobs */
+.blob-n{position:absolute;width:min(500px,100vw);height:min(500px,100vw);background:radial-gradient(circle,rgba(13,33,69,0.09) 0%,transparent 70%);top:-100px;right:-40px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.blob-g{position:absolute;width:min(440px,100vw);height:min(440px,100vw);background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-60px;left:-40px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+/* Fade up */
+.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.12s}.fu-3{animation-delay:.19s}
+
+/* Notification item */
+.notif-item{display:flex;gap:16px;padding:18px 20px;border-bottom:1px solid #e2e8f0;cursor:pointer;transition:background .15s;position:relative;text-decoration:none;color:inherit}
+.notif-item:last-child{border-bottom:none}
+.notif-item:hover{background:rgba(13,33,69,0.025)}
+.notif-item:active{background:rgba(13,33,69,0.04)}
+.notif-item.unread{background:rgba(232,245,239,0.45)}
+.notif-item.unread:hover{background:rgba(232,245,239,0.70)}
+
+/* Timeline connector */
+.notif-timeline{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px}
+.notif-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:transform .15s}
+.notif-item:hover .notif-dot{transform:scale(1.2)}
+.notif-dot.unread{background:#2d8a5e;box-shadow:0 0 0 3px rgba(45,138,94,0.18)}
+.notif-dot.read{background:#e2e8f0;border:1.5px solid #cbd5e1}
+.notif-line{width:1.5px;flex:1;margin-top:6px;min-height:24px}
+.notif-line.unread{background:linear-gradient(to bottom,rgba(45,138,94,0.35),rgba(45,138,94,0.05))}
+.notif-line.read{background:#f0f2f6}
+
+/* Content */
+.notif-content{flex:1;min-width:0}
+.notif-title{font-size:14px;line-height:1.4;margin:0 0 4px;word-break:break-word}
+.notif-title.unread{font-weight:700;color:#0d2145}
+.notif-title.read{font-weight:500;color:rgba(13,33,69,0.72)}
+.notif-body{font-size:13px;font-weight:400;color:rgba(13,33,69,0.52);line-height:1.55;margin:0 0 6px;word-break:break-word}
+.notif-time{font-size:11px;font-weight:500;color:rgba(13,33,69,0.38);display:flex;align-items:center;gap:5px}
+.notif-time.unread{color:rgba(45,138,94,0.80)}
+
+/* Category pill on notification */
+.notif-type{display:inline-flex;align-items:center;padding:2px 8px;border-radius:50px;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:5px}
+
+/* Filter tabs */
+.filter-tab{padding:7px 16px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
+.filter-tab.active{background:#0d2145;color:#fff;border-color:#0d2145}
+.filter-tab:not(.active){background:transparent;color:rgba(13,33,69,0.52);border-color:#e2e8f0}
+.filter-tab:not(.active):hover{border-color:#0d2145;color:#0d2145}
+
+/* Responsive */
+@media(min-width:1024px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px!important;width:calc(100% - 248px)!important}
+  #page-content{padding:36px 40px!important;max-width:100%!important}
+  #page-content > div > div[style*="z-index:1"]{max-width:860px;margin:0 auto}
+}
+@media(min-width:768px) and (max-width:1023px){
+  #page-content{padding:28px 24px!important}
+}
+</style>
+<style id="mobile-first-patch">
+/* 1. BODY — no horizontal scroll on mobile */
+body { overflow-x: hidden !important; }
+
+/* 2. SIDEBAR — safe area on desktop */
+#sidebar {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding-top: max(30px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+
+/* 3. PAGE CONTENT — proper mobile padding, no bleed */
+#page-content {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  min-height: 100dvh !important;
+}
+
+/* 4. HAMBURGER — always visible on mobile, proper tap size */
+#hamburger {
+  display: flex !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+@media (min-width: 768px) {
+  #hamburger { display: none !important; }
+  #sidebar { display: flex !important; }
+}
+
+/* 5. LOADING OVERLAY — full screen properly */
+
+
+/* 6. NAV LINKS — prevent text overflow in sidebar */
+.nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 7. TOAST — above safe area on mobile */
+#toast {
+  bottom: max(24px, env(safe-area-inset-bottom, 24px)) !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+/* 8. MOBILE MENU — full height with safe area */
+#mobile-menu {
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding-top: max(30px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+</style>
+</head>
+<body style="visibility:hidden" class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+
+<!-- LOADING OVERLAY -->
+
+
+
+<!-- MOBILE BACKDROP -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:272px;height:100%;background:#091830;z-index:500;padding:30px 22px;display:flex;flex-direction:column;overflow-y:auto;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;margin-top:2px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button onclick="handleLogout()" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;">
+  <a href="/dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button onclick="handleLogout()" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrap" style="min-height:100vh;display:flex;flex-direction:column;width:100%;overflow-x:hidden;">
+
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 id="page-title" style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Notifications</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="window.location.href='notifications.html'" style="position:relative;width:38px;height:38px;background:rgba(13,33,69,0.06);border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.10)'" onmouseout="this.style.background='rgba(13,33,69,0.06)'">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;">MR</div>
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main id="page-content" style="flex:1;padding:22px 18px;width:100%;margin:0 auto;position:relative;overflow:hidden;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;">
+
+      <!-- HEADER ROW -->
+      <div class="fu fu-1" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;margin:0 0 2px;line-height:1.2;">All Notifications</h2>
+          <p id="notif-count-label" class="lbl" style="margin:0;">Loading...</p>
+        </div>
+        <button id="mark-all-btn" class="btn-green" onclick="markAllAsRead()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark All as Read
+        </button>
+      </div>
+
+      <!-- FILTER TABS -->
+      <div class="fu fu-2" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <button class="filter-tab active" onclick="filterNotifs('all', this)">All</button>
+        <button class="filter-tab" onclick="filterNotifs('unread', this)">Unread</button>
+        <button class="filter-tab" onclick="filterNotifs('payment', this)">Payments</button>
+        <button class="filter-tab" onclick="filterNotifs('project', this)">Projects</button>
+        <button class="filter-tab" onclick="filterNotifs('account', this)">Account</button>
+        <button class="filter-tab" onclick="filterNotifs('admin', this)">Admin</button>
+      </div>
+
+      <!-- NOTIFICATIONS LIST -->
+      <div class="fu fu-3 glass" style="overflow:hidden;padding:0;" id="notif-container">
+
+        <!-- Skeleton loading state -->
+        <div id="notif-skeleton" style="padding:8px 0;">
+          <div style="display:flex;gap:16px;padding:18px 20px;border-bottom:1px solid #e2e8f0;">
+            <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px;">
+              <div class="sk" style="width:10px;height:10px;border-radius:50%;"></div>
+              <div class="sk" style="width:1.5px;height:36px;margin-top:6px;border-radius:0;"></div>
+            </div>
+            <div style="flex:1;">
+              <div class="sk" style="height:13px;width:60%;margin-bottom:8px;"></div>
+              <div class="sk" style="height:11px;width:85%;margin-bottom:8px;"></div>
+              <div class="sk" style="height:10px;width:30%;"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;padding:18px 20px;border-bottom:1px solid #e2e8f0;">
+            <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px;">
+              <div class="sk" style="width:10px;height:10px;border-radius:50%;"></div>
+              <div class="sk" style="width:1.5px;height:36px;margin-top:6px;border-radius:0;"></div>
+            </div>
+            <div style="flex:1;">
+              <div class="sk" style="height:13px;width:45%;margin-bottom:8px;"></div>
+              <div class="sk" style="height:11px;width:75%;margin-bottom:8px;"></div>
+              <div class="sk" style="height:10px;width:25%;"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;padding:18px 20px;">
+            <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px;">
+              <div class="sk" style="width:10px;height:10px;border-radius:50%;"></div>
+            </div>
+            <div style="flex:1;">
+              <div class="sk" style="height:13px;width:55%;margin-bottom:8px;"></div>
+              <div class="sk" style="height:11px;width:80%;margin-bottom:8px;"></div>
+              <div class="sk" style="height:10px;width:20%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actual notification list -->
+        <div id="notif-list" style="display:none;"></div>
+
+        <!-- Empty state -->
+        <div id="notif-empty" style="display:none;padding:64px 24px;text-align:center;">
+          <div style="width:72px;height:72px;background:#e8f5ef;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="1.5" stroke-linecap="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </div>
+          <h3 style="font-size:17px;font-weight:800;color:#0d2145;margin:0 0 8px;letter-spacing:-0.3px;">All caught up</h3>
+          <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.48);margin:0;max-width:260px;margin-left:auto;margin-right:auto;line-height:1.6;">You have no new notifications right now.</p>
+        </div>
+
+        <!-- Filter empty state -->
+        <div id="notif-filter-empty" style="display:none;padding:48px 24px;text-align:center;">
+          <div style="width:56px;height:56px;background:rgba(13,33,69,0.05);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.35)" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <p style="font-size:14px;font-weight:600;color:rgba(13,33,69,0.45);margin:0;">No notifications in this category.</p>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ─── NAV CONFIG ───────────────────────────────────────────────────────────────
+const NAV_LINKS = {
+  buyer: [
+    { label:'Dashboard',     href:'buyer-dashboard.html',    icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+    { label:'Projects',      href:'buyer-projects.html',     icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+    { label:'Contracts',     href:'dashboard-contracts.html',icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+    { label:'Browse',        href:'browse.html',             icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+    { label:'Payments',      href:'buyer-payments.html',     icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' },
+    { label:'Purchases',     href:'buyer-purchases.html',    icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+    { label:'Affiliate',     href:'dashboard-affiliate.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+    { label:'Settings',      href:'dashboard-settings.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+  ],
+  freelancer: [
+    { label:'Dashboard',     href:'dashboard.html',          icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+    { label:'Earnings',      href:'dashboard-earnings.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+    { label:'Projects',      href:'dashboard-projects.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+    { label:'Invoices',      href:'/dashboard-invoices.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { label:'Store',         href:'store.html',              icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+    { label:'Products',      href:'dashboard-products.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+    { label:'Purchases',     href:'buyer-purchases.html',    icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+    { label:'Affiliate',     href:'dashboard-affiliate.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+    { label:'Contracts',     href:'dashboard-contracts.html',icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+    { label:'Withdraw',      href:'dashboard-withdraw.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' },
+    { label:'Browse',        href:'browse.html',             icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+    { label:'Settings',      href:'dashboard-settings.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+  ]
+};
+
+function buildNav(role, affiliateEnabled) {
+  const links = (NAV_LINKS[role] || NAV_LINKS.freelancer).filter(l => {
+    if (l.label === 'Affiliate') return affiliateEnabled === true;
+    return true;
+  });
+  const current = window.location.pathname.split('/').pop() || 'dashboard.html';
+  const html = links.map(l => {
+    let href = l.href;
+    if (l.label === 'Store') {
+      const uid = window._currentUid;
+      if (uid) href = 'store.html?uid=' + uid;
+    }
+    if (l.label === 'Profile') {
+      const uid = window._currentUid;
+      if (uid) href = 'profile.html?uid=' + uid;
+    }
+    const isActive = current === l.href || current === '' && l.href === 'dashboard.html';
+    return '<a href="' + href + '" class="nav-link' + (isActive ? ' active' : '') + '">' + l.icon + '<span>' + l.label + '</span></a>';
+  }).join('');
+  document.getElementById('desktop-nav').innerHTML = html;
+  document.getElementById('mobile-nav').innerHTML = html;
+}
+
+function openMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleLogout() {
+  window.location.href = 'login.html';
+}
+function showToast(msg, duration=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ─── NOTIFICATION DATA ────────────────────────────────────────────────────────
+let currentFilter = 'all';
+let notifications = [];
+
+// ─── TYPE CONFIG ──────────────────────────────────────────────────────────────
+const TYPE_CONFIG = {
+  payment: { label:'Payment', color:'#2d8a5e', bg:'#e8f5ef' },
+  project: { label:'Project', color:'#1a56db', bg:'#e8f0fe' },
+  account: { label:'Account', color:'#856404', bg:'#fff3cd' },
+  admin:   { label:'Admin',   color:'#7c3aed', bg:'#f3e8ff' },
+};
+function relTime(ts) {
+  const diff = (Date.now() - ts) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff/60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)} hr ago`;
+  if (diff < 172800) return 'Yesterday';
+  const days = Math.floor(diff/86400);
+  if (days < 7) return `${days} days ago`;
+  return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+
+// ─── SANITIZATION (FIX — audit finding N1) ──────────────────────────────────
+// notif.title/body/url/id can originate from send-push-notification.js or
+// send-smart-notification.js, both of which pass caller-supplied text
+// straight through. These were previously interpolated unescaped into
+// innerHTML (title/body) and into an inline onclick="..." attribute
+// (id/url), which is a stored-XSS path. escHtml() neutralizes HTML/attribute
+// injection; escJsString() additionally neutralizes the JS-string-literal
+// context the onclick attribute sits in. Apply escJsString() first, then
+// wrap the result in escHtml() — the browser HTML-decodes the attribute
+// before handing it to the JS parser, so escHtml() is what's actually
+// "outermost" at render time.
+function escHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escJsString(str) {
+  return String(str == null ? '' : str)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
+// Only allow navigating to http(s) targets — blocks javascript:/data:/vbscript:
+// URLs that could otherwise execute on notification click.
+function isSafeNotifUrl(url) {
+  if (!url) return false;
+  try {
+    const resolved = new URL(url, window.location.origin);
+    return resolved.protocol === 'http:' || resolved.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function getFiltered() {
+  if (currentFilter === 'all') return notifications;
+  if (currentFilter === 'unread') return notifications.filter(n => !n.read);
+  return notifications.filter(n => n.type === currentFilter);
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  const empty = document.getElementById('notif-empty');
+  const filterEmpty = document.getElementById('notif-filter-empty');
+  const filtered = getFiltered();
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Update count label
+  const countLabel = document.getElementById('notif-count-label');
+  countLabel.textContent = unreadCount > 0 ? `${unreadCount} unread` : 'No unread notifications';
+
+  // Toggle mark all button visibility
+  const markAllBtn = document.getElementById('mark-all-btn');
+  markAllBtn.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
+
+  // Bell dot is owned exclusively by shared.js's live Firestore listener
+  // (setupFCMAndBell) — this page must not also write to #bell-dot, since
+  // two writers on the same element from different data sources (this
+  // page's local one-time-fetched array vs. shared.js's real-time
+  // onSnapshot) is what caused the dot to show stale/incorrect state.
+
+  if (notifications.length === 0) {
+    list.style.display = 'none';
+    empty.style.display = 'block';
+    filterEmpty.style.display = 'none';
+    return;
+  }
+
+  if (filtered.length === 0) {
+    list.style.display = 'none';
+    empty.style.display = 'none';
+    filterEmpty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  filterEmpty.style.display = 'none';
+  list.style.display = 'block';
+
+  list.innerHTML = filtered.map((n, i) => {
+    const type = TYPE_CONFIG[n.type] || TYPE_CONFIG.account;
+    const isLast = i === filtered.length - 1;
+    const readClass = n.read ? 'read' : 'unread';
+
+    return `
+    <div class="notif-item ${readClass}" onclick="handleNotifClick('${escHtml(escJsString(n.id))}', '${escHtml(escJsString(n.url || ''))}')">
+      <div class="notif-timeline">
+        <div class="notif-dot ${readClass}"></div>
+        ${!isLast ? `<div class="notif-line ${readClass}"></div>` : ''}
+      </div>
+      <div class="notif-content">
+        <div style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:50px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;background:${type.bg};color:${type.color};margin-bottom:5px;">${type.label}</div>
+        <p class="notif-title ${readClass}">${escHtml(n.title)}</p>
+        <p class="notif-body">${escHtml(n.body)}</p>
+        <div class="notif-time ${readClass}">
+          ${!n.read ? `<svg width="8" height="8" viewBox="0 0 24 24" fill="#2d8a5e"><circle cx="12" cy="12" r="10"/></svg>` : `<svg width="8" height="8" viewBox="0 0 24 24" fill="rgba(13,33,69,0.25)"><circle cx="12" cy="12" r="10"/></svg>`}
+          ${relTime(n.createdAt)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function handleNotifClick(id, url) {
+  // Mark as read
+  const notif = notifications.find(n => n.id === id);
+  if (notif && !notif.read) {
+    notif.read = true;
+    // In production: update Firestore doc
+    renderNotifications();
+  }
+  // Navigate if URL — only ever to http(s) targets (see isSafeNotifUrl)
+  if (url && isSafeNotifUrl(url)) {
+    setTimeout(() => { window.location.href = url; }, 100);
+  }
+}
+
+function markAllAsRead() {
+  const unreadExists = notifications.some(n => !n.read);
+  if (!unreadExists) return;
+  notifications.forEach(n => n.read = true);
+  // In production: Firestore batch write setting read=true on all unread docs
+  renderNotifications();
+  showToast('All notifications marked as read');
+}
+
+function filterNotifs(type, btn) {
+  currentFilter = type;
+  // Update tab styling
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderNotifications();
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+window._boot = function(user, role, affiliateEnabled, db, firestoreModules) {
+  window._currentUid = user.uid;
+  buildNav(role || 'freelancer', affiliateEnabled === true);
+
+  const { collection, query, orderBy, limit, getDocs, updateDoc, doc, writeBatch, onSnapshot } = firestoreModules;
+  const uid = user.uid;
+
+  // Show skeleton, then keep notifications live for the rest of the session
+  const skeleton = document.getElementById('notif-skeleton');
+
+  if (window._notifUnsubscribe) { window._notifUnsubscribe(); }
+  window._notifUnsubscribe = onSnapshot(
+    query(
+      collection(db, 'users', uid, 'notifications'),
+      orderBy('createdAt', 'desc'),
+      limit(50)
+    ),
+    function(snap) {
+      notifications = [];
+      snap.forEach(function(d) {
+        var data = d.data();
+        var ts = data.createdAt && data.createdAt.toDate
+          ? data.createdAt.toDate().getTime()
+          : (typeof data.createdAt === 'number' ? data.createdAt : Date.now());
+        notifications.push({
+          id: d.id,
+          title: data.title || '',
+          body: data.body || '',
+          type: data.type || 'account',
+          read: data.read === true,
+          url: data.url || '',
+          createdAt: ts
+        });
+      });
+      if (skeleton) skeleton.style.display = 'none';
+      renderNotifications();
+    },
+    function(err) {
+      console.warn('Failed to load notifications:', err);
+      if (skeleton) skeleton.style.display = 'none';
+      notifications = [];
+      renderNotifications();
+    }
+  );
+
+  window.addEventListener('beforeunload', function() {
+    if (window._notifUnsubscribe) { window._notifUnsubscribe(); }
+  });
+
+  // Override handleNotifClick to also write to Firestore
+  window.handleNotifClick = function(id, url) {
+    var notif = notifications.find(function(n) { return n.id === id; });
+    if (notif && !notif.read) {
+      notif.read = true;
+      updateDoc(doc(db, 'users', uid, 'notifications', id), { read: true })
+        .catch(function(e) { console.warn('Mark read failed:', e); });
+      renderNotifications();
+    }
+    // Guard against unsafe URLs (javascript:, data:, etc.) — same check as
+    // pre-boot handleNotifClick, applied consistently after boot too.
+    if (url && isSafeNotifUrl(url)) {
+      setTimeout(function() { window.location.href = url; }, 100);
+    }
+  };
+
+  // Override markAllAsRead to write to Firestore
+  window.markAllAsRead = function() {
+    var unread = notifications.filter(function(n) { return !n.read; });
+    if (!unread.length) return;
+    var batch = writeBatch(db);
+    unread.forEach(function(n) {
+      batch.update(doc(db, 'users', uid, 'notifications', n.id), { read: true });
+      n.read = true;
+    });
+    batch.commit().catch(function(e) { console.warn('Batch mark-read failed:', e); });
+    renderNotifications();
+    showToast('All notifications marked as read');
+  };
+
+  document.body.style.visibility = 'visible';
+};
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+<script>
+// Safety: force-hide loading overlay after 10s if auth/boot stalls
+(function() {
+  var _safetyTimer = setTimeout(function() {
+    document.body.style.visibility = 'visible';
+  }, 10000);
+  window._clearSafetyTimer = function() { clearTimeout(_safetyTimer); };
+})();
+</script>
+
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, collection, query, orderBy, limit, getDocs, updateDoc, doc, getDoc, writeBatch, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+    authDomain:        'kreddlo.firebaseapp.com',
+    projectId:         'kreddlo',
+    storageBucket:     'kreddlo.firebasestorage.app',
+    messagingSenderId: '764500458567',
+    appId:             '1:764500458567:web:2389d5cf8c688caafd0562',
+  };
+  const app  = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  window.auth = auth;
+  const db   = getFirestore(app);
+  window.db  = db;
+  onAuthStateChanged(auth, function(user) {
+    if (!user) { window.location.href = '/login.html'; return; }
+    getDoc(doc(db, 'users', user.uid)).then(function(snap) {
+      var role = snap.exists() ? (snap.data().role || 'freelancer') : 'freelancer';
+      var affiliateEnabled = snap.exists() ? (snap.data().affiliateEnabled === true) : false;
+      if (typeof window._boot === 'function') window._boot(user, role, affiliateEnabled, db, { collection, query, orderBy, limit, getDocs, updateDoc, doc, writeBatch, onSnapshot });
+    });
+  });
+</script>
+</body>
+</html>

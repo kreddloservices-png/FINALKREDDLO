@@ -1,0 +1,382 @@
+[build]
+  # Injects the ADMIN_SECRET env var into admin.html at deploy time so the
+  # secret never lives in source. Set ADMIN_SECRET in Netlify → Site settings
+  # → Environment variables. The sed command replaces the empty content=""
+  # placeholder in the <meta name="admin-secret"> tag with the real value.
+  command  = "sed -i 's|<meta name=\"admin-secret\" content=\"\">|<meta name=\"admin-secret\" content=\"'\"$ADMIN_SECRET\"'\">|' admin.html"
+  publish  = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."kyc-submit"]
+  included_files = []
+
+
+[functions."scheduled-subscriptions"]
+  schedule = "0 0 * * *"
+
+[functions."scheduled-clear-earnings"]
+  schedule = "0 * * * *"
+
+# Hourly cleanup of expired rate-limit counter docs in the rateLimits
+# Firestore collection. Backup for when Firestore TTL policy is not
+# enabled on the collection. If TTL IS enabled, this job simply finds
+# nothing to delete and exits immediately — no cost or harm.
+[functions."scheduled-clear-rate-limits"]
+  schedule = "0 * * * *"
+
+[functions."process-email-queue"]
+  schedule = "*/5 * * * *"
+
+# Safety net for nowpayments-payout-webhook.js — polls NOWPayments for any
+# payout whose status callback never arrived, so a deducted balance never
+# sits unresolved indefinitely (see reconcile-stuck-payouts.js for details).
+[functions."reconcile-stuck-payouts"]
+  schedule = "*/20 * * * *"
+
+# ── Headers ─────────────────────────────────────────────────────────────────
+# Required so Firebase Messaging service worker can control the full origin
+[[headers]]
+  for = "/firebase-messaging-sw.js"
+  [headers.values]
+    Service-Worker-Allowed = "/"
+    Cache-Control = "no-cache"
+
+
+# ── Static asset caching ─────────────────────────────────────────────────────
+# Images, JS, and icon assets are content-addressed (versioned by filename).
+# Safe to cache for 1 year; HTML always revalidates so deploys propagate fast.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# ── Clean URL redirects ──────────────────────────────────────────────────────
+[[redirects]]
+  from = "/dashboard"
+  to   = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-earnings"
+  to   = "/dashboard-earnings.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-projects"
+  to   = "/dashboard-projects.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-withdraw"
+  to   = "/dashboard-withdraw.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-contracts"
+  to   = "/dashboard-contracts.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-settings"
+  to   = "/dashboard-settings.html"
+  status = 200
+
+[[redirects]]
+  from = "/buyer-dashboard"
+  to   = "/buyer-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/buyer-projects"
+  to   = "/buyer-projects.html"
+  status = 200
+
+[[redirects]]
+  from = "/buyer-payments"
+  to   = "/buyer-payments.html"
+  status = 200
+
+[[redirects]]
+  from = "/notifications"
+  to   = "/notifications.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile-setup"
+  to   = "/profile-setup.html"
+  status = 200
+
+# Profile page OG preview — /profile?uid=<uid> → og-meta function
+# Must be before the plain /profile rule so Netlify matches query-param first.
+[[redirects]]
+  from   = "/profile"
+  to     = "/.netlify/functions/og-meta?type=profile&uid=:uid"
+  status = 200
+  [redirects.query]
+    uid = ":uid"
+
+# Fallback: /profile with no ?uid param — show static page
+[[redirects]]
+  from = "/profile"
+  to   = "/profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/browse"
+  to   = "/browse.html"
+  status = 200
+
+[[redirects]]
+  from = "/pricing"
+  to   = "/pricing.html"
+  status = 200
+
+[[redirects]]
+  from = "/how-it-works"
+  to   = "/how-it-works.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to   = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to   = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to   = "/terms.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to   = "/signup.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to   = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/verify"
+  to   = "/verify.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to   = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/stripe-webhook"
+  to   = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/flutterwave-webhook"
+  to   = "/.netlify/functions/flutterwave-webhook"
+  status = 200
+
+# ── Social media OG preview routing ──────────────────────────────────────────
+# Social crawlers (Facebook, WhatsApp, Twitter/X, LinkedIn, Telegram, Discord,
+# iMessage, Slack) do NOT execute JavaScript. The OG meta tags on p.html,
+# store.html, and profile.html are all set via JS, so crawlers only ever see
+# the empty placeholder tags in the raw static HTML — producing no preview.
+#
+# Fix: route requests that carry a query param (?slug= / ?storeSlug= / ?uid=)
+# through og-meta.js, which reads Firestore server-side (Admin SDK) and returns
+# a minimal HTML page with fully-populated og:image, og:title, og:description,
+# and Twitter Card tags. Human visitors are forwarded instantly to the real page
+# via <meta http-equiv="refresh" content="0; url=..."> so there is zero UX
+# difference for real users.
+#
+# Rule ordering: these rules must come BEFORE the plain /p, /store, /profile
+# redirects below so Netlify intercepts query-param requests first.
+
+# Product page — /p?slug=<productSlug>
+[[redirects]]
+  from   = "/p"
+  to     = "/.netlify/functions/og-meta?type=product&slug=:slug"
+  status = 200
+  [redirects.query]
+    slug = ":slug"
+
+# Store page — /store?storeSlug=<storeSlug>
+[[redirects]]
+  from   = "/store"
+  to     = "/.netlify/functions/og-meta?type=store&slug=:storeSlug"
+  status = 200
+  [redirects.query]
+    storeSlug = ":storeSlug"
+
+# Fallback: /p with no ?slug param — show static page
+[[redirects]]
+  from = "/p"
+  to   = "/p.html"
+  status = 200
+
+# ISSUE 4 FIX: forward :slug as ?slug= so p.html (which reads
+# new URLSearchParams(location.search).get('slug')) can resolve the product.
+# Without this, /p/my-service redirected to /p.html with no query string,
+# causing slug to be null and the page to immediately render a 404.
+[[redirects]]
+  from = "/p/:slug"
+  to   = "/p.html?slug=:slug"
+  status = 200
+
+# Fallback: /store with no ?storeSlug param — show static page
+[[redirects]]
+  from = "/store"
+  to   = "/store.html"
+  status = 200
+
+# ISSUE 4 FIX: forward :slug as ?storeSlug= so store.html (which reads
+# params.get('storeSlug') || params.get('slug')) can resolve the seller store.
+# Without this, /store/john redirected to /store.html with no query string,
+# causing storeSlug and uid to both be null and the page to show empty.
+[[redirects]]
+  from = "/store/:slug"
+  to   = "/store.html?storeSlug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/review"
+  to   = "/review.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-products"
+  to   = "/dashboard-products.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-affiliate"
+  to   = "/dashboard-affiliate.html"
+  status = 200
+
+[[redirects]]
+  from = "/buyer-purchases"
+  to   = "/buyer-purchases.html"
+  status = 200
+
+[[redirects]]
+  from = "/email-confirm"
+  to   = "/email-confirm.html"
+  status = 200
+
+[[redirects]]
+  from = "/nowpayments-webhook"
+  to   = "/.netlify/functions/nowpayments-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard-invoices"
+  to   = "/dashboard-invoices.html"
+  status = 200
+
+[[redirects]]
+  from = "/invoice"
+  to   = "/invoice.html"
+  status = 200
+
+[[redirects]]
+  from = "/course-viewer"
+  to   = "/course-viewer.html"
+  status = 200
+
+# ISSUE 4 FIX: /index clean URL redirect (the only HTML page without one).
+# Netlify serves / -> index.html automatically, but /index (no extension)
+# would fall through to the 404 catch-all without this rule.
+[[redirects]]
+  from = "/index"
+  to   = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/photonpay-webhook"
+  to   = "/.netlify/functions/photonpay-webhook"
+  status = 200
+
+# ── Blog clean URL redirects ──────────────────────────────────────────────────
+# Allows sharing /blog/post-slug without the .html extension.
+# Must come BEFORE the 404 catch-all.
+[[redirects]]
+  from = "/blog"
+  to   = "/blog/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/kreddlo-vs-selar-vs-nestuge"
+  to   = "/blog/kreddlo-vs-selar-vs-nestuge.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/creator-platform-fees-compared"
+  to   = "/blog/creator-platform-fees-compared.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/one-link-three-ways-to-get-paid"
+  to   = "/blog/one-link-three-ways-to-get-paid.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/buyer-protection-paying-freelancers-safely"
+  to   = "/blog/buyer-protection-paying-freelancers-safely.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/what-is-escrow-freelancer-protection"
+  to   = "/blog/what-is-escrow-freelancer-protection.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/escrow-backed-custom-freelance-projects"
+  to   = "/blog/escrow-backed-custom-freelance-projects.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/get-paid-freelance-work-without-scam"
+  to   = "/blog/get-paid-freelance-work-without-scam.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/how-to-invoice-clients-nigeria"
+  to   = "/blog/how-to-invoice-clients-nigeria.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/how-to-sell-ebook-digital-product-nigeria"
+  to   = "/blog/how-to-sell-ebook-digital-product-nigeria.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/kyc-verified-freelancers-why-it-matters"
+  to   = "/blog/kyc-verified-freelancers-why-it-matters.html"
+  status = 200
+
+# ── 404 catch-all (must be last) ─────────────────────────────────────────────
+[[redirects]]
+  from   = "/*"
+  to     = "/404.html"
+  status = 404

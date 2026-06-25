@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Affiliate Dashboard — Kreddlo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-green:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#0d2145;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(13,33,69,0.20);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-primary:hover{background:#162f5e;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s,background .15s}
+.btn-ghost:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+
+.badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+.badge-red{background:#fff0f0;color:#c81e1e}
+
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(9,24,48,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:24px;box-shadow:0 24px 80px rgba(13,33,69,0.20);width:100%;max-width:480px;max-height:90vh;max-height:90dvh;overflow-y:auto;padding:28px}
+
+/* stat cards */
+.stat-card{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:18px;box-shadow:0 4px 20px rgba(13,33,69,0.07);padding:18px 18px 16px}
+
+/* table */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(13,33,69,0.45);padding:0 10px 10px;white-space:nowrap}
+td{padding:11px 10px;border-top:1px solid #f0f2f6;font-weight:500;color:#0d2145;vertical-align:middle}
+tr:last-child td{border-bottom:1px solid #f0f2f6}
+
+/* blob decorations */
+.blob-n{position:fixed;top:-120px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(13,33,69,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+.blob-g{position:fixed;bottom:-100px;left:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0d2145;color:#fff;padding:11px 22px;border-radius:50px;font-size:13px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:9999;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Sidebar responsive */
+@media(min-width:900px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px}
+}
+
+/* NAV — prevent text overflow */
+.nav-link {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Stat grid */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* Product stats row */
+.prod-row{display:grid;grid-template-columns:1fr;gap:0}
+@media(min-width:600px){.prod-row{grid-template-columns:2fr 1fr 1fr 1fr 1fr}}
+
+/* Section header */
+.sec-hd{font-size:15px;font-weight:700;color:#0d2145;margin:0 0 14px}
+
+/* empty state */
+.empty{text-align:center;padding:40px 20px}
+.empty svg{margin:0 auto 12px;display:block;opacity:.3}
+.empty p{font-size:13px;font-weight:500;color:rgba(13,33,69,0.48);margin:0}
+
+/* Withdrawal input */
+.wd-input{width:100%;padding:14px 16px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;color:#0d2145;outline:none;transition:border-color .2s,box-shadow .2s;background:rgba(255,255,255,0.9);-webkit-appearance:none}
+.wd-input:focus{border-color:#2d8a5e;box-shadow:0 0 0 3px rgba(45,138,94,0.11)}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<!-- MOBILE SLIDE-IN MENU -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;background:rgba(9,24,48,0.45);z-index:399;"></div>
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:260px;height:100%;background:#091830;z-index:400;padding:30px 18px;display:flex;flex-direction:column;overflow-y:auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;">
+    <a href="/dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+    <button onclick="closeMobileMenu()" style="width:32px;height:32px;background:rgba(255,255,255,0.07);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="mb-signout" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;">
+  <a href="/dashboard.html" id="sidebar-logo" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="dt-signout" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrap" style="min-height:100vh;display:flex;flex-direction:column;">
+
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Affiliate</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="window.location.href='/notifications.html'" style="position:relative;width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;"></div>
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main style="flex:1;padding:22px 18px;width:100%;position:relative;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;max-width:900px;margin:0 auto;">
+
+      <!-- GATE: not enrolled -->
+      <div id="not-enrolled-state" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="width:64px;height:64px;background:rgba(45,138,94,0.10);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h2 style="font-size:20px;font-weight:800;color:#0d2145;margin:0 0 8px;">You haven't joined the Affiliate Program</h2>
+        <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);margin:0 0 24px;max-width:360px;margin-left:auto;margin-right:auto;line-height:1.6;">Enable affiliate mode in your settings to start earning commissions on products you promote.</p>
+        <a href="/dashboard-settings.html" class="btn-green" style="text-decoration:none;">Go to Settings to Enable</a>
+      </div>
+
+      <!-- MAIN CONTENT: enrolled -->
+      <div id="enrolled-state" style="display:none;">
+
+        <!-- Payouts frozen notice -->
+        <div id="payouts-frozen-notice" style="display:none;align-items:center;gap:12px;background:rgba(99,60,180,0.08);border:1.5px solid rgba(99,60,180,0.25);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633cb4" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>
+          <span style="font-size:13px;font-weight:600;color:#633cb4;">Withdrawals temporarily paused by platform. Please <a href="mailto:support@kreddlo.com" id="support-mailto-link" style="color:#2d8a5e;text-decoration:underline;">contact support</a> for assistance.</span>
+        </div>
+
+        <!-- Unified Available Balance card (per-currency via renderCard) -->
+        <div style="margin-bottom:22px;">
+          <div class="stat-card" style="border-left:3px solid #2d8a5e;margin-bottom:14px;">
+            <p class="lbl" style="margin:0 0 6px;">Available Balance</p>
+            <!-- renderCard() injects the big number + currency chips here -->
+            <div id="bal-card-value" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;min-height:32px;">—</div>
+            <!-- Withdraw buttons — side by side on wide screens, stacked on narrow -->
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+              <button class="btn-green" onclick="openWithdrawModal('crypto')" style="flex:1;min-width:120px;padding:9px 14px;font-size:12px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Withdraw Crypto
+              </button>
+              <button class="btn-primary" onclick="openWithdrawModal('bank')" style="flex:1;min-width:120px;padding:9px 14px;font-size:12px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Withdraw to Bank
+              </button>
+            </div>
+          </div>
+          <p id="bal-pending" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.48);margin:0;"></p>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="stats-grid" style="margin-bottom:22px;">
+          <div class="stat-card">
+            <p class="lbl" style="margin:0 0 6px;">Total Earned</p>
+            <p id="stat-total" style="font-size:20px;font-weight:800;color:#0d2145;margin:0;">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="lbl" style="margin:0 0 6px;">Pending</p>
+            <p id="stat-pending" style="font-size:20px;font-weight:800;color:#856404;margin:0;">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="lbl" style="margin:0 0 6px;">Paid Out</p>
+            <p id="stat-paid" style="font-size:20px;font-weight:800;color:#2d8a5e;margin:0;">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="lbl" style="margin:0 0 6px;">Conversions</p>
+            <p id="stat-conversions" style="font-size:20px;font-weight:800;color:#0d2145;margin:0;">—</p>
+          </div>
+        </div>
+
+        <!-- Promoted products -->
+        <div class="glass" style="padding:20px;margin-bottom:20px;">
+          <h3 class="sec-hd">Products You're Promoting</h3>
+          <div id="products-loading" style="padding:16px 0;">
+            <div class="sk" style="height:42px;border-radius:10px;margin-bottom:10px;"></div>
+            <div class="sk" style="height:42px;border-radius:10px;margin-bottom:10px;"></div>
+            <div class="sk" style="height:42px;border-radius:10px;"></div>
+          </div>
+          <div id="products-empty" class="empty" style="display:none;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <p>No affiliate links created yet.<br>Browse products and copy your link.</p>
+            <a href="/browse.html" class="btn-green" style="margin-top:14px;text-decoration:none;font-size:13px;">Browse Products</a>
+          </div>
+          <div id="products-list" style="display:none;">
+            <!-- Scrollable on mobile -->
+            <div class="tbl-wrap">
+              <table id="products-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th style="text-align:right;">Clicks</th>
+                    <th style="text-align:right;">Conv.</th>
+                    <th style="text-align:right;">Pending</th>
+                    <th style="text-align:right;">Earned</th>
+                    <th style="text-align:right;">Link</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Earnings history -->
+        <div class="glass" style="padding:20px;margin-bottom:20px;">
+          <h3 class="sec-hd">Earnings History</h3>
+          <div id="earnings-loading" style="padding:16px 0;">
+            <div class="sk" style="height:38px;border-radius:10px;margin-bottom:10px;"></div>
+            <div class="sk" style="height:38px;border-radius:10px;margin-bottom:10px;"></div>
+            <div class="sk" style="height:38px;border-radius:10px;"></div>
+          </div>
+          <div id="earnings-empty" class="empty" style="display:none;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <p>No earnings yet. Share your affiliate links to get started.</p>
+          </div>
+          <div id="earnings-list" style="display:none;">
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th style="text-align:right;">Commission</th>
+                    <th style="text-align:right;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="earnings-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payout history -->
+        <div class="glass" style="padding:20px;">
+          <h3 class="sec-hd">Payout History</h3>
+          <div id="payouts-loading" style="padding:16px 0;">
+            <div class="sk" style="height:38px;border-radius:10px;margin-bottom:10px;"></div>
+            <div class="sk" style="height:38px;border-radius:10px;"></div>
+          </div>
+          <div id="payouts-empty" class="empty" style="display:none;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <p>No payouts yet.</p>
+          </div>
+          <div id="payouts-list" style="display:none;">
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th style="text-align:right;">Gross</th>
+                    <th style="text-align:right;">Fee</th>
+                    <th style="text-align:right;">Net</th>
+                    <th style="text-align:right;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="payouts-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /enrolled-state -->
+
+    </div><!-- /max-width -->
+  </main>
+</div><!-- /main-wrap -->
+
+<!-- WITHDRAW MODAL -->
+<div id="withdraw-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="wd-modal-title">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 id="wd-modal-title" style="font-size:18px;font-weight:800;color:#0d2145;margin:0;">Withdraw Earnings</h3>
+      <button onclick="closeWithdrawModal()" style="width:32px;height:32px;background:rgba(13,33,69,0.06);border:none;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;" aria-label="Close">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Balance info -->
+    <div style="background:#f8f9fb;border-radius:14px;padding:16px;margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);">Available balance</span>
+        <span id="wd-available" style="font-size:15px;font-weight:800;color:#2d8a5e;">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);">Withdrawal fee (<span id="wd-fee-pct">—</span>%)</span>
+        <span id="wd-fee-display" style="font-size:13px;font-weight:700;color:#c81e1e;">—</span>
+      </div>
+    </div>
+
+    <!-- Amount input -->
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:6px;">Amount to withdraw</label>
+      <input id="wd-amount-input" type="number" min="1" step="0.01" class="wd-input" placeholder="0.00" oninput="updateWithdrawCalc()" />
+    </div>
+
+    <!-- Net display -->
+    <div style="background:rgba(45,138,94,0.06);border:1px solid rgba(45,138,94,0.15);border-radius:14px;padding:14px;margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;color:rgba(13,33,69,0.65);">You'll receive</span>
+        <span id="wd-net-display" style="font-size:18px;font-weight:800;color:#2d8a5e;">—</span>
+      </div>
+    </div>
+
+    <!-- Payout method tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      <button id="wd-tab-crypto" onclick="switchWdTab('crypto')" style="flex:1;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;border:1.5px solid #2d8a5e;background:#2d8a5e;color:#fff;transition:all .15s;">Crypto Wallet</button>
+      <button id="wd-tab-bank" onclick="switchWdTab('bank')" style="flex:1;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:rgba(13,33,69,0.55);transition:all .15s;">Bank Transfer</button>
+    </div>
+
+    <!-- Currency selector — swaps between crypto coins and fiat currencies per tab -->
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:8px;">Withdrawal Currency</label>
+
+      <!-- Crypto currencies (shown when Crypto Wallet tab is active) -->
+      <div id="wd-crypto-currencies" style="display:flex;flex-wrap:wrap;gap:7px;">
+        <button class="wd-cur-btn wd-cur-selected" data-cur="USDT" onclick="selectWdCurrency('USDT')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #2d8a5e;background:#e8f5ef;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:#2d8a5e;cursor:pointer;transition:all .15s;">USDT</button>
+        <button class="wd-cur-btn" data-cur="USDC" onclick="selectWdCurrency('USDC')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">USDC</button>
+        <button class="wd-cur-btn" data-cur="BTC" onclick="selectWdCurrency('BTC')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">BTC</button>
+        <button class="wd-cur-btn" data-cur="ETH" onclick="selectWdCurrency('ETH')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">ETH</button>
+        <button class="wd-cur-btn" data-cur="BNB" onclick="selectWdCurrency('BNB')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">BNB</button>
+        <button class="wd-cur-btn" data-cur="SOL" onclick="selectWdCurrency('SOL')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">SOL</button>
+        <button class="wd-cur-btn" data-cur="TRX" onclick="selectWdCurrency('TRX')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">TRX</button>
+        <button class="wd-cur-btn" data-cur="XRP" onclick="selectWdCurrency('XRP')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">XRP</button>
+        <button class="wd-cur-btn" data-cur="LTC" onclick="selectWdCurrency('LTC')" style="padding:7px 13px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);cursor:pointer;transition:all .15s;">LTC</button>
+      </div>
+
+      <!-- Fiat currencies (shown when Bank Transfer tab is active) -->
+      <div id="wd-fiat-currencies" style="display:none;">
+        <select id="wd-fiat-select" onchange="onWdFiatChange()" style="width:100%;padding:13px 38px 13px 14px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:600;color:#0d2145;outline:none;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230d2145' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\") no-repeat right 14px center;-webkit-appearance:none;appearance:none;cursor:pointer;transition:border-color .2s;">
+          <option value="NGN">NGN — Nigerian Naira</option>
+          <option value="GHS">GHS — Ghanaian Cedi</option>
+          <option value="KES">KES — Kenyan Shilling</option>
+          <option value="UGX">UGX — Ugandan Shilling</option>
+          <option value="TZS">TZS — Tanzanian Shilling</option>
+          <option value="ZAR">ZAR — South African Rand</option>
+          <option value="XOF">XOF — West African CFA Franc</option>
+          <option value="XAF">XAF — Central African CFA Franc</option>
+          <option value="RWF">RWF — Rwandan Franc</option>
+          <option value="ETB">ETB — Ethiopian Birr</option>
+          <option value="USD">USD — US Dollar</option>
+          <option value="GBP">GBP — British Pound</option>
+          <option value="EUR">EUR — Euro</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Crypto payout section -->
+    <div id="wd-section-crypto">
+      <div style="background:#fff3cd;border:1px solid #f6c843;border-radius:12px;padding:12px 14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        <p style="font-size:12px;font-weight:500;color:#856404;margin:0;line-height:1.5;">Payout will be sent to the withdrawal wallet set in your <a href="/dashboard-settings.html" style="color:#856404;font-weight:700;">Settings</a>. Ensure it is correct before proceeding.</p>
+      </div>
+    </div>
+
+    <!-- Bank payout section -->
+    <div id="wd-section-bank" style="display:none;">
+
+      <!-- Saved bank details display -->
+      <div id="wd-bank-saved" style="display:none;background:#f8f9fb;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px 16px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:rgba(13,33,69,0.5);text-transform:uppercase;letter-spacing:.04em;">Saved Bank Account</span>
+          <button onclick="editBankDetails()" style="font-size:11px;font-weight:700;color:#2d8a5e;background:none;border:none;cursor:pointer;padding:0;font-family:'Plus Jakarta Sans',sans-serif;">Edit</button>
+        </div>
+        <div id="wd-bank-saved-name" style="font-size:14px;font-weight:800;color:#0d2145;margin-bottom:2px;">—</div>
+        <div id="wd-bank-saved-bank" style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.55);">—</div>
+        <div id="wd-bank-saved-acct" style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.55);">—</div>
+      </div>
+
+      <!-- Bank entry form -->
+      <div id="wd-bank-form">
+        <!-- Loading indicator -->
+        <div id="wd-bank-loading" style="display:none;font-size:12px;color:rgba(13,33,69,0.5);margin-bottom:12px;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" style="animation:spin 1s linear infinite;flex-shrink:0;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          Loading bank details…
+        </div>
+        <!-- Live gateway FX rate note (shown for cross-currency withdrawals) -->
+        <div id="wd-fx-note" style="display:none;padding:9px 12px;border-radius:10px;background:#e8f5ef;border:1px solid #b2dfcc;font-size:12px;font-weight:600;color:#2d8a5e;margin-bottom:12px;"></div>
+
+        <!-- FLW bank selector (shown for African currencies) -->
+        <div id="wd-flw-section">
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:6px;">Bank</label>
+            <div style="position:relative;">
+              <select id="wd-bank-select" onchange="onWdBankChange()" style="width:100%;padding:13px 38px 13px 14px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:600;color:#0d2145;outline:none;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230d2145' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\") no-repeat right 14px center;-webkit-appearance:none;appearance:none;cursor:pointer;transition:border-color .2s;">
+                <option value="">Select bank…</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:6px;">Account Number</label>
+            <input id="wd-acct-number" type="tel" maxlength="10" placeholder="e.g. 0123456789" onblur="lookupAccountName()" style="width:100%;padding:13px 14px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:600;color:#0d2145;outline:none;transition:border-color .2s;background:#fff;" />
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:6px;">Account Name <span id="wd-acct-lookup-spinner" style="display:none;font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);">Looking up…</span></label>
+            <input id="wd-acct-name" type="text" readonly placeholder="Auto-filled after lookup" style="width:100%;padding:13px 14px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#0d2145;outline:none;background:rgba(13,33,69,0.03);cursor:default;" />
+          </div>
+        </div>
+
+        <!-- Stripe international fields (injected by renderAffiliateStripeFields) -->
+        <div id="wd-stripe-section" style="display:none;"></div>
+
+        <!-- Stripe info pill -->
+        <div id="wd-stripe-pill" style="display:none;background:#eef2ff;border:1px solid rgba(82,84,163,0.2);border-radius:12px;padding:10px 12px;margin-bottom:12px;flex-direction:row;gap:8px;align-items:flex-start;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5254a3" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+          <span style="font-size:12px;font-weight:500;color:#5254a3;line-height:1.4;">Processed via Stripe — secure international bank transfer</span>
+        </div>
+
+        <!-- Save checkbox -->
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+          <input type="checkbox" id="wd-save-bank" checked style="width:16px;height:16px;accent-color:#2d8a5e;cursor:pointer;flex-shrink:0;" />
+          <label for="wd-save-bank" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.55);cursor:pointer;">Save bank details for future withdrawals</label>
+        </div>
+        <div id="wd-bank-lookup-error" style="display:none;font-size:12px;font-weight:600;color:#c81e1e;margin-bottom:10px;padding:10px 12px;background:#fde8e8;border-radius:10px;"></div>
+      </div>
+
+      <div id="wd-flw-info" style="background:#e8f5ef;border:1px solid rgba(45,138,94,0.2);border-radius:12px;padding:12px 14px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        <p style="font-size:12px;font-weight:500;color:#2d8a5e;margin:0;line-height:1.5;">Bank payout is processed via Flutterwave. Transfers typically arrive within 1–2 business days.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeWithdrawModal()" class="btn-ghost" style="flex:1;">Cancel</button>
+      <button id="wd-confirm-btn" onclick="confirmWithdraw()" class="btn-green" style="flex:1;">Withdraw</button>
+    </div>
+    <p id="wd-error" style="font-size:12px;font-weight:600;color:#c81e1e;margin:12px 0 0;text-align:center;display:none;"></p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- SHARED JS (bell dot etc.) -->
+<script src="/assets/shared.js"></script>
+
+<script type="module">
+import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut }       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, collection,
+         query, where, orderBy, limit, getDocs,
+         onSnapshot }                                 from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ── Firebase config ───────────────────────────────────────────────────────────
+var FIREBASE_CONFIG = {
+  apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+  authDomain:        'kreddlo.firebaseapp.com',
+  projectId:         'kreddlo',
+  storageBucket:     'kreddlo.firebasestorage.app',
+  messagingSenderId: '764500458567',
+  appId:             '1:764500458567:web:2389d5cf8c688caafd0562'
+};
+
+var app  = initializeApp(FIREBASE_CONFIG);
+var auth = getAuth(app);
+var db   = getFirestore(app);
+
+// Expose for shared.js
+window.auth             = auth;
+window.db               = db;
+window.onAuthStateChanged = onAuthStateChanged;
+window.fsCollection     = collection;
+window.fsQuery          = query;
+window.fsWhere          = where;
+window.fsLimit          = limit;
+window.fsOnSnapshot     = onSnapshot;
+window.fsGetDoc         = getDoc;
+window.fsDoc            = doc;
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var _uid              = null;
+var _userRole         = null;
+var _affiliateBal     = 0;   // total (crypto + fiat)
+var _affiliateCryptoBal = 0; // withdrawable via crypto only
+var _affiliateFiatBal   = 0; // withdrawable via bank only
+var _settings         = {};
+var _walletAddr   = null;
+var _wdTab        = 'crypto'; // 'crypto' | 'bank'
+var _wdCurrency   = 'USDT';  // selected withdrawal currency
+var _bankList     = [];       // [{ code, name }] from Flutterwave
+var _bankListLoaded = false;
+var _bankListCurrency = null; // currency the cached _bankList was fetched for
+var _savedBankCode   = null;
+var _savedBankName   = null;
+var _savedAcctNumber = null;
+var _savedAcctName   = null;
+// FX state for affiliate bank withdrawals — DISPLAY ESTIMATE ONLY.
+// affiliateBalance is always stored in USD; the amount field for bank
+// withdrawals is always denominated in USD. This rate is never sent to
+// the backend and never used in any debit calculation.
+var _affiliateFxRate     = null;  // 1 USD = N _wdCurrency (estimate)
+var _affiliateFxCurrency = null;  // currency the rate applies to
+var _affiliateFxSource   = null;  // 'flutterwave' | 'stripe'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Currency helpers — delegate to shared module (assets/shared.js) ──────────
+function fmt(n, cur) {
+  cur = cur || _settings.platformCurrency || 'USD';
+  if (window.kreddloCurrency && window.kreddloCurrency.fmt) return window.kreddloCurrency.fmt(Number(n) || 0, cur);
+  try { return new Intl.NumberFormat('en', { style: 'currency', currency: cur, maximumFractionDigits: 2 }).format(Number(n) || 0); } catch(e) { return cur + ' ' + Number(n || 0).toFixed(2); }
+}
+function fmtCurrency(amount, currency) {
+  if (window.kreddloCurrency && window.kreddloCurrency.fmt) return window.kreddloCurrency.fmt(amount, currency);
+  try { return new Intl.NumberFormat('en', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 2 }).format(Number(amount) || 0); } catch(e) { return (currency || 'USD') + ' ' + Number(amount || 0).toFixed(2); }
+}
+function fmtDate(ts) {
+  if (!ts) return '—';
+  var d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+// Nav arrays keyed by role — Affiliate link always shown (page is only
+// reachable for opted-in users; gate enforced client-side on auth)
+var NAV_FREELANCER = [
+  { label:'Dashboard',    href:'/dashboard.html',          icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Earnings',     href:'/dashboard-earnings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { label:'Projects',     href:'/dashboard-projects.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Invoices',     href:'/dashboard-invoices.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+  { label:'Store',        href:'/store.html',              icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Products',     href:'/dashboard-products.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { label:'Purchases',    href:'/buyer-purchases.html',    icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',    href:'/dashboard-affiliate.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Contracts',    href:'/dashboard-contracts.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Withdraw',     href:'/dashboard-withdraw.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' },
+  { label:'Browse',       href:'/browse.html',             icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Settings',     href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+];
+
+var NAV_BUYER = [
+  { label:'Dashboard',    href:'/buyer-dashboard.html',    icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Projects',     href:'/buyer-projects.html',     icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Contracts',    href:'/dashboard-contracts.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Browse',       href:'/browse.html',             icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Payments',     href:'/buyer-payments.html',     icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' },
+  { label:'Purchases',    href:'/buyer-purchases.html',    icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',    href:'/dashboard-affiliate.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Settings',     href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' }
+];
+
+function buildNav(uid, role) {
+  var navItems = (role === 'buyer') ? NAV_BUYER : NAV_FREELANCER;
+  var cur = (window.location.pathname.split('/').pop() || 'dashboard-affiliate.html');
+  var html = navItems.map(function(n) {
+    var href = n.href;
+    if (n.label === 'Store'   && uid) href = '/store.html?uid=' + uid;
+    if (n.label === 'Profile' && uid) href = '/profile.html?uid=' + uid;
+    var active = cur === n.href.replace('/','') ? ' active' : '';
+    return '<a href="' + href + '" class="nav-link' + active + '">' + n.icon + n.label + '</a>';
+  }).join('');
+  document.getElementById('mobile-nav').innerHTML  = html;
+  document.getElementById('desktop-nav').innerHTML = html;
+}
+
+// ── Body scroll lock (touch-safe, fixes iOS background shift) ─────────────────
+// overflow:hidden on <body> does not reliably stop background scroll/bounce on
+// iOS Safari while a modal or menu is open. This fixed-position technique pins
+// the body at its current scroll offset instead, which iOS respects, and
+// restores the exact scroll position on unlock.
+window.lockBodyScroll = function() {
+  if (document.body.classList.contains('body-scroll-locked')) return;
+  window._scrollLockY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + window._scrollLockY + 'px';
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.classList.add('body-scroll-locked');
+};
+window.unlockBodyScroll = function() {
+  if (!document.body.classList.contains('body-scroll-locked')) return;
+  document.body.classList.remove('body-scroll-locked');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  window.scrollTo(0, window._scrollLockY || 0);
+  window._scrollLockY = 0;
+};
+
+// ── Mobile menu ───────────────────────────────────────────────────────────────
+window.openMobileMenu  = function() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  lockBodyScroll();
+};
+window.closeMobileMenu = function() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  unlockBodyScroll();
+};
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+window.showToast = function(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+};
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+function handleLogout() {
+  signOut(auth).then(function() {
+    window.location.href = '/login.html';
+  }).catch(function() {
+    showToast('Could not sign out. Try again.');
+  });
+}
+document.getElementById('mb-signout').onclick = handleLogout;
+document.getElementById('dt-signout').onclick = handleLogout;
+
+// ── Fetch platform settings ───────────────────────────────────────────────────
+async function fetchSettings() {
+  try {
+    var snap = await getDoc(doc(db, 'config', 'platform'));
+    _settings = snap.exists() ? snap.data() : {};
+  } catch(e) {
+    _settings = {};
+  }
+  // defaults
+  if (!_settings.platformCurrency)             _settings.platformCurrency = 'USD';
+  if (_settings.affiliateWithdrawFeePercent == null) _settings.affiliateWithdrawFeePercent = 2.0;
+  if (!_settings.minAffiliateWithdrawalUsd)    _settings.minAffiliateWithdrawalUsd = 5;
+}
+
+// ── Load affiliate data ───────────────────────────────────────────────────────
+async function loadAffiliateDashboard(uid) {
+  var cur = _settings.platformCurrency || 'USD';
+
+  // 1. User doc for balance
+  var userSnap = await getDoc(doc(db, 'users', uid));
+  var userData = userSnap.exists() ? userSnap.data() : {};
+  _affiliateBal  = Number(userData.affiliateBalance)     || 0;
+  _walletAddr    = userData.walletAddress                || null;
+  _savedBankCode   = userData.affiliateBankCode   || null;
+  _savedBankName   = userData.affiliateBankName   || null;
+  _savedAcctNumber = userData.affiliateAccountNumber || null;
+  _savedAcctName   = userData.affiliateAccountName   || null;
+  var totalEarned= Number(userData.affiliateTotalEarned) || 0;
+  var totalPaid  = Number(userData.affiliateTotalPaid)   || 0;
+
+  // Render avatar
+  var initials = ((userData.displayName || userData.name || 'U').trim().charAt(0) || 'U').toUpperCase();
+  document.getElementById('user-avatar').textContent = initials;
+
+  // Render unified Available Balance card using the per-currency map.
+  // affiliateBalances is written by the webhooks with native currency amounts
+  // (e.g. { NGN: 5000, USD: 45.00 }) — no blending, no currency assumption.
+  // renderCard() handles empty map (shows ₔ0.00), single currency (plain number),
+  // and multi-currency (primary + chips + overflow dropdown) automatically.
+  var affiliateBalancesMap = userData.affiliateBalances || {};
+
+  var balCardEl = document.getElementById('bal-card-value');
+  if (balCardEl) {
+    if (window.kreddloCurrency && window.kreddloCurrency.renderCard) {
+      balCardEl.innerHTML = window.kreddloCurrency.renderCard(affiliateBalancesMap, {
+        primaryColor: '#0d2145',
+        zeroCurrency: cur
+      });
+    } else {
+      // shared.js not yet ready — show plain legacy total as fallback
+      balCardEl.textContent = fmtCurrency(_affiliateBal, cur);
+    }
+  }
+
+  // Pending clearance row (Item 9 — admin-configurable holding period).
+  // affiliatePendingBalance is the real held-funds figure written by the
+  // payment webhooks; fall back to the old estimate for legacy records.
+  var pendingClearance = userData.affiliatePendingBalance != null
+    ? Number(userData.affiliatePendingBalance) || 0
+    : Math.max(0, totalEarned - totalPaid - _affiliateBal);
+  if (pendingClearance > 0) {
+    // If per-currency pending data exists, show it broken down; otherwise show blended
+    var pendingBalancesMap = userData.affiliatePendingBalances || {};
+    var pendingKeys = Object.keys(pendingBalancesMap).filter(function(c) { return Number(pendingBalancesMap[c]) > 0; });
+    if (pendingKeys.length > 1) {
+      var pendingParts = pendingKeys.map(function(c) { return fmtCurrency(pendingBalancesMap[c], c); }).join(' + ');
+      document.getElementById('bal-pending').textContent = pendingParts + ' clearing — available once the holding period ends';
+    } else {
+      document.getElementById('bal-pending').textContent = cur + ' ' + pendingClearance.toFixed(2) + ' clearing — available once the holding period ends';
+    }
+  } else {
+    document.getElementById('bal-pending').textContent = '';
+  }
+
+  // Stats — query affiliate-earnings
+  var earningsColl  = collection(db, 'affiliate-earnings');
+  var earningsSnap;
+  try {
+    var earningsQ = query(earningsColl, where('affiliateUid', '==', uid), orderBy('createdAt', 'desc'), limit(100));
+    earningsSnap  = await getDocs(earningsQ);
+  } catch (idxErr) {
+    if (idxErr && (idxErr.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(idxErr.message || ''))) {
+      console.warn('[affiliate] affiliate-earnings index not ready — falling back to unordered query. Run: firebase deploy --only firestore:indexes');
+      var earningsQFallback = query(earningsColl, where('affiliateUid', '==', uid), limit(100));
+      earningsSnap = await getDocs(earningsQFallback);
+    } else { throw idxErr; }
+  }
+  var earningDocs     = [];
+  var totalPendingAmt = 0, totalConversions = 0;
+  var cryptoPendingAmt = 0, fiatPendingAmt = 0;
+  earningsSnap.forEach(function(d) {
+    var e = d.data();
+    e._id = d.id;
+    earningDocs.push(e);
+    totalConversions++;
+    if (e.status === 'pending') {
+      var amt = Number(e.amount) || 0;
+      totalPendingAmt += amt;
+      if (e.paymentMethod === 'crypto') cryptoPendingAmt += amt;
+      else fiatPendingAmt += amt;
+    }
+  });
+
+  // Keep legacy bucket figures for the withdraw modal's available-balance display.
+  // Per-currency map is now the source of truth for the balance card itself.
+  _affiliateCryptoBal = cryptoPendingAmt;
+  _affiliateFiatBal   = fiatPendingAmt;
+  if (_affiliateCryptoBal + _affiliateFiatBal < _affiliateBal) {
+    var legacyRemainder = _affiliateBal - (_affiliateCryptoBal + _affiliateFiatBal);
+    _affiliateFiatBal += legacyRemainder;
+  }
+
+  // Stat cards
+  document.getElementById('stat-total').textContent       = fmt(totalEarned, cur);
+  document.getElementById('stat-pending').textContent     = fmt(totalPendingAmt, cur);
+  document.getElementById('stat-paid').textContent        = fmt(totalPaid, cur);
+  document.getElementById('stat-conversions').textContent = totalConversions;
+
+  // 2. Affiliate-links for promoted products
+  var linksColl = collection(db, 'affiliate-links');
+  var linksQ    = query(linksColl, where('affiliateUid', '==', uid));
+  var linksSnap = await getDocs(linksQ);
+  var linksArr  = [];
+  linksSnap.forEach(function(d) { var l = d.data(); l._id = d.id; linksArr.push(l); });
+
+  // Hide loaders
+  document.getElementById('products-loading').style.display = 'none';
+  document.getElementById('earnings-loading').style.display = 'none';
+  document.getElementById('payouts-loading').style.display  = 'none';
+
+  // ── Promoted products table ───────────────────────────────────────────────
+  if (linksArr.length === 0) {
+    document.getElementById('products-empty').style.display = 'block';
+  } else {
+    document.getElementById('products-list').style.display = 'block';
+    var tbody = document.getElementById('products-tbody');
+    tbody.innerHTML = '';
+
+    // Build per-product earning sums
+    var prodEarnings = {};
+    earningDocs.forEach(function(e) {
+      if (!prodEarnings[e.productId]) prodEarnings[e.productId] = { pending:0, total:0 };
+      var amt = Number(e.amount) || 0;
+      prodEarnings[e.productId].total += amt;
+      if (e.status === 'pending') prodEarnings[e.productId].pending += amt;
+    });
+
+    linksArr.forEach(function(lnk) {
+      var pe = prodEarnings[lnk.productId] || { pending:0, total:0 };
+
+      // Reconstruct referral URL from stored refUrl, or build client-side fallback
+      var myUid  = window._myAffilUid || '';
+      var refUrl = lnk.refUrl || '';
+      if (!refUrl && lnk.productSlug && myUid) {
+        refUrl = window.location.origin + '/p.html?slug=' + encodeURIComponent(lnk.productSlug) + '&ref=' + encodeURIComponent(myUid);
+      } else if (!refUrl && myUid) {
+        refUrl = window.location.origin + '/p.html?id=' + encodeURIComponent(lnk.productId) + '&ref=' + encodeURIComponent(myUid);
+      }
+
+      var copyBtnId = 'copy-lnk-' + lnk._id;
+      var copyCell  = refUrl
+        ? '<td style="text-align:right;"><button id="' + copyBtnId + '" data-ref="' + escHtml(refUrl) + '" onclick="copyAffRowLink(this.dataset.ref,this.id)" style="background:transparent;border:1px solid rgba(45,138,94,0.35);border-radius:50px;padding:4px 10px;font-size:11px;font-weight:600;color:#2d8a5e;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s,border-color .15s;">Copy</button></td>'
+        : '<td style="text-align:right;color:rgba(13,33,69,0.30);font-size:11px;">—</td>';
+
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;">' + escHtml(lnk.productTitle || lnk.productId || '—') + '</td>' +
+        '<td style="text-align:right;color:rgba(13,33,69,0.60);">' + (lnk.clicks || 0) + '</td>' +
+        '<td style="text-align:right;color:rgba(13,33,69,0.60);">' + (lnk.conversions || 0) + '</td>' +
+        '<td style="text-align:right;color:#856404;">' + fmt(pe.pending, cur) + '</td>' +
+        '<td style="text-align:right;color:#2d8a5e;font-weight:700;">' + fmt(pe.total, cur) + '</td>' +
+        copyCell;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── Earnings history table ─────────────────────────────────────────────────
+  if (earningDocs.length === 0) {
+    document.getElementById('earnings-empty').style.display = 'block';
+  } else {
+    document.getElementById('earnings-list').style.display = 'block';
+    var etbody = document.getElementById('earnings-tbody');
+    etbody.innerHTML = '';
+    earningDocs.slice(0, 50).forEach(function(e) {
+      var statusBadge = e.status === 'paid'
+        ? '<span class="badge badge-green">Paid</span>'
+        : '<span class="badge badge-amber">Pending</span>';
+      var methodBadge = e.paymentMethod === 'crypto'
+        ? '<span class="badge badge-navy">Crypto</span>'
+        : (e.paymentMethod === 'fiat'
+          ? '<span class="badge badge-green">Fiat</span>'
+          : '<span class="badge" style="background:#f0f2f6;color:rgba(13,33,69,0.55);">—</span>');
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td style="color:rgba(13,33,69,0.60);white-space:nowrap;">' + fmtDate(e.createdAt) + '</td>' +
+        '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;">' + escHtml(e.productTitle || e.productId || '—') + '</td>' +
+        '<td>' + methodBadge + '</td>' +
+        '<td style="text-align:right;font-weight:700;color:#2d8a5e;">' + fmt(e.amount, e.currency || cur) + '</td>' +
+        '<td style="text-align:right;">' + statusBadge + '</td>';
+      etbody.appendChild(tr);
+    });
+  }
+
+  // ── Payout history ────────────────────────────────────────────────────────
+  var payoutsSnap;
+  try {
+    var payoutsQ = query(collection(db, 'affiliate-payouts'), where('uid', '==', uid), orderBy('createdAt', 'desc'), limit(30));
+    payoutsSnap  = await getDocs(payoutsQ);
+  } catch (idxErr2) {
+    if (idxErr2 && (idxErr2.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(idxErr2.message || ''))) {
+      console.warn('[affiliate] affiliate-payouts index not ready — falling back to unordered query. Run: firebase deploy --only firestore:indexes');
+      var payoutsQFallback = query(collection(db, 'affiliate-payouts'), where('uid', '==', uid), limit(30));
+      payoutsSnap = await getDocs(payoutsQFallback);
+    } else { throw idxErr2; }
+  }
+  var payoutDocs  = [];
+  payoutsSnap.forEach(function(d) { var p = d.data(); p._id = d.id; payoutDocs.push(p); });
+
+  if (payoutDocs.length === 0) {
+    document.getElementById('payouts-empty').style.display = 'block';
+  } else {
+    document.getElementById('payouts-list').style.display = 'block';
+    var ptbody = document.getElementById('payouts-tbody');
+    ptbody.innerHTML = '';
+    payoutDocs.forEach(function(p) {
+      var statusBadge = p.status === 'paid'
+        ? '<span class="badge badge-green">Paid</span>'
+        : p.status === 'pending'
+          ? '<span class="badge badge-amber">Pending</span>'
+          : '<span class="badge badge-navy">' + escHtml(p.status || '—') + '</span>';
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td style="color:rgba(13,33,69,0.60);white-space:nowrap;">' + fmtDate(p.createdAt) + '</td>' +
+        '<td style="text-align:right;font-weight:600;">' + fmt(p.grossAmount, p.currency || cur) + '</td>' +
+        '<td style="text-align:right;color:#c81e1e;">' + fmt(p.feeAmount, p.currency || cur) + '</td>' +
+        '<td style="text-align:right;font-weight:700;color:#2d8a5e;">' + fmt(p.netAmount, p.currency || cur) + '</td>' +
+        '<td style="text-align:right;">' + statusBadge + '</td>';
+      ptbody.appendChild(tr);
+    });
+  }
+}
+
+// ── Withdraw modal ────────────────────────────────────────────────────────────
+window.openWithdrawModal = function(defaultTab) {
+  // Block if payouts are frozen
+  if (window._payoutsFrozen) {
+    showToast('Withdrawals temporarily paused by platform. Please contact support.');
+    return;
+  }
+  var feePct = Number(_settings.affiliateWithdrawFeePercent) || 2;
+
+  document.getElementById('wd-fee-pct').textContent     = feePct;
+  document.getElementById('wd-fee-display').textContent = '—';
+  document.getElementById('wd-net-display').textContent = '—';
+  document.getElementById('wd-amount-input').value      = '';
+  document.getElementById('wd-error').style.display     = 'none';
+  document.getElementById('wd-confirm-btn').disabled    = false;
+  document.getElementById('wd-confirm-btn').textContent = 'Withdraw';
+
+  // Open on the tab matching the bucket the user clicked
+  var tab = (defaultTab === 'bank') ? 'bank' : 'crypto';
+  _wdCurrency = (tab === 'crypto') ? 'USDT' : 'NGN';
+  switchWdTab(tab);
+
+  // Pre-populate bank section if saved details exist
+  populateSavedBankDisplay();
+
+  // Load bank list for bank tab
+  loadAffiliateBankList();
+
+  document.getElementById('withdraw-modal').classList.add('open');
+};
+
+window.closeWithdrawModal = function() {
+  document.getElementById('withdraw-modal').classList.remove('open');
+};
+
+window.switchWdTab = function(tab) {
+  _wdTab = tab;
+  var isCrypto = (tab === 'crypto');
+  document.getElementById('wd-tab-crypto').style.background    = isCrypto ? '#2d8a5e' : '#fff';
+  document.getElementById('wd-tab-crypto').style.color         = isCrypto ? '#fff' : 'rgba(13,33,69,0.55)';
+  document.getElementById('wd-tab-crypto').style.borderColor   = isCrypto ? '#2d8a5e' : '#e2e8f0';
+  document.getElementById('wd-tab-bank').style.background      = !isCrypto ? '#2d8a5e' : '#fff';
+  document.getElementById('wd-tab-bank').style.color           = !isCrypto ? '#fff' : 'rgba(13,33,69,0.55)';
+  document.getElementById('wd-tab-bank').style.borderColor     = !isCrypto ? '#2d8a5e' : '#e2e8f0';
+  document.getElementById('wd-section-crypto').style.display   = isCrypto ? 'block' : 'none';
+  document.getElementById('wd-section-bank').style.display     = !isCrypto ? 'block' : 'none';
+  document.getElementById('wd-error').style.display            = 'none';
+
+  // Swap currency selectors
+  document.getElementById('wd-crypto-currencies').style.display = isCrypto ? 'flex' : 'none';
+  document.getElementById('wd-fiat-currencies').style.display   = !isCrypto ? 'block' : 'none';
+
+  // Reset currency to sensible default for the tab
+  if (isCrypto) {
+    _wdCurrency = 'USDT';
+    refreshCryptoCurrencyBtns('USDT');
+  } else {
+    _wdCurrency = document.getElementById('wd-fiat-select').value || 'NGN';
+  }
+
+  // Update available balance display to reflect the active bucket.
+  // Bank tab balance is always USD — that's the currency the amount field
+  // is denominated in (affiliateBalance is a single USD figure).
+  var bucketBal = (tab === 'bank') ? _affiliateFiatBal : _affiliateCryptoBal;
+  var availCur  = (tab === 'bank') ? 'USD' : _wdCurrency;
+  document.getElementById('wd-available').textContent = availCur + ' ' + bucketBal.toFixed(2);
+  updateWithdrawCalc();
+};
+
+function refreshCryptoCurrencyBtns(selected) {
+  var btns = document.querySelectorAll('#wd-crypto-currencies .wd-cur-btn');
+  btns.forEach(function(btn) {
+    var isSelected = btn.getAttribute('data-cur') === selected;
+    btn.style.background   = isSelected ? '#e8f5ef' : '#fff';
+    btn.style.borderColor  = isSelected ? '#2d8a5e' : '#e2e8f0';
+    btn.style.color        = isSelected ? '#2d8a5e' : 'rgba(13,33,69,0.55)';
+  });
+}
+
+window.selectWdCurrency = function(cur) {
+  _wdCurrency = cur;
+  refreshCryptoCurrencyBtns(cur);
+  // crypto tab is always active when selecting crypto currencies
+  document.getElementById('wd-available').textContent = cur + ' ' + _affiliateCryptoBal.toFixed(2);
+  updateWithdrawCalc();
+};
+
+window.onWdFiatChange = function() {
+  _wdCurrency = document.getElementById('wd-fiat-select').value || 'NGN';
+  // Reset FX estimate state for new currency
+  _affiliateFxRate     = null;
+  _affiliateFxCurrency = null;
+  _affiliateFxSource   = null;
+  // Available balance is always USD on the bank tab — _wdCurrency here only
+  // selects which currency the bank account receives.
+  document.getElementById('wd-available').textContent = 'USD ' + _affiliateFiatBal.toFixed(2);
+  updateWithdrawCalc();
+  // Bank list depends on currency/country — refetch when the user
+  // switches the fiat currency so the dropdown matches their bank's country.
+  loadAffiliateBankList(_wdCurrency);
+};
+
+function populateSavedBankDisplay() {
+  var hasSaved = _savedBankCode && _savedAcctNumber && _savedAcctName;
+  var savedDiv = document.getElementById('wd-bank-saved');
+  var formDiv  = document.getElementById('wd-bank-form');
+  if (hasSaved) {
+    document.getElementById('wd-bank-saved-name').textContent = _savedAcctName || '—';
+    document.getElementById('wd-bank-saved-bank').textContent = _savedBankName || '—';
+    document.getElementById('wd-bank-saved-acct').textContent = 'Account: ' + _savedAcctNumber;
+    savedDiv.style.display = 'block';
+    formDiv.style.display  = 'none';
+  } else {
+    savedDiv.style.display = 'none';
+    formDiv.style.display  = 'block';
+  }
+}
+
+window.editBankDetails = function() {
+  document.getElementById('wd-bank-saved').style.display = 'none';
+  document.getElementById('wd-bank-form').style.display  = 'block';
+  // Pre-fill form with saved values
+  if (_savedBankCode) {
+    var sel = document.getElementById('wd-bank-select');
+    sel.value = _savedBankCode;
+  }
+  if (_savedAcctNumber) document.getElementById('wd-acct-number').value = _savedAcctNumber;
+  if (_savedAcctName)   document.getElementById('wd-acct-name').value   = _savedAcctName;
+};
+
+// Stripe-supported currencies for affiliate international bank withdrawals
+const AFFILIATE_STRIPE_CURRENCIES = ['USD','EUR','GBP','CAD','AUD','NZD','CHF','DKK','NOK','SEK','SGD','HKD'];
+let _affiliateStripeFields = null; // current Stripe fields descriptor
+
+function renderAffiliateStripeFields(fields) {
+  var ss = document.getElementById('wd-stripe-section');
+  if (!ss || !fields) return;
+  var INP = 'width:100%;padding:13px 14px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:16px;font-weight:600;color:#0d2145;outline:none;background:#fff;';
+  var LBL = 'display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:6px;';
+  var WRAP = 'margin-bottom:12px;';
+  if (fields.type === 'iban') {
+    ss.innerHTML =
+      '<div style="' + WRAP + '">' +
+        '<label style="' + LBL + '">IBAN</label>' +
+        '<input type="text" id="wd-stripe-iban" class="inp" placeholder="e.g. DE89 3704 0044 0532 0130 00" maxlength="34" autocomplete="off" style="' + INP + 'text-transform:uppercase;letter-spacing:0.5px;" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\')">' +
+        '<p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.42);margin:6px 0 0;">Enter your IBAN without spaces — up to 34 characters.</p>' +
+      '</div>';
+  } else if (fields.type === 'sort_account') {
+    ss.innerHTML =
+      '<div style="' + WRAP + '">' +
+        '<label style="' + LBL + '">Sort Code</label>' +
+        '<input type="text" id="wd-stripe-sort" placeholder="e.g. 20-00-00" maxlength="8" autocomplete="off" style="' + INP + '" oninput="affiliateFormatSortCode(this)">' +
+        '<p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.42);margin:6px 0 0;">6-digit sort code, e.g. 20-00-00</p>' +
+      '</div>' +
+      '<div style="' + WRAP + '">' +
+        '<label style="' + LBL + '">Account Number</label>' +
+        '<input type="text" id="wd-stripe-acct" placeholder="8-digit account number" maxlength="8" autocomplete="off" inputmode="numeric" style="' + INP + '" oninput="this.value=this.value.replace(/\\D/g,\'\')">' +
+      '</div>';
+  } else {
+    // routing_account (USD, CAD, AUD, NZD, SGD, HKD)
+    var routingCopy = {
+      USD: { label: 'Routing Number', placeholder: '9-digit routing number', maxlen: 9 },
+      CAD: { label: 'Institution & Transit Number', placeholder: 'e.g. 12345-678', maxlen: 9 },
+      AUD: { label: 'BSB Number', placeholder: '6-digit BSB number', maxlen: 6 },
+      NZD: { label: 'Bank Branch Number', placeholder: 'Bank & branch number', maxlen: 8 },
+      SGD: { label: 'Bank Code', placeholder: 'Bank & branch code', maxlen: 10 },
+      HKD: { label: 'Bank Code', placeholder: 'Bank & branch code', maxlen: 10 },
+    };
+    var rc = routingCopy[_wdCurrency] || routingCopy.USD;
+    ss.innerHTML =
+      '<div style="' + WRAP + '">' +
+        '<label style="' + LBL + '">' + rc.label + '</label>' +
+        '<input type="text" id="wd-stripe-routing" placeholder="' + rc.placeholder + '" inputmode="numeric" maxlength="' + rc.maxlen + '" autocomplete="off" style="' + INP + '">' +
+      '</div>' +
+      '<div style="' + WRAP + '">' +
+        '<label style="' + LBL + '">Account Number</label>' +
+        '<input type="text" id="wd-stripe-acct" placeholder="Your account number" inputmode="numeric" autocomplete="off" style="' + INP + '" oninput="this.value=this.value.replace(/\\D/g,\'\')">' +
+      '</div>';
+  }
+}
+
+function affiliateFormatSortCode(el) {
+  var digits = el.value.replace(/\D/g, '').slice(0, 6);
+  var parts = [];
+  if (digits.length > 0) parts.push(digits.slice(0, 2));
+  if (digits.length > 2) parts.push(digits.slice(2, 4));
+  if (digits.length > 4) parts.push(digits.slice(4, 6));
+  el.value = parts.join('-');
+}
+
+// Wait for Firebase auth to resolve before requesting a token
+function waitForAffiliateAuthToken() {
+  return new Promise(function(resolve) {
+    if (auth && auth.currentUser) {
+      auth.currentUser.getIdToken().then(resolve).catch(function() { resolve(''); });
+      return;
+    }
+    var attempts = 0;
+    var poll = setInterval(function() {
+      attempts++;
+      if (auth && auth.currentUser) {
+        clearInterval(poll);
+        auth.currentUser.getIdToken().then(resolve).catch(function() { resolve(''); });
+      } else if (attempts > 50) {
+        clearInterval(poll);
+        resolve('');
+      }
+    }, 100);
+  });
+}
+
+async function loadAffiliateBankList(currency) {
+  currency = currency || _wdCurrency || 'NGN';
+  if (_bankListLoaded && _bankListCurrency === currency) return;
+
+  var flwSection    = document.getElementById('wd-flw-section');
+  var stripeSection = document.getElementById('wd-stripe-section');
+  var stripePill    = document.getElementById('wd-stripe-pill');
+  var flwInfo       = document.getElementById('wd-flw-info');
+  var loadingEl     = document.getElementById('wd-bank-loading');
+
+  // Show loading
+  if (loadingEl) { loadingEl.style.display = 'flex'; }
+
+  // Stripe currency: hide FLW section, show Stripe fields
+  if (AFFILIATE_STRIPE_CURRENCIES.includes(currency)) {
+    if (flwSection)    flwSection.style.display    = 'none';
+    if (stripeSection) stripeSection.style.display = 'none';
+    if (stripePill)    stripePill.style.display    = 'none';
+    if (flwInfo)       flwInfo.style.display       = 'none';
+    _affiliateStripeFields = null;
+    _bankListLoaded = false;
+
+    try {
+      var idToken = await waitForAffiliateAuthToken();
+      var res = await fetch('/.netlify/functions/get-bank-list?currency=' + encodeURIComponent(currency), {
+        headers: { 'Authorization': 'Bearer ' + idToken }
+      });
+      if (!res.ok) throw new Error('Failed');
+      var data = await res.json();
+      if (data.stripeFields) {
+        _affiliateStripeFields = data.stripeFields;
+        _bankListLoaded = true;
+        _bankListCurrency = currency;
+        renderAffiliateStripeFields(_affiliateStripeFields);
+        if (stripeSection) stripeSection.style.display = 'block';
+        if (stripePill)    { stripePill.style.display = 'flex'; }
+      }
+      // Capture live gateway FX rate
+      if (data.fxRate && data.currency) {
+        _affiliateFxRate     = Number(data.fxRate);
+        _affiliateFxCurrency = data.currency;
+        _affiliateFxSource   = data.fxSource || 'gateway';
+        _updateAffiliateFxNote();
+      }
+    } catch(e) {
+      if (stripeSection) stripeSection.innerHTML = '<p style="font-size:12px;color:#c81e1e;">Could not load bank fields. Please try again.</p>';
+      if (stripeSection) stripeSection.style.display = 'block';
+    } finally {
+      if (loadingEl) loadingEl.style.display = 'none';
+    }
+    return;
+  }
+
+  // FLW currency: show FLW section, hide Stripe
+  _affiliateStripeFields = null;
+  if (flwSection)    flwSection.style.display    = '';
+  if (stripeSection) { stripeSection.style.display = 'none'; stripeSection.innerHTML = ''; }
+  if (stripePill)    stripePill.style.display    = 'none';
+  if (flwInfo)       flwInfo.style.display       = 'flex';
+
+  try {
+    var idToken = await waitForAffiliateAuthToken();
+    var res = await fetch('/.netlify/functions/get-bank-list?currency=' + encodeURIComponent(currency), {
+      headers: { 'Authorization': 'Bearer ' + idToken }
+    });
+    if (!res.ok) throw new Error('Failed');
+    var data = await res.json();
+    _bankList = data.banks || [];
+    _bankListLoaded = true;
+    _bankListCurrency = currency;
+    var sel = document.getElementById('wd-bank-select');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Select bank…</option>' +
+      _bankList.map(function(b) {
+        return '<option value="' + escHtml(b.code) + '">' + escHtml(b.name) + '</option>';
+      }).join('');
+    if (_savedBankCode) sel.value = _savedBankCode;
+    // Capture live gateway FX rate
+    if (data.fxRate && data.currency) {
+      _affiliateFxRate     = Number(data.fxRate);
+      _affiliateFxCurrency = data.currency;
+      _affiliateFxSource   = data.fxSource || 'gateway';
+      _updateAffiliateFxNote();
+    }
+  } catch(e) {
+    _bankListLoaded = false;
+    var sel = document.getElementById('wd-bank-select');
+    if (sel) sel.innerHTML = '<option value="">Failed to load banks — try again</option>';
+  } finally {
+    if (loadingEl) loadingEl.style.display = 'none';
+  }
+}
+
+window.onWdBankChange = function() {
+  // Clear account name when bank changes
+  document.getElementById('wd-acct-name').value = '';
+  document.getElementById('wd-bank-lookup-error').style.display = 'none';
+};
+
+window.lookupAccountName = async function() {
+  var bankCode = document.getElementById('wd-bank-select').value;
+  var acctNum  = (document.getElementById('wd-acct-number').value || '').trim();
+  var nameEl   = document.getElementById('wd-acct-name');
+  var spinner  = document.getElementById('wd-acct-lookup-spinner');
+  var errEl    = document.getElementById('wd-bank-lookup-error');
+
+  errEl.style.display = 'none';
+  if (!bankCode || acctNum.length < 10) return;
+
+  spinner.style.display = 'inline';
+  nameEl.value = '';
+  try {
+    var idToken = await auth.currentUser.getIdToken();
+    var res = await fetch('/.netlify/functions/resolve-bank-account?bankCode=' + encodeURIComponent(bankCode) + '&accountNumber=' + encodeURIComponent(acctNum) + '&currency=' + encodeURIComponent(_wdCurrency || 'NGN'), {
+      headers: { 'Authorization': 'Bearer ' + idToken }
+    });
+    var data = await res.json();
+    if (!res.ok || !data.accountName) throw new Error(data.error || 'Could not verify account');
+    nameEl.value = data.accountName;
+  } catch(e) {
+    errEl.textContent = e.message || 'Could not look up account name. Check the number and bank.';
+    errEl.style.display = 'block';
+  } finally {
+    spinner.style.display = 'none';
+  }
+};
+
+// Show live gateway FX estimate note in affiliate bank withdraw modal.
+// Display-only — never affects the amount field, balance check, or payload.
+function _updateAffiliateFxNote() {
+  var noteEl = document.getElementById('wd-fx-note');
+  if (!noteEl) return;
+  var cur = _wdCurrency;
+  if (_wdTab === 'bank' && _affiliateFxRate && _affiliateFxCurrency === cur && cur !== 'USD') {
+    var amt = parseFloat((document.getElementById('wd-amount-input') || {}).value) || 0;
+    var estimatedPayout = amt * _affiliateFxRate;
+    noteEl.textContent = 'Your bank receives approximately 1 USD ≈ ' + _affiliateFxRate.toFixed(4) + ' ' + cur +
+      (amt > 0 ? (' — estimated ' + cur + ' ' + estimatedPayout.toFixed(2)) : '') +
+      ' (estimate only; your payment partner sets the final rate at transfer time).';
+    noteEl.style.display = 'block';
+  } else {
+    noteEl.style.display = 'none';
+  }
+  // Available balance always reflects the real USD balance — never overwritten
+  // with a converted figure.
+  var availEl = document.getElementById('wd-available');
+  if (availEl && _wdTab === 'bank') {
+    availEl.textContent = 'USD ' + _affiliateFiatBal.toFixed(2);
+  }
+}
+
+window.updateWithdrawCalc = function() {
+  var debitCur = (_wdTab === 'bank') ? 'USD' : (_wdCurrency || 'USDT');
+  var feePct = Number(_settings.affiliateWithdrawFeePercent) || 2;
+  var amt    = parseFloat(document.getElementById('wd-amount-input').value) || 0;
+  var fee    = parseFloat((amt * feePct / 100).toFixed(2));
+  var net    = Math.max(0, amt - fee);
+
+  document.getElementById('wd-fee-display').textContent = amt > 0 ? ('−' + debitCur + ' ' + fee.toFixed(2)) : '—';
+  document.getElementById('wd-net-display').textContent = amt > 0 ? (debitCur + ' ' + net.toFixed(2)) : '—';
+
+  if (_wdTab === 'bank') _updateAffiliateFxNote();
+};
+
+window.confirmWithdraw = async function() {
+  var errEl   = document.getElementById('wd-error');
+  var btn     = document.getElementById('wd-confirm-btn');
+  var amt     = parseFloat(document.getElementById('wd-amount-input').value) || 0;
+  var cur     = _wdCurrency || 'USDT';
+  var feePct  = Number(_settings.affiliateWithdrawFeePercent) || 2;
+  var minWd   = Number(_settings.minAffiliateWithdrawalUsd) || 5;
+
+  // Use the per-bucket balance for validation — crypto withdrawals draw from
+  // crypto earnings only; bank withdrawals draw from fiat earnings only.
+  // Bank tab amount is ALWAYS in USD — that's the exact figure debited from
+  // affiliateBalance. No conversion, no derived cap.
+  var debitCur  = (_wdTab === 'bank') ? 'USD' : cur;
+  var bucketBal = (_wdTab === 'bank') ? _affiliateFiatBal : _affiliateCryptoBal;
+
+  errEl.style.display = 'none';
+
+  if (amt <= 0) {
+    errEl.textContent = 'Please enter a valid amount.';
+    errEl.style.display = 'block'; return;
+  }
+  if (amt < minWd) {
+    errEl.textContent = 'Minimum withdrawal is ' + debitCur + ' ' + minWd.toFixed(2) + '.';
+    errEl.style.display = 'block'; return;
+  }
+  if (amt > bucketBal) {
+    var bucketLabel = (_wdTab === 'bank') ? 'fiat' : 'crypto';
+    errEl.textContent = 'Amount exceeds your available ' + bucketLabel + ' balance (' + debitCur + ' ' + bucketBal.toFixed(2) + ').';
+    errEl.style.display = 'block'; return;
+  }
+
+  // amount is always USD for bank tab — the exact debit. payoutCurrency is
+  // only sent when the bank account's currency differs from USD; Flutterwave
+  // converts natively. No fxRate is ever sent.
+  var payload = { amount: amt, method: _wdTab };
+  if (_wdTab === 'bank' && cur !== 'USD') {
+    payload.payoutCurrency = cur;
+  }
+
+  if (_wdTab === 'crypto') {
+    if (!_walletAddr) {
+      errEl.innerHTML = 'No withdrawal wallet set. <a href="/dashboard-settings.html" style="color:#c81e1e;font-weight:700;">Add one in Settings.</a>';
+      errEl.style.display = 'block'; return;
+    }
+    payload.walletAddress = _walletAddr;
+  } else {
+    // Bank transfer — resolve from saved display or the form
+    var savedVisible = document.getElementById('wd-bank-saved').style.display !== 'none';
+    var isStripeCur  = AFFILIATE_STRIPE_CURRENCIES.includes(cur);
+
+    if (savedVisible) {
+      payload.bankCode      = _savedBankCode;
+      payload.bankName      = _savedBankName;
+      payload.accountNumber = _savedAcctNumber;
+      payload.accountName   = _savedAcctName;
+    } else if (isStripeCur && _affiliateStripeFields) {
+      // Stripe international currency — collect from Stripe fields
+      var sf = _affiliateStripeFields;
+      if (sf.type === 'iban') {
+        var iban = ((document.getElementById('wd-stripe-iban') || {}).value || '').trim();
+        if (iban.length < 8) {
+          errEl.textContent = 'Please enter a valid IBAN.';
+          errEl.style.display = 'block'; return;
+        }
+        payload.iban       = iban;
+        payload.stripeType = 'iban';
+      } else if (sf.type === 'sort_account') {
+        var sortCode = ((document.getElementById('wd-stripe-sort') || {}).value || '').replace(/\D/g, '');
+        var acctNum  = ((document.getElementById('wd-stripe-acct') || {}).value || '').trim();
+        if (sortCode.length < 6) { errEl.textContent = 'Please enter a valid 6-digit sort code.'; errEl.style.display = 'block'; return; }
+        if (!acctNum)            { errEl.textContent = 'Please enter your account number.';         errEl.style.display = 'block'; return; }
+        payload.sortCode      = sortCode;
+        payload.accountNumber = acctNum;
+        payload.stripeType    = 'sort_account';
+      } else {
+        // routing_account
+        var routing = ((document.getElementById('wd-stripe-routing') || {}).value || '').trim();
+        var acctNum = ((document.getElementById('wd-stripe-acct')    || {}).value || '').trim();
+        if (!routing) { errEl.textContent = 'Please enter your routing number.';  errEl.style.display = 'block'; return; }
+        if (!acctNum) { errEl.textContent = 'Please enter your account number.';  errEl.style.display = 'block'; return; }
+        payload.routingNumber = routing;
+        payload.accountNumber = acctNum;
+        payload.stripeType    = 'routing_account';
+      }
+    } else {
+      // FLW bank
+      var bankCode   = document.getElementById('wd-bank-select').value;
+      var selEl      = document.getElementById('wd-bank-select');
+      var bankName   = selEl.options[selEl.selectedIndex] ? selEl.options[selEl.selectedIndex].text : '';
+      var acctNumber = (document.getElementById('wd-acct-number').value || '').trim();
+      var acctName   = (document.getElementById('wd-acct-name').value   || '').trim();
+
+      if (!bankCode) {
+        errEl.textContent = 'Please select a bank.';
+        errEl.style.display = 'block'; return;
+      }
+      if (!acctNumber || acctNumber.length < 10) {
+        errEl.textContent = 'Please enter a valid 10-digit account number.';
+        errEl.style.display = 'block'; return;
+      }
+      if (!acctName) {
+        errEl.textContent = 'Account name not verified. Enter account number and wait for lookup.';
+        errEl.style.display = 'block'; return;
+      }
+
+      payload.bankCode      = bankCode;
+      payload.bankName      = bankName;
+      payload.accountNumber = acctNumber;
+      payload.accountName   = acctName;
+    }
+
+    // Save bank details if checkbox checked (and we're in form mode)
+    if (!savedVisible && document.getElementById('wd-save-bank').checked) {
+      try {
+        var { updateDoc, doc: fsDoc2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        await updateDoc(fsDoc2(db, 'users', _uid), {
+          affiliateBankCode:      bankCode,
+          affiliateBankName:      bankName,
+          affiliateAccountNumber: acctNumber,
+          affiliateAccountName:   acctName
+        });
+        _savedBankCode   = bankCode;
+        _savedBankName   = bankName;
+        _savedAcctNumber = acctNumber;
+        _savedAcctName   = acctName;
+      } catch(saveErr) {
+        console.warn('[affiliate] Could not save bank details:', saveErr.message);
+      }
+    }
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Processing…';
+
+  try {
+    var idToken = await auth.currentUser.getIdToken();
+    var res = await fetch('/.netlify/functions/affiliate-withdraw', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body:    JSON.stringify(payload)
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Withdrawal failed');
+
+    closeWithdrawModal();
+    // data.netAmount and data.currency from the backend are always USD —
+    // the exact amount debited. For cross-currency bank payouts, mention
+    // the destination currency separately without implying a converted figure.
+    var toastMsg = 'Withdrawal submitted! ' +
+      (data.currency || 'USD') + ' ' + Number(data.netAmount).toFixed(2) + ' processing' +
+      ((_wdTab === 'bank' && cur !== 'USD') ? ' to your ' + cur + ' bank account.' : '.');
+    showToast(toastMsg);
+
+    // Optimistic deduct and refresh the unified balance card.
+    // Page reloads after 1800ms so this is display-only.
+    _affiliateBal = Math.max(0, _affiliateBal - amt);
+    if (_wdTab === 'bank') {
+      _affiliateFiatBal = Math.max(0, _affiliateFiatBal - amt);
+    } else {
+      _affiliateCryptoBal = Math.max(0, _affiliateCryptoBal - amt);
+    }
+    // Page reloads in 1800ms — the fresh Firestore read will update the card correctly.
+    // No optimistic currency-map rebuild needed here.
+
+    setTimeout(function() { location.reload(); }, 1800);
+
+  } catch(err) {
+    errEl.textContent = err.message || 'Something went wrong. Try again.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Withdraw';
+  }
+};
+
+// ── Utility ───────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Copy affiliate link from the dashboard table ──────────────────────────────
+function copyAffRowLink(refUrl, btnId) {
+  if (!refUrl) return;
+  var btn = document.getElementById(btnId);
+  var origText = btn ? btn.textContent : 'Copy';
+
+  function onSuccess() {
+    if (btn) btn.textContent = 'Copied!';
+    showToast('Affiliate link copied!');
+    setTimeout(function() { if (btn) btn.textContent = origText; }, 2500);
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(refUrl).then(onSuccess).catch(function() {
+      _fallbackCopyText(refUrl, onSuccess);
+    });
+  } else {
+    _fallbackCopyText(refUrl, onSuccess);
+  }
+}
+
+function _fallbackCopyText(text, onSuccess) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); onSuccess(); } catch(e) { /* silent */ }
+  document.body.removeChild(ta);
+}
+
+// ── Auth guard + boot ─────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async function(user) {
+  if (!user) {
+    window.location.href = '/login.html';
+    return;
+  }
+  _uid = user.uid;
+  window._myAffilUid = user.uid; // used by copyAffRowLink for client-side fallback
+
+  // Fetch settings first
+  await fetchSettings();
+
+  // Load user doc to check affiliateEnabled + role
+  var userSnap = await getDoc(doc(db, 'users', user.uid));
+  var userData = userSnap.exists() ? userSnap.data() : {};
+  _userRole    = userData.role || 'freelancer';
+
+  // Payout freeze check
+  window._payoutsFrozen = userData.payoutsFrozen === true;
+  if (window._payoutsFrozen) {
+    // Show frozen notice on any visible withdraw buttons
+    var frozenNotice = document.getElementById('payouts-frozen-notice');
+    if (frozenNotice) frozenNotice.style.display = 'flex';
+    // Disable withdraw buttons
+    document.querySelectorAll('[onclick*="openWithdrawModal"]').forEach(function(btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+    });
+  }
+
+  // Build nav based on role
+  buildNav(user.uid, _userRole);
+
+  // Update sidebar logo link for buyer role
+  if (_userRole === 'buyer') {
+    document.getElementById('sidebar-logo').href = '/buyer-dashboard.html';
+  }
+
+  // Gate: must have affiliateEnabled
+  if (userData.affiliateEnabled !== true) {
+    document.getElementById('not-enrolled-state').style.display = 'block';
+    // Render avatar anyway
+    var initials = ((userData.displayName || userData.name || 'U').trim().charAt(0) || 'U').toUpperCase();
+    document.getElementById('user-avatar').textContent = initials;
+    return;
+  }
+
+  // Show dashboard
+  document.getElementById('enrolled-state').style.display = 'block';
+
+  try {
+    await loadAffiliateDashboard(user.uid);
+  } catch(err) {
+    if (err && (err.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(err.message || ''))) {
+      console.error('[affiliate-dashboard] missing composite index on affiliate-earnings/affiliate-payouts — see FIRESTORE_INDEXES.md, or check this error for a Firebase auto-create link:', err);
+      showToast('Setting up — try again in a minute.');
+    } else {
+      console.error('[affiliate-dashboard] load failed:', err);
+      showToast('Could not load affiliate data. Please refresh.');
+    }
+    // Hide loaders on error
+    document.getElementById('products-loading').style.display = 'none';
+    document.getElementById('earnings-loading').style.display = 'none';
+    document.getElementById('payouts-loading').style.display  = 'none';
+    document.getElementById('products-empty').style.display   = 'block';
+    document.getElementById('earnings-empty').style.display   = 'block';
+    document.getElementById('payouts-empty').style.display    = 'block';
+  }
+});
+
+// Close withdraw modal on backdrop click
+document.getElementById('withdraw-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeWithdrawModal();
+});
+</script>
+
+<script type="module">
+  // Load support email from Firestore config (falls back to the static address already in the link)
+  (async () => {
+    try {
+      if (!window.db) return;
+      const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDoc(doc(window.db, 'config', 'platform'));
+      const email = snap.exists() && snap.data().supportEmail ? snap.data().supportEmail : '';
+      if (!email) return;
+      const link = document.getElementById('support-mailto-link');
+      if (link) { link.href = 'mailto:' + email; }
+    } catch (e) { /* silent fail — static fallback email stays in place */ }
+  })();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

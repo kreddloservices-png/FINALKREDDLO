@@ -1,0 +1,2922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Withdraw Funds — Kreddlo</title>
+<script src="/assets/shared.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-green:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s,background .15s}
+.btn-ghost:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+
+.badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(9,24,48,0.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:24px;box-shadow:0 24px 80px rgba(13,33,69,0.20);width:100%;max-width:480px;max-height:90vh;max-height:90dvh;overflow-y:auto;padding:28px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+.blob-n{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(13,33,69,0.09) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.blob-g{position:absolute;width:440px;height:440px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-60px;left:-80px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.12s}.fu-3{animation-delay:.19s}.fu-4{animation-delay:.26s}.fu-5{animation-delay:.33s}
+
+.inp{width:100%;padding:12px 15px;background:rgba(255,255,255,0.9);border:1.5px solid #e2e8f0;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:500;color:#0d2145;outline:none;transition:border-color .2s,box-shadow .2s}
+.inp:focus{border-color:#2d8a5e;box-shadow:0 0 0 3px rgba(45,138,94,0.11)}
+.inp::placeholder{color:rgba(13,33,69,0.32)}
+
+/* Pulsing live dot */
+@keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:0.6}}
+.live-dot{display:inline-block;border-radius:50%;background:#2d8a5e;animation:pulse-dot 1.8s ease-in-out infinite;flex-shrink:0}
+
+/* Currency button */
+.curr-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.curr-btn:hover{border-color:rgba(45,138,94,0.4);box-shadow:0 2px 12px rgba(45,138,94,0.10)}
+.curr-btn.selected{border-color:#2d8a5e;background:#e8f5ef}
+
+/* Rate card */
+.rate-card{padding:14px 16px;border-radius:12px;background:rgba(13,33,69,0.025);border:1.5px solid transparent;cursor:pointer;transition:all .2s;flex-shrink:0;min-width:130px}
+.rate-card:hover{background:rgba(45,138,94,0.05);border-color:rgba(45,138,94,0.2)}
+.rate-card.selected{border-color:#2d8a5e;background:#e8f5ef}
+
+/* Amount input wrapper */
+.amt-wrap{position:relative}
+.amt-wrap .inp{padding-right:60px}
+.amt-unit{position:absolute;right:15px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:600;color:rgba(13,33,69,0.4);pointer-events:none}
+
+/* Scrollable row hidden scrollbar */
+.scroll-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none}
+.scroll-row::-webkit-scrollbar{display:none}
+
+/* Fee row */
+.fee-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* Highlight pulse on balance value */
+@keyframes balance-pulse{0%{color:#0d2145}50%{color:#2d8a5e}100%{color:#0d2145}}
+
+/* Pull-to-refresh indicator */
+.ptr-indicator{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-56px);z-index:190;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e2e8f0;border-radius:50px;padding:8px 18px 8px 12px;box-shadow:0 6px 24px rgba(13,33,69,0.10);font-size:13px;font-weight:600;color:#0d2145;opacity:0;pointer-events:none;transition:transform .28s cubic-bezier(.34,1.4,.64,1),opacity .22s ease;white-space:nowrap}
+.ptr-indicator.ptr-pulling{transform:translateX(-50%) translateY(8px);opacity:1}
+.ptr-indicator.ptr-loading{transform:translateX(-50%) translateY(8px);opacity:1}
+.ptr-spinner{width:18px;height:18px;border:2.5px solid rgba(45,138,94,0.20);border-top-color:#2d8a5e;border-radius:50%;animation:ptr-spin .7s linear infinite;flex-shrink:0}
+@keyframes ptr-spin{to{transform:rotate(360deg)}}
+
+/* Swipe-back left-edge glow */
+.swipe-hint{position:fixed;top:0;left:0;width:4px;height:100%;background:linear-gradient(to right,rgba(45,138,94,0.35),transparent);z-index:350;opacity:0;pointer-events:none;transition:opacity .18s}
+.swipe-hint.active{opacity:1}
+
+@media(min-width:1024px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px}
+}
+@media(min-width:768px){
+  #page-content{padding:32px!important}
+  #rate-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;overflow:visible!important}
+  #balance-cards{flex-direction:row!important;gap:16px!important}
+  #balance-crypto,#balance-fiat{font-size:44px!important}
+}
+</style>
+
+<style id="mobile-first-patch">
+/* ═══════════════════════════════════════════════════
+   KREDDLO GLOBAL MOBILE-FIRST PATCH
+   Fixes: overflow, stat cards, hamburger, sidebar,
+   loading overlay, products grid, bottom sheet
+═══════════════════════════════════════════════════ */
+
+/* 1. ROOT OVERFLOW FIX — kills horizontal scroll/blank sides */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+/* 2. MAIN WRAP — never wider than viewport */
+#main-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* 3. PAGE CONTENT — proper mobile padding, no bleed */
+#page-content {
+  padding: 18px 16px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden;
+}
+@media (min-width: 1024px) {
+  #main-wrap { width: calc(100% - 248px); max-width: none; overflow-x: visible; }
+  #page-content { padding: 32px !important; width: 100% !important; max-width: none !important; margin: 0 !important; box-sizing: border-box; }
+}
+
+/* 4. STAT CARDS — mobile font scaling so text fits */
+@media (max-width: 400px) {
+  .stat-val { font-size: 22px !important; letter-spacing: -0.5px !important; }
+  .stat-lbl { font-size: 10px !important; letter-spacing: 1px !important; }
+  .stat-card { padding: 16px 14px !important; }
+  .badge { font-size: 10px !important; padding: 2px 8px !important; }
+}
+@media (min-width: 401px) and (max-width: 767px) {
+  .stat-val { font-size: 26px !important; }
+  .stat-card { padding: 18px 16px !important; }
+}
+
+/* 5. STAT GRID — 2-col always on mobile, min 0 to prevent overflow */
+#section-c > div, #stats-grid > div, #summary-cards > div {
+  min-width: 0;
+}
+.stat-card { min-width: 0; }
+
+/* 6. HAMBURGER — always visible on mobile, proper tap size */
+#hamburger {
+  display: flex !important;
+  width: 44px !important;
+  height: 44px !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: rgba(13,33,69,0.08);
+  border-radius: 10px;
+}
+@media (min-width: 1024px) {
+  #hamburger { display: none !important; }
+}
+
+/* 7. TOPBAR — full width, no overflow */
+header {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 14px !important;
+}
+header h1 {
+  font-size: 16px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+header > div:last-child {
+  flex-shrink: 0;
+  gap: 6px !important;
+}
+
+/* 8. MOBILE MENU — full height with safe area */
+#mobile-menu {
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding-top: max(30px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+
+/* 9. LOADING OVERLAY — full screen properly */
+
+
+/* 10. PRODUCTS GRID — single col mobile */
+#products-grid, #products-grid-sk {
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+}
+@media (min-width: 600px) {
+  #products-grid, #products-grid-sk {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (min-width: 1024px) {
+  #products-grid, #products-grid-sk {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* 11. PRODUCT CARDS — prevent overflow */
+.prod-card { min-width: 0; width: 100%; }
+.prod-title { word-break: break-word; }
+
+/* 12. BOTTOM SHEET (create product modal) — mobile first */
+.cp-overlay {
+  padding: 0 !important;
+  align-items: flex-end !important;
+}
+.cp-sheet {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-radius: 24px 24px 0 0 !important;
+  max-height: 92dvh !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (min-width: 600px) {
+  .cp-overlay { align-items: center !important; padding: 20px !important; }
+  .cp-sheet {
+    max-width: 600px !important;
+    border-radius: 24px !important;
+    max-height: 90dvh !important;
+  }
+}
+
+/* 13. QUICK CARDS — equal width, responsive */
+.qcard {
+  width: calc(33.333% - 8px) !important;
+  min-width: 0 !important;
+  padding: 12px 6px !important;
+}
+.qcard-lbl { font-size: 10px !important; }
+@media (max-width: 360px) {
+  .qcard { width: calc(33.333% - 6px) !important; padding: 10px 4px !important; }
+  .qcard-icon { width: 34px !important; height: 34px !important; }
+}
+
+/* 14. SECTION HEADER WRAP (products page title + button) */
+.fu.fu-1 > div { min-width: 0; }
+#create-product-btn { flex-shrink: 0; white-space: nowrap; }
+@media (max-width: 400px) {
+  /* Stack the title+button on very small screens */
+  .fu.fu-1[style*="justify-content:space-between"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+  #create-product-btn { width: 100% !important; }
+}
+
+/* 15. MODALS — full width on mobile */
+.modal-box {
+  width: calc(100vw - 32px) !important;
+  max-width: 500px !important;
+  max-height: 90dvh !important;
+  overflow-y: auto !important;
+  padding: 22px 18px 32px !important;
+}
+
+/* 16. GLASS CARDS — no overflow */
+.glass { min-width: 0; }
+
+/* 17. PERIOD PILLS (earnings) — wrap and small on mobile */
+.pill { padding: 8px 14px !important; font-size: 12px !important; }
+
+/* 18. EARNINGS SUMMARY CARDS — single col mobile */
+#summary-cards {
+  grid-template-columns: 1fr !important;
+}
+@media (min-width: 768px) {
+  #summary-cards { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+/* 19. PAYOUT TABLE — hide on mobile, show cards */
+@media (max-width: 767px) {
+  .payout-desktop { display: none !important; }
+  .payout-mobile { display: block !important; }
+}
+@media (min-width: 768px) {
+  .payout-desktop { display: table !important; }
+  .payout-mobile { display: none !important; }
+}
+
+/* 20. TOAST — above safe area on mobile */
+.toast {
+  bottom: max(24px, env(safe-area-inset-bottom, 24px)) !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+/* 21. NAV LINKS — prevent text overflow in sidebar */
+.nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+</style>
+</head>
+<body style="visibility:hidden" class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<!-- LOADING OVERLAY -->
+
+
+<!-- MOBILE BACKDROP -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:272px;height:100%;background:#091830;z-index:500;padding:30px 22px;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;margin-top:2px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button onclick="handleLogout()" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <a href="/dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button onclick="handleLogout()" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrap" style="min-height:100vh;display:flex;flex-direction:column;">
+
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Withdraw</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="window.location.href='/notifications.html'" style="position:relative;width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;">MR</div>
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main id="page-content" style="flex:1;padding:22px 18px;width:100%;position:relative;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;">
+
+      <!-- ===================== SECTION A: Dual Balance Cards ===================== -->
+      <div class="fu fu-1" style="margin-bottom:20px;">
+        <!-- Mobile: stack vertically gap-12px. Desktop (md+): flex row gap-16px -->
+        <div id="balance-cards" style="display:flex;flex-direction:column;gap:12px;">
+
+          <!-- Crypto Balance Card -->
+          <div id="card-crypto"
+               data-type="crypto"
+               onclick="activateBalanceCard('crypto')"
+               style="flex:1;background:linear-gradient(135deg,#fff 60%,#e8f5ef 100%);border:2px solid #2d8a5e;background-color:#e8f5ef;border-radius:24px;padding:24px 22px;box-shadow:0 8px 40px rgba(45,138,94,0.12),0 2px 8px rgba(13,33,69,0.06);position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s,background-color .2s,box-shadow .2s;">
+            <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(45,138,94,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+            <div class="lbl" style="margin-bottom:8px;">Available Balance</div>
+            <div id="balance-crypto" style="font-size:36px;font-weight:800;color:#0d2145;letter-spacing:-1.2px;line-height:1;margin-bottom:10px;">...</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="live-dot" style="width:7px;height:7px;flex-shrink:0;"></span>
+              <span style="font-size:12px;font-weight:600;color:#2d8a5e;">Withdraw to crypto wallet</span>
+            </div>
+          </div>
+
+          <!-- Fiat Balance Card -->
+          <div id="card-fiat"
+               data-type="fiat"
+               onclick="activateBalanceCard('fiat')"
+               style="flex:1;background:#fff;border:2px solid #e2e8f0;border-radius:24px;padding:24px 22px;box-shadow:0 4px 24px rgba(13,33,69,0.06);position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s,background-color .2s,box-shadow .2s;">
+            <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(13,33,69,0.05) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+            <div class="lbl" style="margin-bottom:8px;">Bank Withdrawal</div>
+            <div id="balance-fiat" style="font-size:36px;font-weight:800;color:#0d2145;letter-spacing:-1.2px;line-height:1.2;margin-bottom:10px;"></div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.4)" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <span style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.45);">Withdraw to bank account</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===================== SECTION A2: Active Form Label ===================== -->
+      <div class="fu fu-1" style="margin-bottom:16px;">
+        <div id="active-form-label" style="font-size:14px;font-weight:700;color:#0d2145;">Withdraw Crypto Balance</div>
+      </div>
+
+      <!-- ===================== SECTION B: Exchange Rates ===================== -->
+      <div class="fu fu-2 glass" style="padding:22px;margin-bottom:20px;">
+        <!-- Heading row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:15px;font-weight:700;color:#0d2145;">Exchange Rates</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="live-dot" style="width:6px;height:6px;"></span>
+            <span style="font-size:12px;color:rgba(13,33,69,0.48);font-weight:500;">Live, updated in <span id="rate-countdown" style="font-weight:700;color:#2d8a5e;">60</span>s</span>
+          </div>
+        </div>
+
+        <!-- Rate cards — scrollable on mobile, 3-col grid on desktop -->
+        <div id="rate-grid" class="scroll-row" style="gap:10px;">
+          <div class="rate-card" id="rate-usdt" onclick="selectRateCard('usdt')" data-symbol="USDT">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+              <div style="width:26px;height:26px;background:#26a17b;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:800;color:#fff;">T</span>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#0d2145;">Tether</div>
+                <div style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);">USDT</div>
+              </div>
+            </div>
+            <div id="rate-val-usdt" style="font-size:16px;font-weight:800;color:#2d8a5e;">1.0000 USDT</div>
+            <div style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.4);margin-top:2px;">per USD</div>
+          </div>
+
+          <div class="rate-card" id="rate-bitcoin" onclick="selectRateCard('bitcoin')" data-symbol="BTC">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+              <div style="width:26px;height:26px;background:#F7931A;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:800;color:#fff;">B</span>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#0d2145;">Bitcoin</div>
+                <div style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);">BTC</div>
+              </div>
+            </div>
+            <div id="rate-val-btc" style="font-size:16px;font-weight:800;color:#2d8a5e;">0.00001524 BTC</div>
+            <div style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.4);margin-top:2px;">per USD</div>
+          </div>
+
+          <div class="rate-card" id="rate-ethereum" onclick="selectRateCard('ethereum')" data-symbol="ETH">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+              <div style="width:26px;height:26px;background:#627EEA;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:800;color:#fff;">E</span>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#0d2145;">Ethereum</div>
+                <div style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);">ETH</div>
+              </div>
+            </div>
+            <div id="rate-val-eth" style="font-size:16px;font-weight:800;color:#2d8a5e;">0.00041820 ETH</div>
+            <div style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.4);margin-top:2px;">per USD</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SECTION D: Withdrawal Forms ===================== -->
+
+      <!-- CRYPTO WITHDRAWAL FORM -->
+      <div id="form-crypto" style="display:block;">
+
+      <!-- Currency Selector (inside crypto form) -->
+      <div class="fu fu-3" style="margin-bottom:20px;">
+        <div class="lbl" style="margin-bottom:10px;">Choose Withdrawal Currency</div>
+        <div class="scroll-row" id="currency-selector">
+          <button class="curr-btn selected" id="curr-USDT" onclick="selectCurrency('USDT','usdt')">
+            <div style="width:24px;height:24px;background:#26a17b;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:8px;font-weight:800;color:#fff;">T</span></div>
+            <span style="font-size:13px;font-weight:600;color:#0d2145;">USDT</span>
+          </button>
+          <button class="curr-btn" id="curr-BTC" onclick="selectCurrency('BTC','bitcoin')">
+            <div style="width:24px;height:24px;background:#F7931A;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:8px;font-weight:800;color:#fff;">B</span></div>
+            <span style="font-size:13px;font-weight:600;color:#0d2145;">Bitcoin</span>
+          </button>
+          <button class="curr-btn" id="curr-ETH" onclick="selectCurrency('ETH','ethereum')">
+            <div style="width:24px;height:24px;background:#627EEA;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:8px;font-weight:800;color:#fff;">E</span></div>
+            <span style="font-size:13px;font-weight:600;color:#0d2145;">Ethereum</span>
+          </button>
+          <button class="curr-btn" id="curr-BNB" onclick="selectCurrency('BNB','binancecoin')">
+            <div style="width:24px;height:24px;background:#F3BA2F;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:8px;font-weight:800;color:#fff;">B</span></div>
+            <span style="font-size:13px;font-weight:600;color:#0d2145;">BNB</span>
+          </button>
+          <button class="curr-btn" id="curr-USDC" onclick="selectCurrency('USDC','usd-coin')">
+            <div style="width:24px;height:24px;background:#2775CA;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:8px;font-weight:800;color:#fff;">U</span></div>
+            <span style="font-size:13px;font-weight:600;color:#0d2145;">USDC</span>
+          </button>
+          <button class="curr-btn" onclick="openMoreModal()" style="border-style:dashed;color:rgba(13,33,69,0.5);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span style="font-size:13px;font-weight:600;">More</span>
+          </button>
+      </div><!-- /currency selector div -->
+      </div><!-- /fu fu-3 currency -->
+
+      <!-- ===================== SECTION D: Crypto Withdrawal Form ===================== -->
+      <div class="fu fu-4 glass" style="padding:24px 22px;margin-bottom:20px;">
+        <div style="font-size:16px;font-weight:700;color:#0d2145;margin-bottom:20px;">Withdrawal Details</div>
+
+        <!-- Amount field -->
+        <div style="margin-bottom:18px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:rgba(13,33,69,0.55);margin-bottom:8px;letter-spacing:0.3px;">Amount to Withdraw (USD)</label>
+          <div class="amt-wrap">
+            <input type="number" id="input-withdraw-amount" class="inp" placeholder="0.00" min="5" step="0.01" oninput="calcFees()" style="padding-right:60px;">
+            <span class="amt-unit">USD</span>
+          </div>
+          <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.42);margin:6px 0 0;display:flex;align-items:center;gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Minimum withdrawal is $5.00. Available: <strong style="color:#2d8a5e;" id="max-display">...</strong>
+          </p>
+        </div>
+
+        <!-- Wallet address field -->
+        <div style="margin-bottom:20px;">
+          <label id="wallet-label" style="display:block;font-size:12px;font-weight:600;color:rgba(13,33,69,0.55);margin-bottom:8px;letter-spacing:0.3px;">USDT Wallet Address</label>
+          <input type="text" id="input-wallet-address" class="inp" placeholder="Your wallet address" value="">
+        </div>
+
+        <!-- Fee breakdown -->
+        <div id="fee-breakdown" style="background:#e8f5ef;border-radius:12px;padding:16px;margin-bottom:20px;">
+          <div style="font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Fee Breakdown</div>
+
+          <div class="fee-row">
+            <span style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);">NOWPayments fee (0.5%)</span>
+            <span id="fee-network" style="font-size:13px;font-weight:600;color:#0d2145;">-</span>
+          </div>
+          <div class="fee-row">
+            <span class="platform-fee-label" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);">Platform fee (1.5%)</span>
+            <span id="fee-platform" style="font-size:13px;font-weight:600;color:#0d2145;">-</span>
+          </div>
+          <div style="height:1px;background:rgba(45,138,94,0.18);margin:8px 0;"></div>
+          <div class="fee-row" style="padding-top:4px;">
+            <span style="font-size:14px;font-weight:700;color:#0d2145;">You will receive</span>
+            <div style="text-align:right;">
+              <div id="fee-final" style="font-size:16px;font-weight:800;color:#2d8a5e;">-</div>
+              <div id="fee-final-usd" style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);margin-top:1px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payouts frozen banner -->
+        <div id="payouts-frozen-banner" style="display:none;align-items:center;gap:12px;background:rgba(99,60,180,0.08);border:1.5px solid rgba(99,60,180,0.25);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633cb4" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>
+  <span style="font-size:13px;font-weight:600;color:#633cb4;">Withdrawals temporarily paused by platform. Please <a href="mailto:support@kreddlo.com" id="support-mailto-link" style="color:#2d8a5e;text-decoration:underline;">contact support</a> for assistance.</span>
+</div>
+
+        <!-- Error message -->
+        <div id="kyc-banner" style="display:none;align-items:center;gap:12px;background:#fff3cd;border:1.5px solid #ffc107;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span style="font-size:13px;font-weight:600;color:#856404;">Identity verification required. <a href="/verify.html" style="color:#2d8a5e;text-decoration:underline;">Complete KYC</a> to withdraw funds.</span>
+</div>
+<div id="withdraw-error" style="display:none;font-size:13px;font-weight:500;color:#c81e1e;margin-bottom:12px;padding:10px 14px;background:#fde8e8;border-radius:10px;"></div>
+
+        <!-- Submit button -->
+        <button class="btn-green" id="btn-withdraw" onclick="handleWithdraw()" style="width:100%;padding:15px 28px;font-size:15px;font-weight:700;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Confirm Withdrawal
+        </button>
+      </div><!-- /crypto glass card -->
+
+      </div><!-- /form-crypto -->
+
+      <!-- ===================== BANK WITHDRAWAL FORM ===================== -->
+      <div id="form-bank" style="display:none;">
+<div id="bank-coming-soon-banner" style="display:none;align-items:center;gap:10px;background:rgba(13,33,69,0.04);border:1.5px solid #e2e8f0;border-radius:12px;padding:13px 16px;margin-bottom:16px;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.5)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+  <div>
+    <div style="font-size:13px;font-weight:700;color:#0d2145;">Bank withdrawals coming soon</div>
+    <div style="font-size:12px;color:rgba(13,33,69,0.5);margin-top:2px;">Use crypto withdrawal for now. Bank transfers will be available shortly.</div>
+  </div>
+</div>
+
+        <!-- Per-currency withdrawal selector (shown when multiple currencies available) -->
+        <div id="withdrawal-currency-selector" style="display:none;margin-bottom:16px;"></div>
+
+        <div class="fu fu-3 glass" style="padding:24px 22px;margin-bottom:20px;">
+          <div style="font-size:16px;font-weight:700;color:#0d2145;margin-bottom:20px;">Bank Transfer Details</div>
+
+          <!-- Amount -->
+          <div style="margin-bottom:16px;">
+            <label for="input-bank-amount" id="bank-amount-label" class="lbl" style="display:block;margin-bottom:8px;">Amount (USD)</label>
+            <div class="amt-wrap">
+              <input type="number" id="input-bank-amount" class="inp" placeholder="0.00" min="10" step="0.01" oninput="calcBankFees()" style="padding-right:60px;">
+              <span class="amt-unit" id="bank-amount-unit">USD</span>
+            </div>
+            <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.42);margin:6px 0 0;display:flex;align-items:center;gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Minimum $10.00. Available: <strong style="color:#2d8a5e;" id="bank-max-display">...</strong>
+            </p>
+          </div>
+
+          <!-- Bank Dropdown (dynamic from Flutterwave) -->
+          <!-- Bank search section (FLW currencies only) — hidden for Stripe currencies by B3b -->
+          <div id="bank-search-section" style="margin-bottom:16px;">
+            <label for="input-bank-search" class="lbl" style="display:block;margin-bottom:8px;">Bank</label>
+            <div style="position:relative;">
+              <input type="text" id="input-bank-search" class="inp" placeholder="Search for your bank…" oninput="filterBankList()" onfocus="onBankSearchFocus()" autocomplete="off" style="padding-right:36px;">
+              <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.45)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div id="bank-dropdown-list" style="display:none;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 24px rgba(13,33,69,0.10);max-height:200px;overflow-y:auto;margin-top:4px;z-index:100;position:relative;"></div>
+            <div id="bank-selected-display" style="display:none;margin-top:8px;padding:10px 14px;background:#e8f5ef;border-radius:10px;font-size:13px;font-weight:700;color:#2d8a5e;display:flex;align-items:center;justify-content:space-between;">
+              <span id="bank-selected-name"></span>
+              <button onclick="clearBankSelection()" style="background:none;border:none;cursor:pointer;padding:0;color:rgba(13,33,69,0.4);font-size:11px;font-weight:600;">Change</button>
+            </div>
+            <div id="bank-list-loading" style="display:none;font-size:12px;color:rgba(13,33,69,0.5);margin-top:6px;align-items:center;gap:6px;">
+              <div class="spinner" style="width:12px;height:12px;border-width:2px;"></div> Loading banks…
+            </div>
+            <div id="bank-info-message" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(13,33,69,0.04);border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:500;color:rgba(13,33,69,0.65);line-height:1.5;"></div>
+          </div>
+
+          <!-- Stripe international bank fields — shown for USD/EUR/GBP etc. by B3c–B3e -->
+          <div id="stripe-fields-section" style="display:none;margin-bottom:16px;"></div>
+
+          <!-- B3g: Stripe info pill — shown for Stripe currencies -->
+          <div id="stripe-info-pill" style="display:none;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(99,102,241,0.07);border:1.5px solid rgba(99,102,241,0.22);border-radius:10px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span style="font-size:12px;font-weight:500;color:#5254a3;line-height:1.4;">Processed via Stripe &mdash; secure international bank transfer</span>
+            </div>
+          </div>
+
+          <!-- Bank Account Number — hidden by default; shown by fetchBankList for FLW currencies
+               and by renderStripeFields for routing_account (USD/CAD etc). Fix F. -->
+          <div id="account-number-wrap" style="display:none;margin-bottom:16px;">
+            <label for="input-account-number" class="lbl" style="display:block;margin-bottom:8px;">Account Number</label>
+            <input type="text" id="input-account-number" class="inp" placeholder="Enter your account number" inputmode="numeric" onblur="resolveBankAccount()">
+          </div>
+
+          <!-- Account Name (auto-filled, read-only) -->
+          <div style="margin-bottom:16px;">
+            <label class="lbl" style="display:block;margin-bottom:8px;">Account Name</label>
+            <div style="position:relative;">
+              <input type="text" id="input-account-name" class="inp" placeholder="Auto-filled after account number entry" readonly style="background:rgba(13,33,69,0.03);color:rgba(13,33,69,0.6);cursor:default;">
+              <div id="account-name-spinner" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);"><div class="spinner" style="width:14px;height:14px;border-width:2px;"></div></div>
+              <svg id="account-name-check" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+
+          <!-- Save bank details checkbox -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <input type="checkbox" id="save-bank-details" style="width:17px;height:17px;accent-color:#2d8a5e;cursor:pointer;flex-shrink:0;">
+            <label for="save-bank-details" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.55);cursor:pointer;">Save bank details for future withdrawals</label>
+          </div>
+
+          <!-- Bank fee breakdown -->
+          <div id="bank-fee-breakdown" style="background:#e8f5ef;border-radius:12px;padding:16px;margin-bottom:20px;">
+            <div style="font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Fee Breakdown</div>
+            <div class="fee-row">
+              <span class="platform-fee-label" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);">Platform fee (1.5%)</span>
+              <span id="bank-fee-platform" style="font-size:13px;font-weight:600;color:#0d2145;">-</span>
+            </div>
+            <div style="height:1px;background:rgba(45,138,94,0.18);margin:8px 0;"></div>
+            <div class="fee-row" style="padding-top:4px;">
+              <span style="font-size:14px;font-weight:700;color:#0d2145;">You will receive</span>
+              <span id="bank-fee-final" style="font-size:16px;font-weight:800;color:#2d8a5e;">-</span>
+            </div>
+            <div id="bank-local-equiv" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(45,138,94,0.08);border-radius:8px;">
+              <span style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.55);">≈ Local equivalent</span>
+              <span id="bank-local-equiv-amount" style="float:right;font-size:13px;font-weight:700;color:#0d2145;">-</span>
+              <div style="clear:both;"></div>
+              <div id="bank-local-rate-note" style="font-size:11px;color:rgba(13,33,69,0.4);margin-top:3px;"></div>
+            </div>
+          </div>
+
+          <!-- Bank error -->
+          <div id="bank-error" style="display:none;font-size:13px;font-weight:500;color:#c81e1e;margin-bottom:12px;padding:10px 14px;background:#fde8e8;border-radius:10px;"></div>
+
+          <!-- Submit -->
+          <button class="btn-green" id="btn-bank-withdraw" onclick="handleBankWithdraw()" style="width:100%;padding:15px 28px;font-size:15px;font-weight:700;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Send to Bank Account
+          </button>
+        </div><!-- /bank glass card -->
+      </div><!-- /form-bank -->
+
+      <!-- ===================== SECTION E: Early Payout (Premium) ===================== -->
+      <div id="early-payout-section" class="fu fu-5" style="margin-bottom:32px;">
+        <div style="background:rgba(255,255,255,0.70);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-left:3px solid #856404;border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08);padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:32px;height:32px;background:#fff3cd;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <span style="font-size:15px;font-weight:700;color:#0d2145;">Early Payout</span>
+              <span class="badge badge-amber">Pro Feature</span>
+            </div>
+          </div>
+          <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);margin:0 0 16px;line-height:1.6;">Normally funds are held for <strong style="color:#0d2145;">7 days</strong> after project completion. Early Payout gives you instant access to your funds for a <strong style="color:#856404;">2% fee</strong> on the withdrawal amount.</p>
+          <button class="btn-ghost" onclick="openEarlyPayoutModal()" style="font-size:13px;padding:9px 18px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Request Early Payout
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Withdrawals -->
+      <div class="fu fu-5 glass" style="padding:22px;margin-bottom:32px;">
+        <div style="font-size:15px;font-weight:700;color:#0d2145;margin-bottom:16px;">Recent Withdrawals</div>
+        <div id="withdrawal-history">
+          <div style="text-align:center;padding:24px 0;color:rgba(13,33,69,0.38);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;display:block;opacity:0.4;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <div style="font-size:13px;font-weight:600;">No withdrawals yet</div>
+            <div style="font-size:12px;margin-top:4px;">Your withdrawal history will appear here.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ===================== EARLY PAYOUT MODAL ===================== -->
+<div id="modal-early" class="modal" onclick="if(event.target===this)closeEarlyModal()">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:18px;font-weight:800;color:#0d2145;">Request Early Payout</div>
+      <button onclick="closeEarlyModal()" style="width:32px;height:32px;background:rgba(13,33,69,0.06);border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="background:#fff3cd;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:600;color:#856404;margin-bottom:6px;">Fee notice</div>
+      <div style="font-size:13px;font-weight:500;color:rgba(133,100,4,0.85);line-height:1.5;">A 2% early payout fee will be applied to your withdrawal amount. Funds are normally held for 7 days after project completion. Early payout releases them immediately.</div>
+    </div>
+    <div style="background:#f8f9fb;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div class="fee-row">
+        <span style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.58);">Withdrawal amount</span>
+        <span id="ep-amount" style="font-size:14px;font-weight:700;color:#0d2145;">$0.00</span>
+      </div>
+      <div class="fee-row">
+        <span style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.58);">Early payout fee (2%)</span>
+        <span id="ep-fee" style="font-size:14px;font-weight:700;color:#856404;">-$0.00</span>
+      </div>
+      <div style="height:1px;background:#e2e8f0;margin:8px 0;"></div>
+      <div class="fee-row">
+        <span style="font-size:14px;font-weight:700;color:#0d2145;">You will receive</span>
+        <span id="ep-final" style="font-size:16px;font-weight:800;color:#2d8a5e;">$0.00</span>
+      </div>
+    </div>
+    <button class="btn-green" onclick="confirmEarlyPayout()" style="width:100%;padding:13px 24px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Confirm Early Payout
+    </button>
+  </div>
+</div>
+
+<!-- ===================== MORE CURRENCIES MODAL ===================== -->
+<div id="modal-more" class="modal" onclick="if(event.target===this)closeMoreModal()">
+  <div class="modal-box" style="max-height:85vh;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:18px;font-weight:800;color:#0d2145;">All Currencies</div>
+      <button onclick="closeMoreModal()" style="width:32px;height:32px;background:rgba(13,33,69,0.06);border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="position:relative;margin-bottom:16px;">
+      <input type="text" id="currency-search" class="inp" placeholder="Search currencies..." oninput="filterCurrencies()" style="padding-left:38px;">
+      <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.4)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div id="currency-list" style="display:flex;flex-direction:column;gap:8px;max-height:55vh;max-height:55dvh;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- PULL-TO-REFRESH INDICATOR -->
+<div id="ptr-indicator" class="ptr-indicator" aria-live="polite" aria-label="Refreshing">
+  <div class="ptr-spinner"></div>
+  <span id="ptr-label">Refreshing</span>
+</div>
+
+<!-- SWIPE-BACK EDGE HINT -->
+<div id="swipe-hint" class="swipe-hint"></div>
+
+<!-- ===================== OTP MODAL (Withdrawal 2FA — Bug 7) ===================== -->
+<div id="modal-otp" class="modal" onclick="if(event.target===this)cancelOtpModal()">
+  <div class="modal-box" style="max-width:400px;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;background:#e8f5ef;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#0d2145;">Verify Withdrawal</div>
+          <div style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.5);">Check your email for a code</div>
+        </div>
+      </div>
+      <button onclick="cancelOtpModal()" style="width:32px;height:32px;background:rgba(13,33,69,0.06);border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Info text -->
+    <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.65);margin:0 0 20px;line-height:1.6;">
+      A 6-digit code has been sent to your registered email address. Enter it below to confirm your withdrawal.
+    </p>
+
+    <!-- 6-digit OTP input -->
+    <div style="margin-bottom:16px;">
+      <label class="lbl" style="display:block;margin-bottom:8px;">Verification Code</label>
+      <input
+        type="text"
+        id="otp-input"
+        class="inp"
+        placeholder="_ _ _ _ _ _"
+        maxlength="6"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        style="font-size:24px;font-weight:800;letter-spacing:10px;text-align:center;padding:14px 20px;"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6); onOtpInput();"
+      >
+    </div>
+
+    <!-- OTP error -->
+    <div id="otp-error" style="display:none;font-size:13px;font-weight:500;color:#c81e1e;margin-bottom:14px;padding:10px 14px;background:#fde8e8;border-radius:10px;"></div>
+
+    <!-- Timer / resend -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <span id="otp-timer-text" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.5);">Code expires in <strong id="otp-countdown" style="color:#0d2145;">10:00</strong></span>
+      <button id="otp-resend-btn" onclick="resendWithdrawalOtp()" style="display:none;background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:#2d8a5e;padding:0;font-family:'Plus Jakarta Sans',sans-serif;">Resend code</button>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:10px;">
+      <button onclick="cancelOtpModal()" class="btn-ghost" style="flex:1;padding:13px;font-size:14px;">Cancel</button>
+      <button id="otp-confirm-btn" onclick="confirmWithdrawalOtp()" class="btn-green" style="flex:2;padding:13px;font-size:14px;font-weight:700;" disabled>
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ======= APP STATE =======
+// Live balances loaded from Firestore in _boot
+let liveBalance = 0;          // USD entry from balancesMap — used as cap for crypto withdrawal validation
+let balancesMap = {};         // { 'NGN': 150000, 'USD': 245.00, 'USDT': 12.00, ... } — all earned currencies
+let selectedWithdrawalCurrency = 'USD'; // for bank withdrawal currency selector
+let liveWalletAddress = '';
+let kycVerified = false;
+let currentUid = '';
+
+let PLATFORM_FEE_PCT     = 1.5;
+let NOWPAYMENTS_FEE_PCT  = 0.5;
+let HOLDING_DAYS         = 7;
+let EARLY_PAYOUT_FEE_PCT = 2;
+let MIN_WITHDRAWAL       = 10;
+let MIN_BANK_WITHDRAWAL  = 10;
+
+// ======= STATE =======
+let liveRates = { usdt: 1, bitcoin: 0.000015, ethereum: 0.00042, binancecoin: 0.0017, 'usd-coin': 1, litecoin: 0.012, ripple: 1.5, dogecoin: 8, solana: 0.007, cardano: 3, tron: 12, 'matic-network': 2 };
+let selectedCurrency  = 'USDT';
+let selectedCoinId    = 'usdt';
+let rateCountdown     = 60;
+let lockedRate        = null;
+let activeBalanceType = 'crypto';
+let fiatEnabled       = false;
+
+// ======= BANK LOCAL CURRENCY CONVERSION =======
+let bankListFetched  = false;
+
+// Maps bank country names (matching select options) to ISO 4217 currency codes
+const COUNTRY_CURRENCY_MAP = {
+  'Nigeria': 'NGN', 'Ghana': 'GHS', 'Kenya': 'KES', 'South Africa': 'ZAR',
+  'Tanzania': 'TZS', 'Uganda': 'UGX', 'Rwanda': 'RWF', 'Ethiopia': 'ETB',
+  'Senegal': 'XOF', 'Ivory Coast': 'XOF', "Côte d'Ivoire": 'XOF',
+  'Cameroon': 'XAF', 'Egypt': 'EGP', 'Morocco': 'MAD', 'Tunisia': 'TND',
+  'United Kingdom': 'GBP', 'Germany': 'EUR', 'France': 'EUR', 'Italy': 'EUR',
+  'Spain': 'EUR', 'Portugal': 'EUR', 'Netherlands': 'EUR', 'Belgium': 'EUR',
+  'Austria': 'EUR', 'Greece': 'EUR', 'Finland': 'EUR', 'Ireland': 'EUR',
+  'India': 'INR', 'Pakistan': 'PKR', 'Bangladesh': 'BDT', 'Philippines': 'PHP',
+  'Indonesia': 'IDR', 'Malaysia': 'MYR', 'Thailand': 'THB', 'Vietnam': 'VND',
+  'Brazil': 'BRL', 'Mexico': 'MXN', 'Colombia': 'COP', 'Argentina': 'ARS',
+  'Canada': 'CAD', 'Australia': 'AUD', 'New Zealand': 'NZD', 'Japan': 'JPY',
+  'South Korea': 'KRW', 'China': 'CNY', 'Singapore': 'SGD', 'Hong Kong': 'HKD',
+  'United Arab Emirates': 'AED', 'Saudi Arabia': 'SAR', 'Poland': 'PLN',
+  'Czech Republic': 'CZK', 'Hungary': 'HUF', 'Romania': 'RON', 'Turkey': 'TRY',
+  'Ukraine': 'UAH', 'Sweden': 'SEK', 'Norway': 'NOK', 'Denmark': 'DKK',
+  'Switzerland': 'CHF', 'Israel': 'ILS', 'Jordan': 'JOD', 'Qatar': 'QAR',
+  'Kuwait': 'KWD', 'Bahrain': 'BHD', 'Oman': 'OMR', 'Sri Lanka': 'LKR',
+  'Nepal': 'NPR', 'Myanmar': 'MMK', 'Cambodia': 'KHR', 'Zimbabwe': 'ZWL',
+  'Zambia': 'ZMW', 'Mozambique': 'MZN', 'Angola': 'AOA', 'Botswana': 'BWP',
+  'Namibia': 'NAD', 'Malawi': 'MWK', 'Liberia': 'LRD', 'Sierra Leone': 'SLL',
+  'Mauritius': 'MUR', 'Seychelles': 'SCR', 'Chile': 'CLP', 'Peru': 'PEN',
+  'Venezuela': 'VES', 'Guatemala': 'GTQ', 'Costa Rica': 'CRC', 'Panama': 'PAB',
+  'Dominican Republic': 'DOP', 'Jamaica': 'JMD', 'Trinidad and Tobago': 'TTD',
+  'Russia': 'RUB', 'Kazakhstan': 'KZT', 'Uzbekistan': 'UZS', 'Georgia': 'GEL',
+  'Azerbaijan': 'AZN', 'Armenia': 'AMD', 'Moldova': 'MDL', 'Serbia': 'RSD',
+  'Croatia': 'HRK', 'Bulgaria': 'BGN', 'Albania': 'ALL', 'North Macedonia': 'MKD',
+  'Bosnia and Herzegovina': 'BAM', 'Iceland': 'ISK', 'Taiwan': 'TWD',
+  'Mongolia': 'MNT', 'Bolivia': 'BOB', 'Paraguay': 'PYG', 'Uruguay': 'UYU',
+  'Ecuador': 'USD', 'El Salvador': 'USD'
+};
+
+// FX state — populated from get-bank-list response (gateway rates, not third-party API).
+// Used ONLY for the live display-only estimate shown to the user. The actual
+// debit is always the exact balance-currency amount the user enters — this
+// rate is never sent to the backend or used in any debit calculation.
+var liveBankFxRate         = null;  // current debitCurrency → selectedWithdrawalCurrency rate (display only)
+var liveBankFxCurrency     = null;  // which currency the rate is for
+var liveBankFxSource       = null;  // 'flutterwave' | 'stripe'
+
+// selectedWithdrawalCurrency = the currency the BENEFICIARY BANK ACCOUNT receives (payoutCurrency).
+// selectedDebitCurrency      = the BALANCE BUCKET being debited — what the amount field is denominated in.
+// These are the same currency in the common case. They only differ when the
+// user explicitly holds no balance in their bank's currency and chooses to
+// debit a different balance they do hold; the gateway converts natively.
+var selectedDebitCurrency  = null;
+
+// ======= BALANCE DISPLAY =======
+function fmt(n){ return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ── Currency helpers — delegate to shared module (assets/shared.js) ──────────
+function fmtCurrency(amount, currency) {
+  if (window.kreddloCurrency && window.kreddloCurrency.fmt) {
+    return window.kreddloCurrency.fmt(amount, currency);
+  }
+  // Fallback if shared.js not yet loaded
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 2 }).format(Number(amount) || 0);
+  } catch(e) {
+    return (currency || 'USD') + ' ' + Number(amount || 0).toFixed(2);
+  }
+}
+
+function renderBalances() {
+  // ---- Crypto card: renderCard() over the full balancesMap so all earned
+  //      currencies appear (USDT, BTC, ETH, USD etc.) with tappable chips.
+  //      liveBalance (balancesMap['USD']) is still the cap for USD-denominated
+  //      crypto withdrawals — no change to validation logic below.
+  var cryptoEl = document.getElementById('balance-crypto');
+  if (cryptoEl) {
+    if (window.kreddloCurrency && window.kreddloCurrency.renderCard) {
+      cryptoEl.innerHTML = window.kreddloCurrency.renderCard(balancesMap, {
+        primaryColor: '#0d2145'
+      });
+    } else {
+      // shared.js not yet loaded — show USD fallback
+      var _ckeys = Object.keys(balancesMap).filter(function(c){ return Number(balancesMap[c]) > 0; });
+      cryptoEl.innerHTML = _ckeys.length
+        ? _ckeys.map(function(c){ return fmtCurrency(balancesMap[c], c); }).join(' · ')
+        : fmtCurrency(0, 'USD');
+    }
+  }
+
+  // ---- Fiat card: shared card renderer (big primary + tappable chips) ----
+  var fiatEl = document.getElementById('balance-fiat');
+  if (fiatEl) {
+    if (window.kreddloCurrency && window.kreddloCurrency.renderCard) {
+      fiatEl.innerHTML = window.kreddloCurrency.renderCard(balancesMap, {
+        primaryColor: '#0d2145'
+      });
+    } else {
+      // shared.js not yet loaded — show raw total
+      var _keys = Object.keys(balancesMap).filter(function(c){ return Number(balancesMap[c]) > 0; });
+      fiatEl.innerHTML = _keys.length
+        ? _keys.map(function(c){ return fmtCurrency(balancesMap[c], c); }).join(' · ')
+        : fmtCurrency(0, 'USD');
+    }
+  }
+
+  // ---- Withdrawal currency selector for bank form ----
+  renderWithdrawalCurrencySelector();
+
+  // ---- Crypto form caps: use the full balance for the selected withdrawal
+  //      currency (liveBalance = balancesMap['USD'] for USD-denominated crypto) ----
+  var maxDisplay = document.getElementById('max-display');
+  if (maxDisplay) maxDisplay.textContent = fmt(liveBalance);
+  var cryptoInput = document.getElementById('input-withdraw-amount');
+  if (cryptoInput) cryptoInput.max = liveBalance;
+
+  // ---- Bank form caps (selected currency) ----
+  updateBankFormForCurrency();
+
+  // ---- Eagerly fetch bank list/Stripe fields if bank form is visible ----
+  var formBank = document.getElementById('form-bank');
+  if (formBank && formBank.style.display !== 'none' && !bankListFetched) {
+    fetchBankList();
+  }
+}
+
+function renderWithdrawalCurrencySelector() {
+  var container = document.getElementById('withdrawal-currency-selector');
+  if (!container) return;
+
+  // Base list of supported withdrawal currencies.
+  // Any currency the seller actually holds (from balancesMap) is automatically
+  // merged in at the top — so new currencies added to the platform appear
+  // without any code changes here.
+  var BASE_WITHDRAWAL_CURRENCIES = [
+    { code: 'NGN', label: 'NGN — Nigerian Naira' },
+    { code: 'GHS', label: 'GHS — Ghanaian Cedi' },
+    { code: 'KES', label: 'KES — Kenyan Shilling' },
+    { code: 'UGX', label: 'UGX — Ugandan Shilling' },
+    { code: 'TZS', label: 'TZS — Tanzanian Shilling' },
+    { code: 'ZAR', label: 'ZAR — South African Rand' },
+    { code: 'XOF', label: 'XOF — West African CFA Franc' },
+    { code: 'XAF', label: 'XAF — Central African CFA Franc' },
+    { code: 'RWF', label: 'RWF — Rwandan Franc' },
+    { code: 'ETB', label: 'ETB — Ethiopian Birr' },
+    { code: 'USD', label: 'USD — US Dollar' },
+    { code: 'GBP', label: 'GBP — British Pound' },
+    { code: 'EUR', label: 'EUR — Euro' },
+  ];
+  // Merge any currencies the seller actually holds that aren't in the base list.
+  // These appear first (with a balance indicator) so the seller sees their money first.
+  var baseCodes = BASE_WITHDRAWAL_CURRENCIES.map(function(x){ return x.code; });
+  var extraCurrencies = Object.keys(balancesMap)
+    .filter(function(c){ return Number(balancesMap[c]) > 0 && baseCodes.indexOf(c) === -1; })
+    .map(function(c){ return { code: c, label: c + ' — ' + fmtCurrency(balancesMap[c], c) + ' available', isExtra: true }; });
+  var ALL_WITHDRAWAL_CURRENCIES = extraCurrencies.concat(BASE_WITHDRAWAL_CURRENCIES);
+
+  // Default to first currency with a balance, or USD
+  if (!selectedWithdrawalCurrency) {
+    var firstWithBal = Object.keys(balancesMap).find(function(c){ return Number(balancesMap[c]) > 0; });
+    selectedWithdrawalCurrency = firstWithBal || 'USD';
+  }
+
+  var SEL_STYLE = [
+    'width:100%',
+    'padding:13px 38px 13px 14px',
+    'border:1.5px solid #e2e8f0',
+    'border-radius:14px',
+    "font-family:'Plus Jakarta Sans',sans-serif",
+    'font-size:16px',
+    'font-weight:600',
+    'color:#0d2145',
+    'outline:none',
+    'background:#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230d2145\' stroke-width=\'2.5\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E") no-repeat right 14px center',
+    '-webkit-appearance:none',
+    'appearance:none',
+    'cursor:pointer',
+    'transition:border-color .2s',
+  ].join(';');
+
+  var html = '<label class="lbl" style="display:block;margin-bottom:8px;">Bank Account Currency</label>';
+  html += '<select id="withdrawal-currency-select" onchange="selectWithdrawalCurrency(this.value)" style="' + SEL_STYLE + '">';
+  ALL_WITHDRAWAL_CURRENCIES.forEach(function(item) {
+    var sel = item.code === selectedWithdrawalCurrency ? ' selected' : '';
+    var bal = Number(balancesMap[item.code] || 0);
+    // Show balance for currencies the seller holds (makes it clear which has funds)
+    var balLabel = (!item.isExtra && bal > 0)
+      ? ' · ' + fmtCurrency(bal, item.code)
+      : '';
+    html += '<option value="' + item.code + '"' + sel + '>' + item.label + balLabel + '</option>';
+  });
+  html += '</select>';
+  html += '<div id="bank-fx-note" style="display:none;margin-top:8px;padding:9px 12px;border-radius:10px;background:#e8f5ef;border:1px solid #b2dfcc;font-size:12px;font-weight:600;color:#2d8a5e;"></div>';
+
+  container.innerHTML = html;
+  container.style.display = 'block';
+  updateBankFormForCurrency();
+}
+
+function selectWithdrawalCurrency(currency) {
+  selectedWithdrawalCurrency = currency;
+
+  // Reset FX display state for the new currency
+  liveBankFxRate     = null;
+  liveBankFxCurrency = null;
+  liveBankFxSource   = null;
+  selectedDebitCurrency = null;
+
+  // Reset all bank state so fetchBankList starts fresh for the new currency
+  bankListFetched  = false;
+  currentStripeFields = null;
+  allBanks         = [];
+  selectedBankCode = '';
+  selectedBankName = '';
+
+  // Reset UI to clean state before fetch
+  var disp    = document.getElementById('bank-selected-display');
+  var search  = document.getElementById('input-bank-search');
+  var list    = document.getElementById('bank-dropdown-list');
+  var accName = document.getElementById('input-account-name');
+  var accChk  = document.getElementById('account-name-check');
+  var infoMsg = document.getElementById('bank-info-message');
+  var errEl   = document.getElementById('bank-error');
+  var sfs     = document.getElementById('stripe-fields-section');
+  var anw     = document.getElementById('account-number-wrap');
+
+  if (disp)    disp.style.display    = 'none';
+  if (search)  { search.value = ''; }
+  if (list)    list.style.display    = 'none';
+  if (accName) accName.value         = '';
+  if (accChk)  accChk.style.display  = 'none';
+  if (infoMsg) { infoMsg.style.display = 'none'; infoMsg.innerHTML = ''; }
+  if (errEl)   errEl.style.display   = 'none';
+  if (sfs)     { sfs.style.display   = 'none'; sfs.innerHTML = ''; }
+  if (anw)     anw.style.display     = 'none';  // Fix F: start hidden; fetchBankList sets correct visibility
+
+  renderWithdrawalCurrencySelector();
+
+  // Always eagerly fetch so correct fields appear immediately on currency switch
+  fetchBankList();
+}
+
+function updateBankFormForCurrency() {
+  var bankCur = selectedWithdrawalCurrency || 'USD'; // currency the bank account receives
+  var bal     = Number(balancesMap[bankCur] || 0);
+  var usdBal  = Number(balancesMap['USD'] || 0);
+
+  var bankMaxEl = document.getElementById('bank-max-display');
+  var bankInput = document.getElementById('input-bank-amount');
+  var fxNote    = document.getElementById('bank-fx-note');
+  var bankAmtLabel = document.getElementById('bank-amount-label');
+  var bankAmtUnit  = document.getElementById('bank-amount-unit');
+
+  if (bal > 0) {
+    // Common case: user holds a balance in the same currency their bank
+    // account uses. No conversion anywhere — amount field IS the debit.
+    selectedDebitCurrency = bankCur;
+    if (bankMaxEl) bankMaxEl.textContent = fmtCurrency(bal, bankCur);
+    if (bankInput) bankInput.max = bal;
+    if (fxNote)   fxNote.style.display = 'none';
+  } else if (bankCur !== 'USD' && usdBal > 0) {
+    // No direct balance in the bank's currency, but a USD balance exists.
+    // The amount field is denominated in USD — that's the EXACT amount
+    // debited. Flutterwave converts to bankCur natively at execution time;
+    // the figure below is a live estimate for display only and is never
+    // sent to the backend or used in any debit math.
+    selectedDebitCurrency = 'USD';
+    if (bankMaxEl) bankMaxEl.textContent = fmtCurrency(usdBal, 'USD');
+    if (bankInput) bankInput.max = usdBal;
+    if (fxNote) {
+      if (liveBankFxRate && liveBankFxCurrency === bankCur) {
+        fxNote.textContent = 'Debiting your USD balance — your bank receives approximately 1 USD ≈ ' +
+          liveBankFxRate.toFixed(4) + ' ' + bankCur + ' (estimate only, converted automatically by our payment partner).';
+      } else {
+        fxNote.textContent = 'Debiting your USD balance. Fetching live conversion estimate for ' + bankCur + '…';
+      }
+      fxNote.style.display = 'block';
+    }
+  } else {
+    // No usable balance at all
+    selectedDebitCurrency = bankCur;
+    if (bankMaxEl) bankMaxEl.textContent = fmtCurrency(0, bankCur);
+    if (bankInput) bankInput.max = 0;
+    if (fxNote)   fxNote.style.display = 'none';
+  }
+
+  // Amount label/unit always reflect the currency actually being debited —
+  // this is what the number the user types means.
+  if (bankAmtLabel) bankAmtLabel.textContent = 'Amount (' + selectedDebitCurrency + ')';
+  if (bankAmtUnit)  bankAmtUnit.textContent  = selectedDebitCurrency;
+
+  calcBankFees();
+}
+
+// ======= KYC GATE =======
+function applyKycGate() {
+  const btn    = document.getElementById('btn-withdraw');
+  const errEl  = document.getElementById('withdraw-error');
+  const kycDiv = document.getElementById('kyc-banner');
+  if (!kycVerified) {
+    if (btn)    { btn.disabled = true; }
+    if (kycDiv) { kycDiv.style.display = 'flex'; }
+    if (errEl && errEl.style.display === 'none') {
+      errEl.innerHTML = 'Identity not verified. <a href="/verify.html" style="color:#2d8a5e;font-weight:700;">Complete KYC</a> to enable withdrawals.';
+      errEl.style.display = 'block';
+    }
+  } else {
+    if (btn)    { btn.disabled = false; }
+    if (kycDiv) { kycDiv.style.display = 'none'; }
+  }
+}
+
+// ======= BALANCE CARD SWITCHER =======
+function activateBalanceCard(type) {
+  activeBalanceType = type;
+  const cryptoCard = document.getElementById('card-crypto');
+  const fiatCard   = document.getElementById('card-fiat');
+  const formCrypto = document.getElementById('form-crypto');
+  const formBank   = document.getElementById('form-bank');
+  const label      = document.getElementById('active-form-label');
+
+  if (type === 'crypto') {
+    cryptoCard.style.border          = '2px solid #2d8a5e';
+    cryptoCard.style.backgroundColor = '#e8f5ef';
+    cryptoCard.style.boxShadow       = '0 8px 40px rgba(45,138,94,0.12),0 2px 8px rgba(13,33,69,0.06)';
+    fiatCard.style.border            = '2px solid #e2e8f0';
+    fiatCard.style.backgroundColor   = '#fff';
+    fiatCard.style.boxShadow         = '0 4px 24px rgba(13,33,69,0.06)';
+    if (formCrypto) formCrypto.style.display = 'block';
+    if (formBank)   formBank.style.display   = 'none';
+    if (label) label.textContent = 'Withdraw Crypto Balance';
+  } else {
+    fiatCard.style.border            = '2px solid #2d8a5e';
+    fiatCard.style.backgroundColor   = '#e8f5ef';
+    fiatCard.style.boxShadow         = '0 8px 40px rgba(45,138,94,0.12),0 2px 8px rgba(13,33,69,0.06)';
+    cryptoCard.style.border          = '2px solid #e2e8f0';
+    cryptoCard.style.backgroundColor = '#fff';
+    cryptoCard.style.boxShadow       = '0 4px 24px rgba(13,33,69,0.06)';
+    if (formCrypto) formCrypto.style.display = 'none';
+    if (formBank)   formBank.style.display   = 'block';
+    if (label) label.textContent = 'Withdraw Fiat Balance';
+    fetchBankList();          // fetch bank list / Stripe fields for current currency (includes live rate)
+  }
+}
+
+// ======= DYNAMIC BANK LIST (Bug 6) =======
+let allBanks = [];           // [{ code, name }] from get-bank-list
+let selectedBankCode = '';
+let selectedBankName = '';
+
+// ── B3a: Stripe international currency support ──
+// ── B3b: Show/hide logic for bank-search-section vs stripe-fields-section ──
+function showBankSearchSection() {
+  var bs = document.getElementById('bank-search-section');
+  var sf = document.getElementById('stripe-fields-section');
+  if (bs) bs.style.display = '';       // restore default (block)
+  if (sf) sf.style.display = 'none';
+  _restoreAccountNumberField(); // Fix F: ensure generic Account Number field is visible for FLW currencies
+}
+
+function hideBankSearchSection() {
+  var bs = document.getElementById('bank-search-section');
+  if (bs) bs.style.display = 'none';
+}
+
+function showStripeFieldsSection() {
+  var sf = document.getElementById('stripe-fields-section');
+  if (sf) sf.style.display = '';       // restore default (block) — content set by B3c–B3e
+}
+
+function hideStripeFieldsSection() {
+  var sf = document.getElementById('stripe-fields-section');
+  if (sf) { sf.style.display = 'none'; sf.innerHTML = ''; }
+  _restoreAccountNumberField(); // ensure generic Account Number field is visible for FLW currencies
+}
+
+// ── B3g: Stripe info pill show/hide ──
+function showStripeInfoPill() {
+  var pill = document.getElementById('stripe-info-pill');
+  if (pill) pill.style.display = '';
+}
+
+function hideStripeInfoPill() {
+  var pill = document.getElementById('stripe-info-pill');
+  if (pill) pill.style.display = 'none';
+}
+
+// ── B3c / B3d / B3e: Render Stripe field markup based on stripeFields descriptor type ──
+// B3c: 'routing_account' (USD) — Routing Number; generic Account Number field stays visible.
+// B3d: 'iban'            (EUR) — single IBAN field; hides generic account-number field.
+// B3e: 'sort_account'    (GBP) — Sort Code + Account Number; hides generic account-number field.
+function renderStripeFields(fields) {
+  var sf  = document.getElementById('stripe-fields-section');
+  var anw = document.getElementById('account-number-wrap');
+  if (!sf || !fields) return;
+
+  if (fields.type === 'routing_account') {
+    // Field id/shape is identical across USD/CAD/AUD/NZD/SGD/HKD (routingNumber + accountNumber);
+    // only the label/placeholder differ so the right local terminology shows per currency.
+    var routingCopy = {
+      USD: { label: 'Routing Number',           placeholder: '9-digit routing number',          maxlen: 9  },
+      CAD: { label: 'Institution & Transit Number', placeholder: 'e.g. 12345-678',               maxlen: 9  },
+      AUD: { label: 'BSB Number',                placeholder: '6-digit BSB number',               maxlen: 6  },
+      NZD: { label: 'Bank Branch Number',        placeholder: 'Bank & branch number',             maxlen: 8  },
+      SGD: { label: 'Bank Code',                 placeholder: 'Bank & branch code',               maxlen: 10 },
+      HKD: { label: 'Bank Code',                 placeholder: 'Bank & branch code',               maxlen: 10 },
+    };
+    var rc = routingCopy[selectedWithdrawalCurrency] || routingCopy.USD;
+    if (anw) anw.style.display = '';
+    sf.innerHTML =
+      '<div style="margin-bottom:16px;">' +
+        '<label for="input-stripe-routing" class="lbl" style="display:block;margin-bottom:8px;">' + rc.label + '</label>' +
+        '<input type="text" id="input-stripe-routing" class="inp" placeholder="' + rc.placeholder + '" inputmode="numeric" maxlength="' + rc.maxlen + '" autocomplete="off" onblur="resolveBankAccount()">' +
+      '</div>';
+
+  } else if (fields.type === 'iban') {
+    // EUR: single IBAN field replaces generic Account Number
+    if (anw) anw.style.display = 'none';
+    sf.innerHTML =
+      '<div style="margin-bottom:16px;">' +
+        '<label for="input-stripe-iban" class="lbl" style="display:block;margin-bottom:8px;">IBAN</label>' +
+        '<input type="text" id="input-stripe-iban" class="inp"' +
+          ' placeholder="e.g. DE89 3704 0044 0532 0130 00"' +
+          ' inputmode="text" maxlength="34" autocomplete="off"' +
+          ' style="text-transform:uppercase;letter-spacing:0.5px;"' +
+          ' oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\')"' +
+          ' onblur="resolveBankAccount()">' +
+        '<p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.42);margin:6px 0 0;">Enter your IBAN without spaces — up to 34 characters.</p>' +
+      '</div>';
+
+  } else if (fields.type === 'sort_account') {
+    // GBP: Sort Code + Account Number — both injected here; hide generic Account Number field
+    if (anw) anw.style.display = 'none';
+    sf.innerHTML =
+      '<div style="margin-bottom:16px;">' +
+        '<label for="input-stripe-sort-code" class="lbl" style="display:block;margin-bottom:8px;">Sort Code</label>' +
+        '<input type="text" id="input-stripe-sort-code" class="inp"' +
+          ' placeholder="e.g. 20-00-00"' +
+          ' inputmode="numeric" maxlength="8" autocomplete="off"' +
+          ' oninput="formatSortCode(this)" onblur="resolveBankAccount()">' +
+        '<p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.42);margin:6px 0 0;">6-digit sort code, e.g. 20-00-00</p>' +
+      '</div>' +
+      '<div style="margin-bottom:16px;">' +
+        '<label for="input-stripe-account-number" class="lbl" style="display:block;margin-bottom:8px;">Account Number</label>' +
+        '<input type="text" id="input-stripe-account-number" class="inp"' +
+          ' placeholder="8-digit account number"' +
+          ' inputmode="numeric" maxlength="8" autocomplete="off"' +
+          ' oninput="this.value=this.value.replace(/\\D/g,\'\')" onblur="resolveBankAccount()">' +
+      '</div>';
+
+  } else {
+    if (anw) anw.style.display = '';
+    sf.innerHTML = '';
+  }
+}
+
+function _restoreAccountNumberField() {
+  var anw = document.getElementById('account-number-wrap');
+  if (anw) anw.style.display = '';
+}
+
+// B3e: Auto-format Sort Code input as NN-NN-NN
+function formatSortCode(el) {
+  var digits = el.value.replace(/\D/g, '').slice(0, 6);
+  var parts  = [];
+  if (digits.length > 0) parts.push(digits.slice(0, 2));
+  if (digits.length > 2) parts.push(digits.slice(2, 4));
+  if (digits.length > 4) parts.push(digits.slice(4, 6));
+  el.value = parts.join('-');
+}
+// ──────────────────────────────────────────────────────────
+// Currencies handled by Stripe — no FLW bank list; backend returns stripeFields descriptor instead.
+const STRIPE_CURRENCIES = ['USD','EUR','GBP','CAD','AUD','NZD','CHF','DKK','NOK','SEK','SGD','HKD'];
+let currentStripeFields = null; // populated when a Stripe currency is active; null for FLW currencies
+
+// Wait for auth.currentUser to be available (Firebase auth resolves asynchronously)
+function waitForAuthToken() {
+  return new Promise(function(resolve) {
+    if (window.auth && window.auth.currentUser) {
+      window.auth.currentUser.getIdToken().then(resolve).catch(function() { resolve(''); });
+      return;
+    }
+    var attempts = 0;
+    var poll = setInterval(function() {
+      attempts++;
+      if (window.auth && window.auth.currentUser) {
+        clearInterval(poll);
+        window.auth.currentUser.getIdToken().then(resolve).catch(function() { resolve(''); });
+      } else if (attempts > 50) { // 5s timeout
+        clearInterval(poll);
+        resolve('');
+      }
+    }, 100);
+  });
+}
+
+async function fetchBankList() {
+  // Always re-fetch when called — callers are responsible for resetting bankListFetched
+  // before calling (e.g. selectWithdrawalCurrency does this).
+  const cur = selectedWithdrawalCurrency || 'NGN';
+
+  var bss      = document.getElementById('bank-search-section');   // FLW search box
+  var sfs      = document.getElementById('stripe-fields-section'); // Stripe fields
+  var pill     = document.getElementById('stripe-info-pill');
+  var anw      = document.getElementById('account-number-wrap');   // generic acct# field
+  var infoMsg  = document.getElementById('bank-info-message');
+  var loadingEl= document.getElementById('bank-list-loading');
+
+  // ── STRIPE CURRENCY ────────────────────────────────────────────────────────
+  if (STRIPE_CURRENCIES.includes(cur)) {
+    // Hide FLW bank-search; show loading; clear prior Stripe state
+    if (bss)  bss.style.display  = 'none';
+    if (sfs)  { sfs.style.display = 'none'; sfs.innerHTML = ''; }
+    if (pill) pill.style.display = 'none';
+    if (infoMsg) infoMsg.style.display = 'none';
+    currentStripeFields = null;
+
+    if (loadingEl) loadingEl.style.display = 'flex';
+
+    try {
+      const token = await waitForAuthToken();
+      const res   = await fetch('/.netlify/functions/get-bank-list?currency=' + encodeURIComponent(cur), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+
+      // Store live gateway FX rate (always included in response now)
+      if (data.fxRate && data.currency) {
+        liveBankFxRate     = Number(data.fxRate);
+        liveBankFxCurrency = data.currency;
+        liveBankFxSource   = data.fxSource || 'gateway';
+      }
+
+      if (data.stripeFields) {
+        currentStripeFields = data.stripeFields;
+        bankListFetched = true;
+        renderStripeFields(currentStripeFields); // sets anw visibility too
+        if (sfs)  sfs.style.display  = '';
+        if (pill) pill.style.display = '';
+      } else {
+        console.warn('[fetchBankList] No stripeFields for Stripe currency:', cur);
+        // Fallback: show generic account number field
+        if (anw) anw.style.display = '';
+      }
+      updateBankFormForCurrency(); // refresh cap/note with live rate
+    } catch (e) {
+      console.error('[fetchBankList] Stripe error:', e);
+      if (anw) anw.style.display = '';
+    } finally {
+      if (loadingEl) loadingEl.style.display = 'none';
+    }
+    return;
+  }
+
+  // ── FLW-SUPPORTED CURRENCY ─────────────────────────────────────────────────
+  const FLW_SUPPORTED = ['NGN','GHS','KES','UGX','TZS','RWF','ZAR','XOF','XAF','MWK','ZMW','ETB'];
+
+  // Reset any Stripe state from a prior currency
+  currentStripeFields = null;
+  if (sfs)  { sfs.style.display = 'none'; sfs.innerHTML = ''; }
+  if (pill) pill.style.display = 'none';
+  if (anw)  anw.style.display  = '';   // show generic account number for FLW
+
+  if (!FLW_SUPPORTED.includes(cur)) {
+    // Unsupported currency — hide bank search, show info message
+    if (bss) bss.style.display = 'none';
+    if (infoMsg) {
+      infoMsg.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" ' +
+        'style="flex-shrink:0;margin-right:6px;vertical-align:middle;">' +
+        '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/>' +
+        '<line x1="12" y1="8" x2="12.01" y2="8"/></svg>' +
+        'For <strong>' + cur + '</strong> withdrawals, enter your account number below and we\'ll process it manually.';
+      infoMsg.style.display    = 'flex';
+      infoMsg.style.alignItems = 'flex-start';
+    }
+    return;
+  }
+
+  // FLW — show bank search section, fetch list
+  if (bss)     bss.style.display     = '';
+  if (infoMsg) infoMsg.style.display = 'none';
+
+  // If already fetched for this currency, just re-render
+  if (bankListFetched && allBanks.length > 0) {
+    // Nothing to do — dropdown renders on focus via onBankSearchFocus
+    return;
+  }
+
+  if (loadingEl) loadingEl.style.display = 'flex';
+
+  try {
+    const token = await waitForAuthToken();
+    const res   = await fetch('/.netlify/functions/get-bank-list?currency=' + encodeURIComponent(cur), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data  = await res.json();
+    if (data.banks && Array.isArray(data.banks)) {
+      allBanks = data.banks;
+      bankListFetched = true;
+      // Don't auto-open dropdown; user triggers it via focus/typing
+    }
+    // Capture live gateway FX rate
+    if (data.fxRate && data.currency) {
+      liveBankFxRate     = Number(data.fxRate);
+      liveBankFxCurrency = data.currency;
+      liveBankFxSource   = data.fxSource || 'gateway';
+      updateBankFormForCurrency(); // refresh cap/note now that rate arrived
+    }
+  } catch (e) {
+    console.error('[fetchBankList]', e);
+  } finally {
+    if (loadingEl) loadingEl.style.display = 'none';
+  }
+}
+
+function renderBankDropdown(banks) {
+  const list = document.getElementById('bank-dropdown-list');
+  if (!list) return;
+  if (banks.length === 0) {
+    list.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:rgba(13,33,69,0.5);">No banks found.</div>';
+    list.style.display = 'block';
+    return;
+  }
+  list.innerHTML = banks.map(function(b) {
+    return '<div onclick="selectBank(\'' + b.code.replace(/'/g,"\\'") + '\',\'' + b.name.replace(/'/g,"\\'") + '\')" ' +
+      'style="padding:12px 16px;font-size:13px;font-weight:500;color:#0d2145;cursor:pointer;border-bottom:1px solid #f0f4f8;transition:background .1s;" ' +
+      'onmouseover="this.style.background=\'#f5f9ff\'" onmouseout="this.style.background=\'#fff\'">' +
+      b.name + '</div>';
+  }).join('');
+  list.style.display = 'block';
+}
+
+function filterBankList() {
+  // No-op for Stripe currencies (search box is hidden)
+  if (STRIPE_CURRENCIES.includes(selectedWithdrawalCurrency)) return;
+
+  const q    = (document.getElementById('input-bank-search').value || '').toLowerCase().trim();
+  const list = document.getElementById('bank-dropdown-list');
+  if (!list) return;
+
+  if (!bankListFetched || allBanks.length === 0) { fetchBankList(); return; }
+
+  if (!q) {
+    list.style.display = 'none';
+    return;
+  }
+  const filtered = allBanks.filter(function(b) { return b.name.toLowerCase().includes(q); });
+  renderBankDropdown(filtered);
+  list.style.display = 'block';
+}
+
+function onBankSearchFocus() {
+  // No-op for Stripe currencies (bank-search-section is hidden anyway)
+  if (STRIPE_CURRENCIES.includes(selectedWithdrawalCurrency)) return;
+
+  if (bankListFetched && allBanks.length > 0) {
+    // Banks already loaded — open/filter the dropdown
+    var q = (document.getElementById('input-bank-search').value || '').trim();
+    if (!q) {
+      renderBankDropdown(allBanks);
+    }
+  } else {
+    // Not yet fetched — trigger fetch (renders on completion)
+    fetchBankList();
+  }
+}
+
+function selectBank(code, name) {
+  selectedBankCode = code;
+  selectedBankName = name;
+  // Show selected display
+  var disp = document.getElementById('bank-selected-display');
+  var nameEl = document.getElementById('bank-selected-name');
+  if (disp) disp.style.display = 'flex';
+  if (nameEl) nameEl.textContent = name;
+  // Hide dropdown + search
+  var list = document.getElementById('bank-dropdown-list');
+  var search = document.getElementById('input-bank-search');
+  if (list) list.style.display = 'none';
+  if (search) search.value = '';
+  // Re-trigger resolve if account number already filled
+  var accNum = document.getElementById('input-account-number');
+  if (accNum && accNum.value.trim().length >= 6) resolveBankAccount();
+}
+
+function clearBankSelection() {
+  selectedBankCode = '';
+  selectedBankName = '';
+  var disp = document.getElementById('bank-selected-display');
+  if (disp) disp.style.display = 'none';
+  // Clear account name
+  var accName = document.getElementById('input-account-name');
+  if (accName) accName.value = '';
+  var chk = document.getElementById('account-name-check');
+  if (chk) chk.style.display = 'none';
+  // Focus search
+  var search = document.getElementById('input-bank-search');
+  if (search) { search.value = ''; search.focus(); }
+}
+
+// stripeAccountToken is captured from a successful Stripe resolve so it can
+// be reused later by the payout submission step. Not yet wired into submit
+// (out of scope for B3f) — kept here so that step doesn't need to repeat work.
+let stripeAccountToken = null;
+
+async function resolveBankAccount() {
+  // ── B3f: Stripe currencies use a different field set / no bank code ──
+  if (currentStripeFields) return resolveBankAccountStripe();
+
+  var accNum  = (document.getElementById('input-account-number').value || '').trim();
+  var accName = document.getElementById('input-account-name');
+  var spinner = document.getElementById('account-name-spinner');
+  var check   = document.getElementById('account-name-check');
+  var errEl   = document.getElementById('bank-error');
+
+  // Clear previous
+  if (accName) { accName.value = ''; accName.placeholder = 'Auto-filled after account number entry'; }
+  if (check)   check.style.display = 'none';
+  if (errEl)   { errEl.style.display = 'none'; }
+
+  if (!selectedBankCode || accNum.length < 6) return;
+
+  if (spinner) spinner.style.display = 'block';
+
+  try {
+    const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+    const res   = await fetch('/.netlify/functions/resolve-bank-account?bankCode=' +
+      encodeURIComponent(selectedBankCode) + '&accountNumber=' + encodeURIComponent(accNum) +
+      '&currency=' + encodeURIComponent(selectedWithdrawalCurrency || 'NGN'), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.accountName) {
+      if (accName) { accName.value = data.accountName; }
+      if (check)   { check.style.display = 'block'; }
+    } else {
+      if (errEl) {
+        errEl.textContent = data.error || 'Could not verify account. Check the bank and account number.';
+        errEl.style.display = 'block';
+      }
+    }
+  } catch (e) {
+    console.error('[resolveBankAccount]', e);
+  } finally {
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+// ── B3f: Resolve via Stripe for USD / EUR / GBP (and other Stripe currencies) ──
+// Builds the query string from whichever field group is currently rendered
+// (routing_account / iban / sort_account), matching resolve-bank-account.js.
+async function resolveBankAccountStripe() {
+  var accName = document.getElementById('input-account-name');
+  var spinner = document.getElementById('account-name-spinner');
+  var check   = document.getElementById('account-name-check');
+  var errEl   = document.getElementById('bank-error');
+
+  // Clear previous
+  if (accName) { accName.value = ''; accName.placeholder = 'Auto-filled after account number entry'; }
+  if (check)   check.style.display = 'none';
+  if (errEl)   { errEl.style.display = 'none'; }
+  stripeAccountToken = null;
+
+  if (!currentStripeFields) return;
+
+  var qs = '&currency=' + encodeURIComponent(selectedWithdrawalCurrency || '');
+  var type = currentStripeFields.type;
+
+  if (type === 'routing_account') {
+    // USD: Routing Number (Stripe field) + generic Account Number field
+    var routing = (document.getElementById('input-stripe-routing') || {}).value || '';
+    var acct    = (document.getElementById('input-account-number') || {}).value || '';
+    routing = routing.trim(); acct = acct.trim();
+    if (!routing || acct.length < 4) return;
+    qs += '&routingNumber=' + encodeURIComponent(routing) + '&accountNumber=' + encodeURIComponent(acct);
+
+  } else if (type === 'iban') {
+    // EUR (and other IBAN currencies): single IBAN field
+    var iban = (document.getElementById('input-stripe-iban') || {}).value || '';
+    iban = iban.trim();
+    if (iban.length < 8) return;
+    qs += '&iban=' + encodeURIComponent(iban);
+
+  } else if (type === 'sort_account') {
+    // GBP: Sort Code + Account Number, both Stripe-rendered fields
+    var sortCode = (document.getElementById('input-stripe-sort-code') || {}).value || '';
+    var sAcct    = (document.getElementById('input-stripe-account-number') || {}).value || '';
+    sortCode = sortCode.trim(); sAcct = sAcct.trim();
+    if (sortCode.replace(/-/g, '').length < 6 || sAcct.length < 6) return;
+    qs += '&sortCode=' + encodeURIComponent(sortCode) + '&accountNumber=' + encodeURIComponent(sAcct);
+
+  } else {
+    return; // unknown field type — nothing to resolve yet
+  }
+
+  if (spinner) spinner.style.display = 'block';
+
+  try {
+    const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+    const res   = await fetch('/.netlify/functions/resolve-bank-account?' + qs.replace(/^&/, ''), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.accountName) {
+      if (accName) { accName.value = data.accountName; }
+      if (check)   { check.style.display = 'block'; }
+      stripeAccountToken = data.stripeAccountToken || null;
+    } else {
+      if (errEl) {
+        errEl.textContent = data.error || 'Could not verify account. Check the details and try again.';
+        errEl.style.display = 'block';
+      }
+    }
+  } catch (e) {
+    console.error('[resolveBankAccountStripe]', e);
+  } finally {
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+// ======= BANK FEE CALCULATION =======
+function calcBankFees() {
+  const amt     = parseFloat(document.getElementById('input-bank-amount').value) || 0;
+  const platFee = amt * (PLATFORM_FEE_PCT / 100);
+  const after   = amt - platFee;
+  const debitCur = selectedDebitCurrency || selectedWithdrawalCurrency || 'USD';
+  const bankCur  = selectedWithdrawalCurrency || 'USD';
+  document.getElementById('bank-fee-platform').textContent = amt > 0 ? '-' + fmtCurrency(platFee, debitCur) : '-';
+  document.getElementById('bank-fee-final').textContent    = (amt > 0 && after > 0) ? fmtCurrency(after, debitCur) : '-';
+
+  // ---- Bank-account currency estimate (display only, cross-currency case) ----
+  const localEl   = document.getElementById('bank-local-equiv');
+  const localAmt  = document.getElementById('bank-local-equiv-amount');
+  const localNote = document.getElementById('bank-local-rate-note');
+
+  if (localEl && bankCur !== debitCur && amt > 0 && after > 0) {
+    var rate = (liveBankFxRate && liveBankFxCurrency === bankCur) ? liveBankFxRate : null;
+    if (rate) {
+      const localAmount = after * rate;
+      localAmt.textContent  = fmtCurrency(localAmount, bankCur);
+      localNote.textContent = '1 ' + debitCur + ' ≈ ' + rate.toLocaleString('en', {maximumFractionDigits: 2}) + ' ' + bankCur +
+        ' (estimate only — your payment partner sets the final rate at transfer time)';
+      localEl.style.display = 'block';
+    } else {
+      localEl.style.display = 'none'; // rate not yet loaded for this currency
+    }
+  } else {
+    if (localEl) localEl.style.display = 'none';
+  }
+}
+
+// ======= BANK WITHDRAW (real Netlify Function) =======
+
+// ── B5: Single source of truth for gathering bank/account identification ──
+// Used by both handleBankWithdraw() (validation) and _executeBankWithdraw()
+// (submission) so the two can never drift out of sync. Reads whichever
+// fields are actually visible for the current currency:
+//   - FLW currencies        → selectedBankName/Code + generic account number
+//   - USD (routing_account) → Stripe routing number + generic account number
+//   - EUR (iban)            → Stripe IBAN only
+//   - GBP (sort_account)    → Stripe sort code + Stripe account number
+function _collectBankWithdrawFields() {
+  var isStripeFlow = !!currentStripeFields;
+  var stripeType   = isStripeFlow ? currentStripeFields.type : null;
+
+  // Read-only field; for FLW this holds the resolved account holder name,
+  // for Stripe currencies it holds the bank name Stripe resolved from the
+  // routing/sort/IBAN details (see resolveBankAccountStripe()).
+  var accountName = ((document.getElementById('input-account-name') || {}).value || '').trim();
+
+  var routingNumber = '', sortCode = '', iban = '', accountNumber = '';
+  var bankName = '', bankCode = '';
+
+  if (isStripeFlow) {
+    // No FLW bank-list selection applies to Stripe currencies.
+    bankName = accountName;
+    bankCode = '';
+
+    if (stripeType === 'routing_account') {
+      routingNumber = ((document.getElementById('input-stripe-routing') || {}).value || '').trim();
+      accountNumber = ((document.getElementById('input-account-number') || {}).value || '').trim();
+    } else if (stripeType === 'iban') {
+      iban = ((document.getElementById('input-stripe-iban') || {}).value || '').trim();
+    } else if (stripeType === 'sort_account') {
+      sortCode      = ((document.getElementById('input-stripe-sort-code') || {}).value || '').trim();
+      accountNumber = ((document.getElementById('input-stripe-account-number') || {}).value || '').trim();
+    }
+  } else {
+    bankName      = selectedBankName;
+    bankCode      = selectedBankCode;
+    accountNumber = ((document.getElementById('input-account-number') || {}).value || '').trim();
+  }
+
+  return {
+    isStripeFlow:  isStripeFlow,
+    stripeType:    stripeType,
+    accountName:   accountName,
+    bankName:      bankName,
+    bankCode:      bankCode,
+    accountNumber: accountNumber,
+    routingNumber: routingNumber,
+    sortCode:      sortCode,
+    iban:          iban,
+  };
+}
+
+// Triggered by the bank Withdraw button — validates fields then launches OTP flow
+async function handleBankWithdraw() {
+  var amt         = parseFloat(document.getElementById('input-bank-amount').value);
+  var fields      = _collectBankWithdrawFields();
+  var errEl       = document.getElementById('bank-error');
+  var debitCur    = selectedDebitCurrency || selectedWithdrawalCurrency || 'USD';
+  var debitBalance = Number(balancesMap[debitCur] || 0);
+  errEl.style.display = 'none';
+
+  if (!kycVerified) {
+    errEl.innerHTML = 'Identity not verified. <a href="/verify.html" style="color:#2d8a5e;font-weight:700;">Complete KYC</a> to withdraw.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!amt || amt < MIN_BANK_WITHDRAWAL) {
+    errEl.textContent = 'Minimum withdrawal is ' + fmtCurrency(MIN_BANK_WITHDRAWAL, debitCur) + '.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Amount is always checked against the exact balance being debited —
+  // no derived or converted figure, ever.
+  if (amt > debitBalance) {
+    errEl.textContent = 'Amount exceeds your available ' + debitCur + ' balance of ' + fmtCurrency(debitBalance, debitCur) + '.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (fields.isStripeFlow) {
+    // ── International (Stripe) currency — validate whichever fields apply ──
+    if (fields.stripeType === 'routing_account') {
+      if (!fields.routingNumber) {
+        var _routingErrLabel = { AUD: 'BSB number', NZD: 'bank branch number', SGD: 'bank code', HKD: 'bank code' }[selectedWithdrawalCurrency] || 'routing number';
+        errEl.textContent = 'Please enter your ' + _routingErrLabel + '.';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!fields.accountNumber) {
+        errEl.textContent = 'Please enter your bank account number.';
+        errEl.style.display = 'block';
+        return;
+      }
+    } else if (fields.stripeType === 'iban') {
+      if (!fields.iban) {
+        errEl.textContent = 'Please enter your IBAN.';
+        errEl.style.display = 'block';
+        return;
+      }
+    } else if (fields.stripeType === 'sort_account') {
+      if (!fields.sortCode) {
+        errEl.textContent = 'Please enter your sort code.';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!fields.accountNumber) {
+        errEl.textContent = 'Please enter your bank account number.';
+        errEl.style.display = 'block';
+        return;
+      }
+    } else {
+      errEl.textContent = 'Please enter your bank details.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (!fields.accountName) {
+      errEl.textContent = 'Bank could not be verified. Check your details and try again.';
+      errEl.style.display = 'block';
+      return;
+    }
+  } else {
+    // ── FLW (bank-list) currency — unchanged validation ──
+    if (!fields.bankCode || !fields.bankName) {
+      errEl.textContent = 'Please select your bank from the list.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (!fields.accountNumber) {
+      errEl.textContent = 'Please enter your bank account number.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (!fields.accountName) {
+      errEl.textContent = 'Account name could not be verified. Check your bank and account number.';
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  // All fields valid — launch OTP step
+  await initiateWithdrawalOtp('bank');
+}
+
+// Called after OTP is verified — executes the actual bank payout
+async function _executeBankWithdraw() {
+  var amt         = parseFloat(document.getElementById('input-bank-amount').value);
+  var fields      = _collectBankWithdrawFields();
+  var saveDetails = document.getElementById('save-bank-details').checked;
+  var errEl       = document.getElementById('bank-error');
+  var debitCur    = selectedDebitCurrency || selectedWithdrawalCurrency || 'USD';
+  var bankCur     = selectedWithdrawalCurrency || 'USD';
+  errEl.style.display = 'none';
+
+  var platFee = amt * (PLATFORM_FEE_PCT / 100);
+  var after   = amt - platFee;
+
+  var btn = document.getElementById('btn-bank-withdraw');
+  var originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Processing\u2026';
+
+  try {
+    var res = await fetch('/.netlify/functions/create-bank-payout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (auth.currentUser ? await auth.currentUser.getIdToken() : '') },
+      body: JSON.stringify({
+        uid:                currentUid,
+        amount:             amt,           // ALWAYS denominated in withdrawalCurrency — the exact debit
+        withdrawalCurrency: debitCur,      // the balance bucket being debited
+        // payoutCurrency is only sent when it differs from the debit currency
+        // (i.e. the bank account is in a different currency than the balance
+        // spent). No exchange rate is ever sent — Flutterwave converts natively.
+        ...(bankCur !== debitCur ? { payoutCurrency: bankCur } : {}),
+        accountName:        fields.accountName,
+        accountNumber:      fields.accountNumber,
+        bankName:           fields.bankName,
+        bankCode:           fields.bankCode,
+        // B5: Stripe-specific identifiers for international currencies.
+        // Empty strings for FLW currencies — the backend only reads these
+        // when withdrawalCurrency is Stripe-routed, so they're harmless here.
+        routingNumber:      fields.routingNumber,
+        sortCode:           fields.sortCode,
+        iban:               fields.iban,
+        saveDetails:        saveDetails,
+        fees: { platformFee: platFee },
+      }),
+    });
+    var result = await res.json();
+    if (result.success) {
+      // Update per-currency balance map from backend response
+      if (result.balances && typeof result.balances === 'object') {
+        balancesMap = result.balances;
+        // Keep liveBalance (crypto card / cap) in sync if full map returned
+        if (typeof balancesMap['USD'] === 'number') liveBalance = balancesMap['USD'];
+      } else if (typeof result.newCurrencyBalance === 'number') {
+        // Backend always debits exactly `currency` from the response —
+        // which always matches debitCur, no derivation needed.
+        var debitedCur = result.currency || debitCur;
+        balancesMap[debitedCur] = result.newCurrencyBalance;
+        // Keep liveBalance (crypto card) in sync when the debited bucket was USD
+        if (debitedCur === 'USD') liveBalance = result.newCurrencyBalance;
+      }
+      renderBalances();
+      showToast(result.message || 'Bank withdrawal request received.');
+      document.getElementById('input-bank-amount').value = '';
+      document.getElementById('input-account-name').value = '';
+      document.getElementById('input-account-number').value = '';
+      document.getElementById('save-bank-details').checked = false;
+      // Reset dynamic bank selection
+      clearBankSelection();
+      // B5: also clear any Stripe-specific inputs so stale routing/IBAN/sort
+      // code values don't carry over into the next withdrawal attempt
+      var stripeRouting = document.getElementById('input-stripe-routing');
+      var stripeIban     = document.getElementById('input-stripe-iban');
+      var stripeSort      = document.getElementById('input-stripe-sort-code');
+      var stripeAcctNum   = document.getElementById('input-stripe-account-number');
+      if (stripeRouting) stripeRouting.value = '';
+      if (stripeIban)     stripeIban.value     = '';
+      if (stripeSort)      stripeSort.value      = '';
+      if (stripeAcctNum)   stripeAcctNum.value   = '';
+      stripeAccountToken = null;
+      var chk = document.getElementById('account-name-check');
+      if (chk) chk.style.display = 'none';
+      calcBankFees();
+    } else {
+      errEl.textContent = result.error || 'Withdrawal failed. Please try again.';
+      errEl.style.display = 'block';
+    }
+  } catch (e) {
+    console.error('[withdraw] create-bank-payout error:', e);
+    errEl.textContent = 'Network error. Please check your connection and try again.';
+    errEl.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.innerHTML = originalHtml;
+}
+
+// ======= NAV =======
+const NAV_LINKS = [
+  { label:'Dashboard',     href:'dashboard.html',           icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Earnings',      href:'dashboard-earnings.html',  icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { label:'Projects',      href:'dashboard-projects.html',  icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Invoices',      href:'/dashboard-invoices.html',  icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+  { label:'Store',         href:'store.html',               icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Products',      href:'dashboard-products.html',  icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { label:'Purchases',     href:'buyer-purchases.html',     icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',     href:'dashboard-affiliate.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Contracts',     href:'dashboard-contracts.html', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Withdraw',      href:'dashboard-withdraw.html',  icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' },
+  { label:'Browse',        href:'browse.html',              icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Settings',      href:'dashboard-settings.html',  icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+];
+function buildNav(uid, affiliateEnabled) {
+  const cur  = 'dashboard-withdraw.html';
+  const items = NAV_LINKS.filter(l => {
+    if (l.label === 'Affiliate') return affiliateEnabled === true;
+    return true;
+  });
+  const html = items.map(l => {
+    let href = l.href;
+    if (l.label === 'Store'   && uid) href = 'store.html?uid='   + uid;
+    if (l.label === 'Profile' && uid) href = 'profile.html?uid=' + uid;
+    const active = l.href === cur;
+    return '<a href="'+href+'" class="nav-link'+(active?' active':'')+'">'+l.icon+'<span>'+l.label+'</span></a>';
+  }).join('');
+  document.getElementById('desktop-nav').innerHTML = html;
+  document.getElementById('mobile-nav').innerHTML  = html;
+}
+// ── Body scroll lock (touch-safe, fixes iOS background shift) ─────────────────
+// overflow:hidden on <body> does not reliably stop background scroll/bounce on
+// iOS Safari while a modal or menu is open. This fixed-position technique pins
+// the body at its current scroll offset instead, which iOS respects, and
+// restores the exact scroll position on unlock.
+function lockBodyScroll(){
+  if (document.body.classList.contains('body-scroll-locked')) return;
+  window._scrollLockY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + window._scrollLockY + 'px';
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.classList.add('body-scroll-locked');
+}
+function unlockBodyScroll(){
+  if (!document.body.classList.contains('body-scroll-locked')) return;
+  document.body.classList.remove('body-scroll-locked');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  window.scrollTo(0, window._scrollLockY || 0);
+  window._scrollLockY = 0;
+}
+function openMobileMenu(){
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  lockBodyScroll();
+}
+function closeMobileMenu(){
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  unlockBodyScroll();
+}
+function handleLogout(){ window.location.href='login.html'; }
+
+// ======= TOAST =======
+function showToast(msg, duration){
+  duration = duration || 3500;
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, duration);
+}
+
+// ======= LIVE EXCHANGE RATES (CoinGecko) =======
+async function fetchLiveRates() {
+  try {
+    const res = await fetch(
+      'https://api.coingecko.com/api/v3/simple/price?ids=tether,bitcoin,ethereum,binancecoin,usd-coin,litecoin,ripple,dogecoin,solana,cardano,tron,matic-network&vs_currencies=usd',
+      { cache: 'no-store' }
+    );
+    if (!res.ok) throw new Error('rate fetch failed');
+    const data = await res.json();
+    liveRates = {
+      usdt:            data.tether          ? 1 / data.tether['usd']          : 1,
+      bitcoin:         data.bitcoin         ? 1 / data.bitcoin['usd']         : liveRates.bitcoin,
+      ethereum:        data.ethereum        ? 1 / data.ethereum['usd']        : liveRates.ethereum,
+      binancecoin:     data.binancecoin     ? 1 / data.binancecoin['usd']     : liveRates.binancecoin,
+      'usd-coin':      data['usd-coin']     ? 1 / data['usd-coin']['usd']     : 1,
+      litecoin:        data.litecoin        ? 1 / data.litecoin['usd']        : liveRates.litecoin,
+      ripple:          data.ripple          ? 1 / data.ripple['usd']          : liveRates.ripple,
+      dogecoin:        data.dogecoin        ? 1 / data.dogecoin['usd']        : liveRates.dogecoin,
+      solana:          data.solana          ? 1 / data.solana['usd']          : liveRates.solana,
+      cardano:         data.cardano         ? 1 / data.cardano['usd']         : liveRates.cardano,
+      tron:            data.tron            ? 1 / data.tron['usd']            : liveRates.tron,
+      'matic-network': data['matic-network'] ? 1 / data['matic-network']['usd'] : liveRates['matic-network'],
+    };
+  } catch(e) {
+    console.warn('[withdraw] CoinGecko fetch failed, using cached rates:', e.message);
+  }
+  updateRateDisplay();
+}
+
+function updateRateDisplay(){
+  const r = liveRates;
+  const usdtEl = document.getElementById('rate-val-usdt');
+  const btcEl  = document.getElementById('rate-val-btc');
+  const ethEl  = document.getElementById('rate-val-eth');
+  if (usdtEl) usdtEl.textContent = (r.usdt||1).toFixed(4)+' USDT';
+  if (btcEl)  btcEl.textContent  = (r.bitcoin||0).toFixed(8)+' BTC';
+  if (ethEl)  ethEl.textContent  = (r.ethereum||0).toFixed(8)+' ETH';
+  calcFees();
+}
+
+function startRateCountdown(){
+  setInterval(function() {
+    rateCountdown--;
+    if (rateCountdown <= 0) {
+      rateCountdown = 60;
+      fetchLiveRates();
+    }
+    const el = document.getElementById('rate-countdown');
+    if (el) el.textContent = rateCountdown;
+  }, 1000);
+}
+
+function selectRateCard(coinId){
+  const map = { usdt:'USDT', bitcoin:'BTC', ethereum:'ETH' };
+  if (map[coinId]) selectCurrency(map[coinId], coinId);
+}
+
+// ======= CURRENCY SELECTION =======
+function selectCurrency(symbol, coinId){
+  selectedCurrency = symbol;
+  selectedCoinId   = coinId;
+  document.querySelectorAll('.curr-btn').forEach(function(b){ b.classList.remove('selected'); });
+  var cb = document.getElementById('curr-'+symbol);
+  if (cb) cb.classList.add('selected');
+  document.querySelectorAll('.rate-card').forEach(function(c){ c.classList.remove('selected'); });
+  var mapToCard = { usdt:'rate-usdt', bitcoin:'rate-bitcoin', ethereum:'rate-ethereum' };
+  if (mapToCard[coinId]) {
+    var rc = document.getElementById(mapToCard[coinId]);
+    if (rc) rc.classList.add('selected');
+  }
+  var wl = document.getElementById('wallet-label');
+  if (wl) wl.textContent = symbol+' Wallet Address';
+  calcFees();
+}
+
+// ======= FEE CALCULATION =======
+function calcFees(){
+  var amt       = parseFloat(document.getElementById('input-withdraw-amount').value) || 0;
+  var nowFee    = amt * (NOWPAYMENTS_FEE_PCT / 100);
+  var platFee   = amt * (PLATFORM_FEE_PCT / 100);
+  var afterFees = amt - nowFee - platFee;
+  var rate      = liveRates[selectedCoinId] || 1;
+  var cryptoAmt = afterFees * rate;
+
+  var feeNet  = document.getElementById('fee-network');
+  var feePlat = document.getElementById('fee-platform');
+  var feeFin  = document.getElementById('fee-final');
+  var feeUsd  = document.getElementById('fee-final-usd');
+
+  if (feeNet)  feeNet.textContent  = amt > 0 ? '-$'+nowFee.toFixed(2)  : '-';
+  if (feePlat) feePlat.textContent = amt > 0 ? '-$'+platFee.toFixed(2) : '-';
+  if (amt > 0 && afterFees > 0) {
+    var isStable = selectedCoinId === 'usdt' || selectedCoinId === 'usd-coin';
+    if (feeFin) feeFin.textContent = isStable
+      ? afterFees.toFixed(2)+' '+selectedCurrency
+      : cryptoAmt.toFixed(8)+' '+selectedCurrency;
+    if (feeUsd) feeUsd.textContent = '\u2248 $'+afterFees.toFixed(2)+' USD';
+  } else {
+    if (feeFin) feeFin.textContent = '-';
+    if (feeUsd) feeUsd.textContent = '';
+  }
+}
+
+// ======= CRYPTO WITHDRAW (real Netlify Function) =======
+// Validates fields then launches OTP flow
+async function handleWithdraw(){
+  var amt    = parseFloat(document.getElementById('input-withdraw-amount').value);
+  var wallet = document.getElementById('input-wallet-address').value.trim();
+  var errEl  = document.getElementById('withdraw-error');
+  errEl.style.display = 'none';
+
+  if (!kycVerified) {
+    errEl.innerHTML = 'Identity not verified. <a href="/verify.html" style="color:#2d8a5e;font-weight:700;">Complete KYC</a> to withdraw.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!amt || amt < MIN_WITHDRAWAL) {
+    errEl.textContent = 'Minimum withdrawal is $'+MIN_WITHDRAWAL+'.00.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (amt > liveBalance) {
+    errEl.textContent = 'Amount exceeds your available balance of '+fmt(liveBalance)+'.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!wallet) {
+    errEl.textContent = 'Please enter a wallet address.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // All valid — launch OTP step
+  await initiateWithdrawalOtp('crypto');
+}
+
+// Called after OTP is verified — executes the actual crypto payout
+async function _executeWithdraw(){
+  var amt    = parseFloat(document.getElementById('input-withdraw-amount').value);
+  var wallet = document.getElementById('input-wallet-address').value.trim();
+  var errEl  = document.getElementById('withdraw-error');
+  errEl.style.display = 'none';
+
+  lockedRate = liveRates[selectedCoinId] || 1;
+  var nowFee    = amt * (NOWPAYMENTS_FEE_PCT / 100);
+  var platFee   = amt * (PLATFORM_FEE_PCT / 100);
+  var afterFees = amt - nowFee - platFee;
+  var amountCoin = parseFloat((afterFees * lockedRate).toFixed(8));
+
+  var btn = document.getElementById('btn-withdraw');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Processing\u2026';
+
+  try {
+    var res = await fetch('/.netlify/functions/create-payout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (auth.currentUser ? await auth.currentUser.getIdToken() : '') },
+      body: JSON.stringify({
+        uid:          currentUid,
+        amount:       amt,
+        amountCoin:   amountCoin,
+        amountUsdt:   afterFees,
+        currency:     selectedCurrency,
+        coinId:       selectedCoinId,
+        network:      selectedCurrency,
+        walletAddress: wallet,
+        exchangeRate: lockedRate,
+        usdtRate:     liveRates['usdt'] || 1,
+        fees: { nowpaymentsFee: nowFee, platformFee: platFee },
+      }),
+    });
+    var result = await res.json();
+    if (result.success) {
+      if (result.balances && typeof result.balances === 'object') {
+        balancesMap = result.balances;
+        liveBalance = Number(result.balances['USD'] || 0);
+      } else if (typeof result.newBalance === 'number') {
+        liveBalance = result.newBalance;
+        // Keep balancesMap['USD'] in sync so the bank form cap is also correct
+        balancesMap['USD'] = result.newBalance;
+      }
+      renderBalances();
+      showToast(result.message || 'Withdrawal initiated. Funds are on their way.');
+      document.getElementById('input-withdraw-amount').value = '';
+      calcFees();
+    } else {
+      errEl.textContent = result.error || 'Withdrawal failed. Please try again.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    console.error('[withdraw] create-payout error:', e);
+    errEl.textContent = 'Network error. Please check your connection and try again.';
+    errEl.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Confirm Withdrawal';
+}
+
+// ======= EARLY PAYOUT MODAL =======
+function openEarlyPayoutModal(){
+  var amt   = parseFloat(document.getElementById('input-withdraw-amount').value) || 0;
+  var epFee = amt * (EARLY_PAYOUT_FEE_PCT / 100);
+  var final = amt - epFee;
+  document.getElementById('ep-amount').textContent = '$'+amt.toFixed(2);
+  document.getElementById('ep-fee').textContent    = '-$'+epFee.toFixed(2);
+  document.getElementById('ep-final').textContent  = '$'+final.toFixed(2);
+  document.getElementById('modal-early').classList.add('open');
+  lockBodyScroll();
+}
+function closeEarlyModal(){
+  document.getElementById('modal-early').classList.remove('open');
+  unlockBodyScroll();
+}
+function confirmEarlyPayout(){
+  closeEarlyModal();
+  showToast('Early payout requested. Funds will arrive shortly.');
+}
+
+// ======= MORE CURRENCIES MODAL =======
+var ALL_CURRENCIES = [
+  { symbol:'USDT',  name:'Tether',    color:'#26a17b', abbr:'T', coinId:'usdt' },
+  { symbol:'BTC',   name:'Bitcoin',   color:'#F7931A', abbr:'B', coinId:'bitcoin' },
+  { symbol:'ETH',   name:'Ethereum',  color:'#627EEA', abbr:'E', coinId:'ethereum' },
+  { symbol:'BNB',   name:'BNB',       color:'#F3BA2F', abbr:'B', coinId:'binancecoin' },
+  { symbol:'USDC',  name:'USD Coin',  color:'#2775CA', abbr:'U', coinId:'usd-coin' },
+  { symbol:'LTC',   name:'Litecoin',  color:'#345D9D', abbr:'L', coinId:'litecoin' },
+  { symbol:'XRP',   name:'Ripple',    color:'#006097', abbr:'X', coinId:'ripple' },
+  { symbol:'DOGE',  name:'Dogecoin',  color:'#C2A633', abbr:'D', coinId:'dogecoin' },
+  { symbol:'SOL',   name:'Solana',    color:'#9945FF', abbr:'S', coinId:'solana' },
+  { symbol:'ADA',   name:'Cardano',   color:'#0033AD', abbr:'A', coinId:'cardano' },
+  { symbol:'TRX',   name:'TRON',      color:'#FF0013', abbr:'T', coinId:'tron' },
+  { symbol:'MATIC', name:'Polygon',   color:'#8247E5', abbr:'M', coinId:'matic-network' },
+];
+function renderCurrencyList(filter){
+  filter = filter || '';
+  var list     = document.getElementById('currency-list');
+  var filtered = ALL_CURRENCIES.filter(function(c) {
+    return c.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1 ||
+           c.symbol.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+  });
+  list.innerHTML = filtered.map(function(c) {
+    return '<button onclick="selectFromModal(\''+c.symbol+'\',\''+c.coinId+'\')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .2s;text-align:left;width:100%;" onmouseover="this.style.borderColor=\'#2d8a5e\';this.style.background=\'#e8f5ef\'" onmouseout="this.style.borderColor=\'#e2e8f0\';this.style.background=\'#fff\'"><div style="width:36px;height:36px;background:'+c.color+';border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:11px;font-weight:800;color:#fff;">'+c.abbr+'</span></div><div><div style="font-size:14px;font-weight:700;color:#0d2145;">'+c.name+'</div><div style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.45);">'+c.symbol+'</div></div></button>';
+  }).join('');
+}
+function filterCurrencies(){
+  renderCurrencyList(document.getElementById('currency-search').value);
+}
+function openMoreModal(){
+  renderCurrencyList('');
+  document.getElementById('modal-more').classList.add('open');
+  lockBodyScroll();
+}
+function closeMoreModal(){
+  document.getElementById('modal-more').classList.remove('open');
+  unlockBodyScroll();
+}
+function selectFromModal(symbol, coinId){
+  closeMoreModal();
+  selectCurrency(symbol, coinId);
+}
+
+// ======= WITHDRAWAL OTP / 2FA (Bug 7) =======
+let _otpPendingAction  = null; // 'crypto' | 'bank'
+let _otpCountdownTimer = null;
+let _otpSecondsLeft    = 600;  // 10 minutes
+
+function onOtpInput() {
+  var val = document.getElementById('otp-input').value;
+  document.getElementById('otp-confirm-btn').disabled = (val.length < 6);
+}
+
+async function initiateWithdrawalOtp(action) {
+  // action = 'crypto' | 'bank'
+  _otpPendingAction = action;
+
+  // Reset modal state
+  document.getElementById('otp-input').value = '';
+  document.getElementById('otp-error').style.display = 'none';
+  document.getElementById('otp-confirm-btn').disabled = true;
+  document.getElementById('otp-resend-btn').style.display = 'none';
+  document.getElementById('otp-timer-text').style.display = 'inline';
+  document.getElementById('otp-input').focus();
+
+  // Open modal
+  document.getElementById('modal-otp').classList.add('open');
+  lockBodyScroll();
+
+  // Send OTP
+  await sendWithdrawalOtp();
+
+  // Start countdown
+  startOtpCountdown();
+}
+
+async function sendWithdrawalOtp() {
+  try {
+    var token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+    var res   = await fetch('/.netlify/functions/send-withdrawal-otp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify({ uid: currentUid }),
+    });
+    var data = await res.json();
+    if (!data.success && data.error) {
+      document.getElementById('otp-error').textContent = data.error;
+      document.getElementById('otp-error').style.display = 'block';
+    }
+  } catch (e) {
+    document.getElementById('otp-error').textContent = 'Could not send verification code. Check your connection.';
+    document.getElementById('otp-error').style.display = 'block';
+  }
+}
+
+function startOtpCountdown() {
+  clearInterval(_otpCountdownTimer);
+  _otpSecondsLeft = 600;
+  updateOtpCountdownDisplay();
+  _otpCountdownTimer = setInterval(function () {
+    _otpSecondsLeft--;
+    updateOtpCountdownDisplay();
+    if (_otpSecondsLeft <= 0) {
+      clearInterval(_otpCountdownTimer);
+      document.getElementById('otp-timer-text').style.display = 'none';
+      document.getElementById('otp-resend-btn').style.display = 'inline';
+    }
+  }, 1000);
+}
+
+function updateOtpCountdownDisplay() {
+  var m = Math.floor(_otpSecondsLeft / 60);
+  var s = _otpSecondsLeft % 60;
+  var el = document.getElementById('otp-countdown');
+  if (el) el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+async function resendWithdrawalOtp() {
+  document.getElementById('otp-resend-btn').style.display = 'none';
+  document.getElementById('otp-timer-text').style.display = 'inline';
+  document.getElementById('otp-error').style.display = 'none';
+  document.getElementById('otp-input').value = '';
+  document.getElementById('otp-confirm-btn').disabled = true;
+  await sendWithdrawalOtp();
+  startOtpCountdown();
+}
+
+async function confirmWithdrawalOtp() {
+  var code  = document.getElementById('otp-input').value.trim();
+  var errEl = document.getElementById('otp-error');
+  errEl.style.display = 'none';
+
+  if (code.length < 6) {
+    errEl.textContent = 'Please enter the 6-digit code from your email.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  var btn = document.getElementById('otp-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;"></div>';
+
+  try {
+    var token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+    var res   = await fetch('/.netlify/functions/verify-withdrawal-otp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify({ uid: currentUid, code: code }),
+    });
+    var data = await res.json();
+
+    if (data.success) {
+      // OTP verified — close modal, run the actual payout
+      closeOtpModal();
+      if (_otpPendingAction === 'crypto') {
+        _executeWithdraw();
+      } else if (_otpPendingAction === 'bank') {
+        _executeBankWithdraw();
+      }
+    } else {
+      errEl.textContent = data.error || 'Incorrect code. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Confirm';
+    }
+  } catch (e) {
+    errEl.textContent = 'Network error. Please try again.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Confirm';
+  }
+}
+
+function cancelOtpModal() {
+  closeOtpModal();
+}
+
+function closeOtpModal() {
+  clearInterval(_otpCountdownTimer);
+  document.getElementById('modal-otp').classList.remove('open');
+  unlockBodyScroll();
+  _otpPendingAction = null;
+}
+
+// ======= PULL TO REFRESH =======
+async function refreshPageData() {
+  try {
+    if (window.db && currentUid) {
+      var mod = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      var snap = await mod.getDoc(mod.doc(window.db, 'users', currentUid));
+      if (snap.exists()) {
+        var d = snap.data();
+        // Load per-currency balances map (new) with backward compat for old availableBalance
+        balancesMap = d.balances && typeof d.balances === 'object' ? d.balances : {};
+        if (!Object.keys(balancesMap).length && d.availableBalance) {
+          balancesMap['USD'] = Number(d.availableBalance);
+        }
+        liveBalance       = Number(balancesMap['USD'] || d.availableBalance || 0);
+        liveWalletAddress = d.walletAddress || '';
+        kycVerified       = d.kycStatus === 'verified';
+        renderBalances();
+        applyKycGate();
+        var wi = document.getElementById('input-wallet-address');
+        if (wi && liveWalletAddress) wi.value = liveWalletAddress;
+      }
+    }
+  } catch(e) {
+    console.warn('[withdraw] refresh failed:', e.message);
+  }
+  await fetchLiveRates();
+  calcFees();
+  calcBankFees();
+  if (currentUid) loadWithdrawalHistory(currentUid);
+}
+
+(function initPullToRefresh() {
+  var touchStartY = 0, touchStartX = 0, isPulling = false;
+  var PTR_THRESHOLD = 80;
+  var indicator  = document.getElementById('ptr-indicator');
+  var label      = document.getElementById('ptr-label');
+  var _ptrCooldown = false;
+  document.addEventListener('touchstart', function(e) {
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+    isPulling   = false;
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e) {
+    if (_ptrCooldown) return;
+    var dy = e.touches[0].clientY - touchStartY;
+    var dx = Math.abs(e.touches[0].clientX - touchStartX);
+    var anyModalOpen =
+      document.getElementById('modal-early').classList.contains('open') ||
+      document.getElementById('modal-more').classList.contains('open')  ||
+      document.getElementById('modal-otp').classList.contains('open');
+    if (window.scrollY < 10 && dy > 30 && dx < 60 && !anyModalOpen) {
+      isPulling = true;
+      if (label) label.textContent = dy > PTR_THRESHOLD ? 'Release to refresh' : 'Pull to refresh';
+      if (indicator) indicator.classList.add('ptr-pulling');
+    }
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    if (!isPulling) return;
+    isPulling = false;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+    if (window.scrollY < 10 && dy > PTR_THRESHOLD) {
+      _ptrCooldown = true;
+      if (label) label.textContent = 'Refreshing';
+      if (indicator) { indicator.classList.remove('ptr-pulling'); indicator.classList.add('ptr-loading'); }
+      try { navigator.vibrate && navigator.vibrate([30,40,30]); } catch(e2){}
+      var result = refreshPageData();
+      var done = function() {
+        if (indicator) indicator.classList.remove('ptr-loading');
+        setTimeout(function(){ _ptrCooldown = false; showToast('Balance and rates refreshed'); }, 300);
+      };
+      if (result && typeof result.then === 'function') result.then(done).catch(done);
+      else setTimeout(done, 800);
+    } else {
+      if (indicator) indicator.classList.remove('ptr-pulling');
+    }
+  }, { passive: true });
+})();
+
+// ======= HAPTIC FEEDBACK =======
+(function initHaptic() {
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('button, [role="button"]');
+    if (!btn) return;
+    if (/^(confirm|approve)/i.test((btn.textContent||'').trim())) {
+      try { navigator.vibrate && navigator.vibrate(50); } catch(e2){}
+    }
+  }, { passive: true });
+})();
+
+// ======= SWIPE TO GO BACK =======
+(function initSwipeBack() {
+  var touchStartX = 0, touchStartY = 0, isEdgeSwipe = false;
+  var EDGE_ZONE = 30, SWIPE_MIN_DX = 60;
+  var hint = document.getElementById('swipe-hint');
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    isEdgeSwipe = touchStartX < EDGE_ZONE;
+    if (isEdgeSwipe && hint) hint.classList.add('active');
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    if (!isEdgeSwipe) return;
+    if (hint) hint.classList.remove('active');
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    if (dx > SWIPE_MIN_DX && dy < dx * 0.6) {
+      if (document.getElementById('mobile-menu').classList.contains('open'))  { closeMobileMenu(); isEdgeSwipe=false; return; }
+      if (document.getElementById('modal-early').classList.contains('open'))  { closeEarlyModal(); isEdgeSwipe=false; return; }
+      if (document.getElementById('modal-more').classList.contains('open'))   { closeMoreModal();  isEdgeSwipe=false; return; }
+      if (document.getElementById('modal-otp').classList.contains('open'))    { cancelOtpModal();  isEdgeSwipe=false; return; }
+      try { navigator.vibrate && navigator.vibrate(30); } catch(e2){}
+      window.history.back();
+    }
+    isEdgeSwipe = false;
+  }, { passive: true });
+  document.addEventListener('touchcancel', function() {
+    if (hint) hint.classList.remove('active');
+    isEdgeSwipe = false;
+  }, { passive: true });
+})();
+
+// ======= BOOT — Real Firebase data =======
+async function loadWithdrawalHistory(uid) {
+  var container = document.getElementById('withdrawal-history');
+  if (!container || !window.db || !uid) return;
+  try {
+    var mod = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    var snap = await mod.getDocs(mod.query(
+      mod.collection(window.db, 'payouts'),
+      mod.where('userUid', '==', uid),
+      mod.orderBy('createdAt', 'desc'),
+      mod.limit(20)
+    ));
+    if (snap.empty) return; // keep "No withdrawals yet" placeholder
+    var rows = snap.docs.map(function(d) {
+      var p = d.data();
+      var date = p.createdAt && p.createdAt.toDate
+        ? p.createdAt.toDate().toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+        : '—';
+      var amount = p.amount != null
+        ? Number(p.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '—';
+      var currency = (p.currency || p.debitCurrency || 'USD').toUpperCase();
+      var method = p.type === 'bank' ? 'Bank Transfer'
+        : p.type === 'crypto' ? 'Crypto'
+        : (p.type || '—');
+      var status = p.status || 'pending';
+      var statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+      var statusColor = status === 'completed' ? '#1a7a4a'
+        : status === 'failed' ? '#c0392b'
+        : '#856304';
+      var statusBg = status === 'completed' ? 'rgba(26,122,74,0.08)'
+        : status === 'failed' ? 'rgba(192,57,43,0.08)'
+        : 'rgba(133,99,4,0.08)';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(13,33,69,0.07);">'
+        + '<div style="min-width:0;">'
+        +   '<div style="font-size:14px;font-weight:700;color:#0d2145;">' + amount + ' ' + currency + '</div>'
+        +   '<div style="font-size:11px;color:rgba(13,33,69,0.5);margin-top:3px;">' + method + ' · ' + date + '</div>'
+        + '</div>'
+        + '<div style="flex-shrink:0;margin-left:12px;padding:3px 10px;border-radius:20px;background:' + statusBg + ';font-size:11px;font-weight:600;color:' + statusColor + ';">' + statusLabel + '</div>'
+        + '</div>';
+    }).join('');
+    container.innerHTML = rows;
+  } catch(e) {
+    console.warn('[withdraw] loadWithdrawalHistory failed:', e.message);
+  }
+}
+
+window._boot = async function(user, affiliateEnabled) {
+  currentUid = user.uid;
+  var displayName = user.displayName || user.email || 'User';
+
+  buildNav(user.uid, affiliateEnabled);
+
+  // Avatar initials
+  var initials = displayName.split(' ').map(function(n){ return n[0]||''; }).join('').toUpperCase().slice(0,2) || 'U';
+  var av = document.getElementById('user-avatar');
+  if (av) av.textContent = initials;
+
+  // Show loading state
+  var bCrypto = document.getElementById('balance-crypto');
+  var bFiat   = document.getElementById('balance-fiat');
+  if (bCrypto) bCrypto.textContent = '...';
+  if (bFiat)   bFiat.textContent   = '...';
+
+  activateBalanceCard('crypto');
+  updateRateDisplay();
+  selectRateCard('usdt');
+
+  try {
+    var mod  = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    var snap = await mod.getDoc(mod.doc(window.db, 'users', currentUid));
+    if (snap.exists()) {
+      var d = snap.data();
+      // Load per-currency balances map (new) with backward compat for old availableBalance
+      balancesMap = d.balances && typeof d.balances === 'object' ? d.balances : {};
+      if (!Object.keys(balancesMap).length && d.availableBalance) {
+        balancesMap['USD'] = Number(d.availableBalance);
+      }
+      liveBalance       = Number(balancesMap['USD'] || d.availableBalance || 0);
+      liveWalletAddress = d.walletAddress || '';
+      kycVerified       = d.kycStatus === 'verified';
+      // Payout freeze check — show banner and disable submit buttons
+      if (d.payoutsFrozen === true) {
+        var frozenBanner = document.getElementById('payouts-frozen-banner');
+        if (frozenBanner) frozenBanner.style.display = 'flex';
+        var btnWithdraw = document.getElementById('btn-withdraw');
+        if (btnWithdraw) { btnWithdraw.disabled = true; btnWithdraw.style.opacity = '0.5'; btnWithdraw.style.cursor = 'not-allowed'; }
+        var btnBankWithdraw = document.getElementById('btn-bank-withdraw');
+        if (btnBankWithdraw) { btnBankWithdraw.disabled = true; btnBankWithdraw.style.opacity = '0.5'; btnBankWithdraw.style.cursor = 'not-allowed'; }
+      }
+
+      // Prefill wallet from Firebase (no hardcoded address)
+      var walletInput = document.getElementById('input-wallet-address');
+      if (walletInput && liveWalletAddress) walletInput.value = liveWalletAddress;
+
+      // Early payout — pro/premium only
+      var isPro = d.plan === 'pro' && d.premiumStatus === 'active';
+      var epSection = document.getElementById('early-payout-section');
+      if (epSection && !isPro) epSection.style.display = 'none';
+      // Store isPro for use in fee config block below
+      window._withdrawIsPro = isPro;
+    }
+  } catch(e) {
+    console.error('[withdraw] Firestore load failed:', e.message);
+    showToast('Could not load balance. Pull down to retry.');
+  }
+
+  // ======= FIAT (BANK) AVAILABILITY — config/platform =======
+  try {
+    var modCfg   = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    var cfgSnap  = await modCfg.getDoc(modCfg.doc(window.db, 'config', 'platform'));
+    fiatEnabled  = cfgSnap.exists() && (
+      cfgSnap.data().flutterwaveEnabled === true ||
+      cfgSnap.data().stripeEnabled      === true
+    );
+    // Load live fee settings from Firestore
+    if (cfgSnap.exists()) {
+      var cfg = cfgSnap.data();
+      if (typeof cfg.withdrawalFeePercent  === 'number') PLATFORM_FEE_PCT     = cfg.withdrawalFeePercent;
+      if (typeof cfg.earlyPayoutFeePercent === 'number') EARLY_PAYOUT_FEE_PCT = cfg.earlyPayoutFeePercent;
+      if (typeof cfg.holdingPeriodDays     === 'number') HOLDING_DAYS         = cfg.holdingPeriodDays;
+      if (typeof cfg.minWithdrawalUsd      === 'number') { MIN_WITHDRAWAL = cfg.minWithdrawalUsd; MIN_BANK_WITHDRAWAL = cfg.minWithdrawalUsd; }
+      // Apply Pro reduced withdrawal fee if user is on an active Pro plan
+      if (window._withdrawIsPro && typeof cfg.withdrawalFeePercentPro === 'number') {
+        PLATFORM_FEE_PCT = cfg.withdrawalFeePercentPro;
+      }
+      // Update fee labels in UI
+      document.querySelectorAll('.platform-fee-label').forEach(function(el) {
+        el.textContent = window._withdrawIsPro && typeof cfg.withdrawalFeePercentPro === 'number'
+          ? 'Platform fee (' + PLATFORM_FEE_PCT + '%) — Pro rate'
+          : 'Platform fee (' + PLATFORM_FEE_PCT + '%)';
+      });
+    }
+  } catch(e) {
+    console.warn('[withdraw] config/platform load failed:', e.message);
+    fiatEnabled = false;
+  }
+
+  var fiatCardEl = document.getElementById('card-fiat');
+  var bankBanner = document.getElementById('bank-coming-soon-banner');
+  // The fiat balance card is ALWAYS visible and tappable so the user can see
+  // their per-currency balances and switch between them regardless of whether
+  // bank withdrawals are currently enabled. Only the submit button is gated.
+  if (fiatCardEl) { fiatCardEl.style.pointerEvents = ''; fiatCardEl.style.opacity = ''; }
+  if (fiatEnabled) {
+    if (bankBanner) bankBanner.style.display = 'none';
+  } else {
+    // Show "coming soon" banner inside the bank form but keep the card active
+    if (bankBanner) bankBanner.style.display = 'flex';
+    // Disable only the submit button, not the whole card
+    var btnBankWithdraw = document.getElementById('btn-bank-withdraw');
+    if (btnBankWithdraw && !btnBankWithdraw.disabled) {
+      btnBankWithdraw.disabled = true;
+      btnBankWithdraw.style.opacity = '0.5';
+      btnBankWithdraw.style.cursor = 'not-allowed';
+    }
+  }
+
+  renderBalances();
+  applyKycGate();
+  loadWithdrawalHistory(currentUid);
+  calcFees();
+  calcBankFees();
+
+  await fetchLiveRates();
+  startRateCountdown();
+
+  document.body.style.visibility = 'visible';
+};
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+<script>
+// Safety: force-hide loading overlay after 10s if auth/boot stalls
+(function() {
+  var _safetyTimer = setTimeout(function() {
+    document.body.style.visibility = 'visible';
+  }, 10000);
+  window._clearSafetyTimer = function() { clearTimeout(_safetyTimer); };
+})();
+</script>
+
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, collection, query, where, orderBy, limit, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getMessaging, getToken } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
+  const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+    authDomain:        'kreddlo.firebaseapp.com',
+    projectId:         'kreddlo',
+    storageBucket:     'kreddlo.firebasestorage.app',
+    messagingSenderId: '764500458567',
+    appId:             '1:764500458567:web:2389d5cf8c688caafd0562',
+  };
+  const app  = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  window.auth = auth;
+  window.handleLogout = function() {
+    signOut(auth).then(function(){ window.location.href = '/login.html'; })
+      .catch(function(){ window.location.href = '/login.html'; });
+  };
+  window.db  = getFirestore(app);
+  // Expose Firestore + FCM helpers for shared.js (bell dot + FCM push token)
+  window.onAuthStateChanged = onAuthStateChanged;
+  window.fsQuery         = query;
+  window.fsCollection    = collection;
+  window.fsWhere         = where;
+  window.fsLimit         = limit;
+  window.fsOnSnapshot    = onSnapshot;
+  window.fsGetDoc        = getDoc;
+  window.fsDoc           = doc;
+  window.fsSetDoc        = setDoc;
+  try { window.messaging = getMessaging(app); } catch(e) { window.messaging = undefined; }
+  window.fsGetToken      = getToken;
+  buildNav(null, false);
+  onAuthStateChanged(auth, function(user) {
+    if (!user) { window.location.href = '/login.html'; return; }
+    getDoc(doc(window.db, 'users', user.uid)).then(function(snap) {
+      var role = snap.exists() ? snap.data().role : null;
+      if (role && role !== 'freelancer') { window.location.href = '/login.html'; return; }
+      var affiliateEnabled = snap.exists() ? (snap.data().affiliateEnabled === true) : false;
+      if (typeof window._boot === 'function') window._boot(user, affiliateEnabled);
+    }).catch(function() { window.location.href = '/login.html'; });
+  });
+</script>
+
+<script type="module">
+  // Load support email from Firestore config (falls back to the static address already in the link)
+  (async () => {
+    try {
+      if (!window.db) return;
+      const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDoc(doc(window.db, 'config', 'platform'));
+      const email = snap.exists() && snap.data().supportEmail ? snap.data().supportEmail : '';
+      if (!email) return;
+      const link = document.getElementById('support-mailto-link');
+      if (link) { link.href = 'mailto:' + email; }
+    } catch (e) { /* silent fail — static fallback email stays in place */ }
+  })();
+</script>
+</body>
+</html>

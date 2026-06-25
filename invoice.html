@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Invoice — Kreddlo</title>
+<meta name="robots" content="noindex"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+<!-- Firebase (no auth required — public document read) -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, doc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+    authDomain: "kreddlo.firebaseapp.com",
+    projectId: "kreddlo",
+    storageBucket: "kreddlo.firebasestorage.app",
+    messagingSenderId: "764500458567",
+    appId: "1:764500458567:web:2389d5cf8c688caafd0562"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window._db = db;
+  window._fsQuery = { doc, getDoc, onSnapshot };
+
+  document.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+:root{
+  --navy:#0d2145; --navy-deep:#091830; --navy-mid:#162f5e;
+  --green:#2d8a5e; --green-light:#3dbd7a; --green-pale:#e8f5ef;
+  --cream:#f8f9fb; --border:#e2e8f0;
+  --muted:rgba(13,33,69,0.48); --muted-light:rgba(13,33,69,0.32);
+}
+
+.nav{position:sticky;top:0;z-index:100;background:rgba(248,249,251,0.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:center}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-size:20px;font-weight:800;color:var(--navy);letter-spacing:-0.5px}
+
+.page{max-width:640px;margin:0 auto;padding:28px 16px 60px}
+
+/* Skeleton */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:10px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Not found / error */
+.center-state{text-align:center;padding:80px 20px}
+.center-state svg{margin:0 auto 16px;display:block;opacity:.3}
+.center-state h2{font-size:18px;font-weight:800;color:var(--navy);margin:0 0 8px}
+.center-state p{font-size:14px;font-weight:500;color:var(--muted);margin:0}
+
+/* Invoice card */
+.inv-card{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:28px 24px;box-shadow:0 8px 32px rgba(13,33,69,0.06)}
+@media(min-width:560px){.inv-card{padding:36px 32px}}
+
+.inv-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:24px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.inv-from{font-size:13px;font-weight:600;color:var(--muted)}
+.inv-number{font-size:13px;font-weight:700;color:var(--navy);text-align:right}
+.inv-status{display:inline-flex;align-items:center;padding:4px 13px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:.3px;margin-top:6px}
+.status-paid{background:var(--green-pale);color:var(--green)}
+.status-due{background:#fff3cd;color:#856404}
+.status-void{background:#fff0f0;color:#c81e1e}
+
+.bill-row{display:flex;flex-wrap:wrap;gap:20px;margin-bottom:24px}
+.bill-block{flex:1;min-width:140px}
+.bill-label{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted-light);margin:0 0 6px}
+.bill-value{font-size:14px;font-weight:700;color:var(--navy);margin:0}
+.bill-sub{font-size:12px;font-weight:500;color:var(--muted);margin:2px 0 0}
+
+/* Line items */
+.li-table{width:100%;border-collapse:collapse;margin-bottom:20px}
+.li-table th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted-light);padding:0 0 10px;border-bottom:1.5px solid var(--border)}
+.li-table td{padding:13px 0;font-size:13.5px;font-weight:500;color:var(--navy);border-bottom:1px solid #f0f2f6}
+.li-table .num{text-align:right;white-space:nowrap}
+
+.total-row{display:flex;justify-content:space-between;align-items:baseline;padding-top:16px}
+.total-label{font-size:14px;font-weight:700;color:var(--navy)}
+.total-amount{font-size:28px;font-weight:800;color:var(--navy);letter-spacing:-0.8px}
+
+.notes-block{margin-top:20px;padding:14px 16px;background:var(--cream);border-radius:14px}
+.notes-block p{font-size:13px;font-weight:500;color:rgba(13,33,69,0.65);margin:0;line-height:1.6;white-space:pre-wrap}
+
+/* Pay section */
+.pay-section{margin-top:24px}
+.input-field{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;color:var(--navy);outline:none;transition:border-color .15s,box-shadow .15s;margin-bottom:12px;display:block}
+.input-field:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(45,138,94,0.12)}
+.input-field:disabled{background:var(--cream);color:var(--muted)}
+
+.btn-pay{display:flex;align-items:center;justify-content:center;width:100%;background:var(--green);color:#fff;border:none;border-radius:50px;padding:15px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(45,138,94,0.32);transition:background .15s,transform .15s,box-shadow .15s;letter-spacing:-0.2px;margin-bottom:10px}
+.btn-pay:hover{background:#236b49;transform:translateY(-2px)}
+.btn-pay:disabled{opacity:.65;pointer-events:none}
+
+.btn-pay-crypto{display:flex;align-items:center;justify-content:center;width:100%;background:#fff;color:var(--navy);border:1.5px solid var(--border);border-radius:50px;padding:14px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:border-color .15s,background .15s}
+.btn-pay-crypto:hover{border-color:var(--navy);background:rgba(13,33,69,0.03)}
+.btn-pay-crypto:disabled{opacity:.65;pointer-events:none}
+
+.spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-right:8px}
+.spinner-dark{border:2px solid rgba(13,33,69,0.2);border-top-color:var(--navy)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.unavailable-msg{font-size:12.5px;font-weight:500;color:var(--muted);text-align:center;margin:10px 0 0}
+
+.paid-banner{display:flex;align-items:center;gap:12px;background:var(--green-pale);border:1.5px solid rgba(45,138,94,0.25);border-radius:16px;padding:18px 20px;margin-top:24px}
+.paid-banner svg{flex-shrink:0}
+.paid-banner p{margin:0;font-size:14px;font-weight:700;color:var(--green)}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0d2145;color:#fff;padding:11px 22px;border-radius:50px;font-size:13px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:9999;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Kreddl<span style="color:var(--green-light);letter-spacing:0;">o</span></a>
+</nav>
+
+<div class="page">
+
+  <!-- Skeleton -->
+  <div id="skeleton">
+    <div class="sk" style="height:200px;border-radius:20px;margin-bottom:0;"></div>
+  </div>
+
+  <!-- Not found -->
+  <div id="not-found" class="center-state" style="display:none;">
+    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    <h2>Invoice Not Found</h2>
+    <p>This invoice link is invalid or has been removed.</p>
+  </div>
+
+  <!-- Invoice -->
+  <div id="invoice-root" style="display:none;">
+    <div class="inv-card">
+
+      <div class="inv-head">
+        <div>
+          <div class="inv-from">Invoice from</div>
+          <p class="bill-value" id="from-name" style="margin-top:4px;">—</p>
+        </div>
+        <div>
+          <div class="inv-number" id="inv-number">—</div>
+          <div id="inv-status-wrap" style="text-align:right;"></div>
+        </div>
+      </div>
+
+      <div class="bill-row">
+        <div class="bill-block">
+          <p class="bill-label">Billed To</p>
+          <p class="bill-value" id="bill-name">—</p>
+          <p class="bill-sub" id="bill-email">—</p>
+        </div>
+        <div class="bill-block">
+          <p class="bill-label">Due Date</p>
+          <p class="bill-value" id="bill-due">—</p>
+        </div>
+      </div>
+
+      <table class="li-table">
+        <thead>
+          <tr><th>Description</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr>
+        </thead>
+        <tbody id="li-tbody"></tbody>
+      </table>
+
+      <div class="total-row">
+        <span class="total-label">Total Due</span>
+        <span class="total-amount" id="total-amount">—</span>
+      </div>
+
+      <div id="notes-wrap"></div>
+
+      <!-- Already paid -->
+      <div id="paid-banner" class="paid-banner" style="display:none;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+        <p>This invoice has been paid. Thank you!</p>
+      </div>
+
+      <!-- Already confirmed (revisiting confirmation link) -->
+      <div id="already-confirmed-banner" class="paid-banner" style="display:none;background:#f0f7ff;border-color:rgba(13,33,69,0.2);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+        <p style="color:#0d2145;">You’ve already confirmed this delivery. The payment has been released to the freelancer.</p>
+      </div>
+
+      <!-- Escrow held -->
+      <div id="escrow-banner" class="paid-banner" style="display:none;background:#fff8e1;border-color:rgba(230,81,0,0.25);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p style="color:#e65100;">Payment secured in escrow. The freelancer will deliver your work and you will be notified to confirm receipt before funds are released.</p>
+      </div>
+
+      <!-- Delivered — awaiting buyer confirmation -->
+      <div id="delivered-banner" class="paid-banner" style="display:none;background:#e8f5ef;border-color:rgba(45,138,94,0.25);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round"><path d="M20 7L9.5 17.5 4 12"/></svg>
+        <div style="flex:1;">
+          <p style="color:#2d8a5e;margin:0 0 10px;">Work has been delivered. Please confirm receipt to release payment to the freelancer.</p>
+          <button id="btn-confirm-delivery" onclick="handleConfirmDelivery()" style="display:inline-flex;align-items:center;gap:6px;background:#2d8a5e;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Confirm Delivery &amp; Release Payment
+          </button>
+        </div>
+      </div>
+
+      <!-- Dispute button (shown when delivered) -->
+      <div id="dispute-wrap" style="display:none;margin-top:14px;">
+        <button onclick="openDisputeModal()" style="background:none;border:1.5px solid rgba(200,30,30,0.4);color:#c81e1e;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">Raise a Dispute</button>
+      </div>
+
+      <!-- Dispute modal -->
+      <div id="dispute-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="closeDisputeModal()"></div>
+      <div id="dispute-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;width:calc(100% - 32px);max-width:480px;box-sizing:border-box;background:#fff;border:1.5px solid rgba(200,30,30,0.2);border-radius:20px;padding:24px 20px 20px;box-shadow:0 20px 60px rgba(13,33,69,0.22);">
+        <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#c81e1e;">Raise a Dispute</p>
+        <p style="margin:0 0 16px;font-size:13px;color:#555;line-height:1.5;">Enter the email address this invoice was sent to, then describe the issue. The Kreddlo team will review and get back to you.</p>
+        <input type="email" id="dispute-email" class="input-field" placeholder="Your email address" autocomplete="email" style="margin-bottom:12px;width:100%;box-sizing:border-box;"/>
+        <textarea id="dispute-reason" class="input-field" placeholder="Describe your dispute…" rows="4" style="resize:vertical;min-height:96px;margin-bottom:16px;width:100%;box-sizing:border-box;"></textarea>
+        <div style="display:flex;gap:10px;">
+          <button onclick="closeDisputeModal()" style="flex:1;background:none;border:1.5px solid rgba(13,33,69,0.18);color:#555;border-radius:50px;padding:12px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Cancel</button>
+          <button id="dispute-submit-btn" onclick="handleRaiseDispute()" style="flex:2;background:#c81e1e;color:#fff;border:none;border-radius:50px;padding:12px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Submit Dispute</button>
+        </div>
+      </div>
+
+      <!-- Void -->
+      <div id="void-banner" class="paid-banner" style="display:none;background:#fff0f0;border-color:rgba(200,30,30,0.22);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <p style="color:#c81e1e;">This invoice is no longer payable.</p>
+      </div>
+
+      <!-- Pay form -->
+      <div id="pay-section" class="pay-section" style="display:none;">
+        <input type="text" id="payer-name" class="input-field" placeholder="Your full name"/>
+        <input type="email" id="payer-email" class="input-field" placeholder="your@email.com" disabled/>
+
+        <button id="btn-pay" class="btn-pay" onclick="handlePayNow()">
+          <span id="pay-spinner" class="spinner"></span>
+          <span id="btn-pay-text">Pay Now</span>
+        </button>
+
+        <button id="btn-crypto" class="btn-pay-crypto" onclick="handleCryptoPay()" style="display:none;">
+          <span id="crypto-spinner" class="spinner spinner-dark"></span>
+          <span id="btn-crypto-text">Pay with Crypto</span>
+        </button>
+
+        <p id="payment-unavailable" class="unavailable-msg" style="display:none;">Payment is temporarily unavailable. Please contact the sender directly.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let _invoiceId = null;
+let _invoice = null;
+let _platformSettings = {};
+
+// ── Init ────────────────────────────────────────────
+let _invoiceUnsubscribe = null;
+
+document.addEventListener('firebase-ready', async () => {
+  _invoiceId = new URLSearchParams(window.location.search).get('invoiceId');
+  if (!_invoiceId) { show404(); return; }
+
+  try {
+    const db = window._db;
+    const { doc, getDoc, onSnapshot } = window._fsQuery;
+
+    // Settings don't need to be live — one-time fetch is fine
+    const settingsSnap = await getDoc(doc(db, 'config', 'platform'));
+    _platformSettings = settingsSnap.exists() ? settingsSnap.data() : {};
+
+    // Invoice must update live so the client sees status changes after paying
+    const invoiceRef = doc(db, 'invoices', _invoiceId);
+    if (_invoiceUnsubscribe) _invoiceUnsubscribe();
+    _invoiceUnsubscribe = onSnapshot(invoiceRef, (invSnap) => {
+      if (!invSnap.exists()) { show404(); return; }
+      _invoice = { id: invSnap.id, ...invSnap.data() };
+      renderInvoice(_invoice);
+    }, (e) => {
+      console.error(e);
+      show404();
+    });
+  } catch (e) {
+    console.error(e);
+    show404();
+  }
+});
+
+function show404() {
+  document.getElementById('skeleton').style.display = 'none';
+  document.getElementById('not-found').style.display = 'block';
+}
+
+function fmtMoney(amount, currency) {
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency: (currency || 'USD').toUpperCase() }).format(Number(amount) || 0);
+  } catch (e) {
+    return (currency || 'USD') + ' ' + (Number(amount) || 0).toFixed(2);
+  }
+}
+
+// Mirrors the uplift formula in netlify/functions/create-invoice-order.js:
+// amount = invoiceListedAmount / (1 - platformFeePercent/100). Used so the
+// total shown to the payer always matches what they'll actually be charged.
+function payableTotal(base) {
+  const pct = typeof _platformSettings.platformFeePercent === 'number' ? _platformSettings.platformFeePercent : 2.5;
+  return pct < 100 ? (Number(base) || 0) / (1 - pct / 100) : (Number(base) || 0);
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = (typeof d === 'string') ? new Date(d) : (d.toDate ? d.toDate() : new Date(d));
+  if (isNaN(dt.getTime())) return '—';
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Render ────────────────────────────────────────────
+async function renderInvoice(inv) {
+  document.getElementById('skeleton').style.display = 'none';
+  document.getElementById('invoice-root').style.display = 'block';
+
+  document.title = `Invoice ${inv.invoiceNumber || ''} — Kreddlo`;
+
+  // Seller name (best-effort live fetch; falls back to stored field)
+  // BUG A FIX: was reading from users/{uid}, which now requires isSignedIn().
+  // Invoice payers are frequently unauthenticated (they follow an emailed link),
+  // so the read was always denied and "Kreddlo Freelancer" showed instead of
+  // the real seller name. publicProfiles/{uid} is allow read: if true and
+  // contains name/displayName — the correct collection for anonymous reads.
+  let fromName = 'Kreddlo Freelancer';
+  if (inv.uid) {
+    try {
+      const { doc, getDoc } = window._fsQuery;
+      const userSnap = await getDoc(doc(window._db, 'publicProfiles', inv.uid));
+      if (userSnap.exists()) {
+        const u = userSnap.data();
+        if (u.name || u.displayName) fromName = u.name || u.displayName;
+      }
+    } catch (_) { /* keep fallback */ }
+  }
+  document.getElementById('from-name').textContent = fromName;
+
+  document.getElementById('inv-number').textContent = inv.invoiceNumber || '—';
+  document.getElementById('bill-name').textContent = inv.clientName || '—';
+  document.getElementById('bill-email').textContent = inv.clientEmail || '—';
+  document.getElementById('bill-due').textContent = inv.dueDate ? fmtDate(inv.dueDate) : 'On receipt';
+
+  // Status pill
+  const statusWrap = document.getElementById('inv-status-wrap');
+  if (inv.status === 'paid' || inv.status === 'completed') {
+    statusWrap.innerHTML = '<span class="inv-status status-paid">Paid</span>';
+  } else if (inv.status === 'escrow') {
+    statusWrap.innerHTML = '<span class="inv-status" style="background:#fff8e1;color:#e65100;">In Escrow</span>';
+  } else if (inv.status === 'delivered') {
+    statusWrap.innerHTML = '<span class="inv-status status-due">Awaiting Confirmation</span>';
+  } else if (inv.status === 'void' || inv.status === 'cancelled') {
+    statusWrap.innerHTML = '<span class="inv-status status-void">Void</span>';
+  } else {
+    statusWrap.innerHTML = '<span class="inv-status status-due">Payment Due</span>';
+  }
+
+  // Line items
+  const currency = (inv.currency || 'USD').toUpperCase();
+  const items = Array.isArray(inv.lineItems) ? inv.lineItems : [];
+  document.getElementById('li-tbody').innerHTML = items.map(li => {
+    const amt = (Number(li.qty) || 0) * (Number(li.rate) || 0);
+    return `<tr>
+      <td>${escHtml(li.description || '')}</td>
+      <td class="num">${Number(li.qty) || 0}</td>
+      <td class="num">${fmtMoney(li.rate, currency)}</td>
+      <td class="num">${fmtMoney(amt, currency)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('total-amount').textContent = fmtMoney(payableTotal(inv.total), currency);
+
+  // Notes
+  if (inv.notes) {
+    document.getElementById('notes-wrap').innerHTML = `<div class="notes-block"><p>${escHtml(inv.notes)}</p></div>`;
+  }
+
+  // Pre-fill payer email (read-only — tied to the invoice)
+  document.getElementById('payer-email').value = inv.clientEmail || '';
+  document.getElementById('payer-name').value = inv.clientName || '';
+
+  // ── URL params: payment success/cancel from gateway redirect, or confirmToken ──
+  const params = new URLSearchParams(window.location.search);
+  const paymentParam  = params.get('payment');
+  const confirmToken  = params.get('confirmToken');
+
+  // If confirmToken is present, auto-call confirm-invoice-delivery
+  if (confirmToken) {
+    await handleConfirmDeliveryToken(confirmToken);
+    return;
+  }
+
+  if (paymentParam === 'success' && !['escrow','delivered','completed','paid'].includes(inv.status)) {
+    showToast('Payment received — confirming...');
+  } else if (paymentParam === 'cancelled') {
+    showToast('Payment was cancelled.');
+  }
+  if (paymentParam === 'success' && inv.status === 'escrow') {
+    showToast('Payment secured in escrow!');
+  }
+
+  // ── Status-based display ──
+  if (inv.status === 'paid' || inv.status === 'completed') {
+    document.getElementById('paid-banner').style.display = 'flex';
+    return;
+  }
+  if (inv.status === 'escrow') {
+    document.getElementById('escrow-banner').style.display = 'flex';
+    return;
+  }
+  if (inv.status === 'delivered') {
+    document.getElementById('delivered-banner').style.display = 'flex';
+    document.getElementById('dispute-wrap').style.display = 'block';
+    return;
+  }
+  if (inv.status === 'void' || inv.status === 'cancelled') {
+    document.getElementById('void-banner').style.display = 'flex';
+    return;
+  }
+
+  // ── Payable — show pay section, gateway-aware (mirrors p.html routing) ──
+  document.getElementById('pay-section').style.display = 'block';
+
+  // Route by BUYER timezone (same signal p.html uses), not invoice currency.
+  // This ensures an African buyer paying a USD invoice gets Flutterwave
+  // (which requires a local currency), not Stripe — and the server will
+  // convert USD to their local currency with the FX buffer applied.
+  const buyerTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  const isAfrican     = buyerTimezone.startsWith('Africa/');
+
+  let cardMethod = null;
+  if (isAfrican && _platformSettings.flutterwaveEnabled) {
+    cardMethod = 'flutterwave';
+  } else if (!isAfrican && _platformSettings.stripeEnabled) {
+    cardMethod = 'stripe';
+  } else if (_platformSettings.flutterwaveEnabled) {
+    cardMethod = 'flutterwave';
+  }
+
+  const cardBtn = document.getElementById('btn-pay');
+  const unavailableMsg = document.getElementById('payment-unavailable');
+
+  if (cardMethod) {
+    document.getElementById('btn-pay-text').textContent = `Pay Now — ${fmtMoney(payableTotal(inv.total), currency)}`;
+    cardBtn.style.display = 'flex';
+    cardBtn.dataset.method = cardMethod;
+  } else {
+    cardBtn.style.display = 'none';
+  }
+
+  if (_platformSettings.cryptoEnabled) {
+    document.getElementById('btn-crypto-text').textContent = `Pay with Crypto — ${fmtMoney(payableTotal(inv.total), currency)}`;
+    document.getElementById('btn-crypto').style.display = 'flex';
+  }
+
+  if (!cardMethod && !_platformSettings.cryptoEnabled) {
+    unavailableMsg.style.display = 'block';
+  }
+}
+
+// ── Pay Now (card via Stripe/Flutterwave — routed server-side too) ──────────
+async function handlePayNow() {
+  const nameEl = document.getElementById('payer-name');
+  if (!nameEl.value.trim()) { nameEl.focus(); showToast('Please enter your name.'); return; }
+
+  const btn = document.getElementById('btn-pay');
+  const spinner = document.getElementById('pay-spinner');
+  const btnText = document.getElementById('btn-pay-text');
+  const method = btn.dataset.method || 'stripe';
+
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  btnText.textContent = 'Processing…';
+
+  try {
+    const res = await fetch('/.netlify/functions/create-invoice-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        invoiceId: _invoiceId,
+        paymentMethod: method,
+        payerName: nameEl.value.trim(),
+        // Sent so the server can convert USD invoices to the buyer's local
+        // currency when routing through Flutterwave. Ignored for Stripe/crypto.
+        buyerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.checkoutUrl) {
+      throw new Error(data.error || 'Something went wrong. Please try again.');
+    }
+    window.location.href = data.checkoutUrl;
+  } catch (err) {
+    showToast(err.message || 'Payment failed. Please try again.');
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    const currency = (_invoice.currency || 'USD').toUpperCase();
+    btnText.textContent = `Pay Now — ${fmtMoney(payableTotal(_invoice.total), currency)}`;
+  }
+}
+
+// ── Pay with Crypto ────────────────────────────────────
+async function handleCryptoPay() {
+  const nameEl = document.getElementById('payer-name');
+  if (!nameEl.value.trim()) { nameEl.focus(); showToast('Please enter your name.'); return; }
+
+  const btn = document.getElementById('btn-crypto');
+  const spinner = document.getElementById('crypto-spinner');
+  const btnText = document.getElementById('btn-crypto-text');
+
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  btnText.textContent = 'Processing…';
+
+  try {
+    const res = await fetch('/.netlify/functions/create-invoice-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invoiceId: _invoiceId, paymentMethod: 'crypto', payerName: nameEl.value.trim() })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.checkoutUrl) {
+      throw new Error(data.error || 'Something went wrong. Please try again.');
+    }
+    window.location.href = data.checkoutUrl;
+  } catch (err) {
+    showToast(err.message || 'Crypto payment failed. Please try again.');
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    const currency = (_invoice.currency || 'USD').toUpperCase();
+    btnText.textContent = `Pay with Crypto — ${fmtMoney(payableTotal(_invoice.total), currency)}`;
+  }
+}
+
+// ── Confirm delivery (buyer clicks button on page) ────
+async function handleConfirmDelivery() {
+  const token = new URLSearchParams(window.location.search).get('confirmToken')
+             || (_invoice && _invoice.confirmToken);
+  if (!token) {
+    showToast('No confirmation token found. Please use the link from your email.');
+    return;
+  }
+  await handleConfirmDeliveryToken(token);
+}
+
+// ── Confirm delivery via token (auto-called when ?confirmToken= in URL) ──
+async function handleConfirmDeliveryToken(token) {
+  showToast('Confirming delivery…');
+  try {
+    const res = await fetch('/.netlify/functions/confirm-invoice-delivery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invoiceId: _invoiceId, confirmToken: token }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Confirmation failed.');
+
+    // Hide delivery banners in both cases
+    document.getElementById('delivered-banner') && (document.getElementById('delivered-banner').style.display = 'none');
+    document.getElementById('dispute-wrap') && (document.getElementById('dispute-wrap').style.display = 'none');
+
+    const alreadyConfirmed = data.message && data.message.toLowerCase().includes('already confirmed');
+    if (alreadyConfirmed) {
+      // Revisiting the confirmation link — show distinct "already done" banner
+      document.getElementById('already-confirmed-banner').style.display = 'flex';
+      document.getElementById('inv-status-wrap').innerHTML = '<span class="inv-status status-paid">Paid</span>';
+      showToast('This delivery was already confirmed.');
+    } else {
+      // Fresh confirmation — show green success banner
+      document.getElementById('paid-banner').style.display = 'flex';
+      document.getElementById('paid-banner').querySelector('p').textContent = 'Delivery confirmed! Payment has been released to the freelancer. Thank you.';
+      document.getElementById('inv-status-wrap').innerHTML = '<span class="inv-status status-paid">Paid</span>';
+      showToast('Delivery confirmed. Funds released.');
+    }
+  } catch (err) {
+    showToast(err.message || 'Could not confirm delivery. Please try again.');
+  }
+}
+
+// ── Dispute modal helpers ──────────────────────────────────────
+function openDisputeModal() {
+  document.getElementById('dispute-email').value = '';
+  document.getElementById('dispute-reason').value = '';
+  document.getElementById('dispute-backdrop').style.display = 'block';
+  document.getElementById('dispute-modal').style.display = 'block';
+  document.getElementById('dispute-email').focus();
+}
+function closeDisputeModal() {
+  document.getElementById('dispute-backdrop').style.display = 'none';
+  document.getElementById('dispute-modal').style.display = 'none';
+}
+
+// ── Raise dispute (buyer, when invoice is in delivered state) ────
+async function handleRaiseDispute() {
+  // Bug C fix: read email from the input the user must actively type.
+  // Previously, raisedBy was auto-filled from _invoice.clientEmail which
+  // is publicly readable from the DOM — anyone with the invoice URL could
+  // read the email and replay it to bypass the server-side check.
+  // Now the submitter must type the email themselves; the server still
+  // validates it matches the stored clientEmail on the invoice, so a
+  // guess or typo is rejected with 403.
+  const disputeEmail = (document.getElementById('dispute-email').value || '').trim().toLowerCase();
+  if (!disputeEmail) {
+    showToast('Please enter the email address this invoice was sent to.');
+    document.getElementById('dispute-email').focus();
+    return;
+  }
+  // Basic email format check — server validates the real match
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(disputeEmail)) {
+    showToast('Please enter a valid email address.');
+    document.getElementById('dispute-email').focus();
+    return;
+  }
+  const reason = (document.getElementById('dispute-reason').value || '').trim();
+  if (!reason) {
+    showToast('Please describe your dispute before submitting.');
+    document.getElementById('dispute-reason').focus();
+    return;
+  }
+  const btn = document.getElementById('dispute-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting\u2026';
+  try {
+    const res = await fetch('/.netlify/functions/raise-dispute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type:         'invoice',
+        invoiceId:    _invoiceId,
+        clientEmail:  disputeEmail,
+        raisedBy:     disputeEmail,
+        raisedByRole: 'buyer',
+        description:  reason,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not raise dispute.');
+    closeDisputeModal();
+    showToast('Dispute submitted. The Kreddlo team will be in touch.');
+    document.getElementById('dispute-wrap').style.display = 'none';
+  } catch (err) {
+    showToast(err.message || 'Could not submit dispute. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Submit Dispute';
+  }
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Earnings — Kreddlo</title>
+<script src="/assets/shared.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+/* Glass */
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+/* Buttons */
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-green:focus-visible{outline:2px solid #3dbd7a;outline-offset:3px}
+.btn-navy{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#0d2145;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(13,33,69,0.20);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-navy:hover{background:#162f5e;transform:translateY(-1px)}
+.btn-navy:active{transform:translateY(0)}
+.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s,background .15s}
+.btn-outline:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+.btn-outline:focus-visible{outline:2px solid #2d8a5e;outline-offset:3px}
+
+/* Period pills */
+.pill{display:inline-flex;align-items:center;justify-content:center;padding:9px 20px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s,color .15s,transform .15s}
+.pill-inactive{background:rgba(13,33,69,0.06);color:#0d2145}
+.pill-inactive:hover{background:rgba(13,33,69,0.10);transform:translateY(-1px)}
+.pill-active{background:#0d2145;color:#fff;box-shadow:0 4px 16px rgba(13,33,69,0.20)}
+.pill:focus-visible{outline:2px solid #2d8a5e;outline-offset:2px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-blue{background:#e8f0fe;color:#1a56db}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-red{background:#fde8e8;color:#c81e1e}
+.badge-grey{background:rgba(13,33,69,0.07);color:rgba(13,33,69,0.55)}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+
+/* Label */
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+/* Skeleton */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Nav */
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+/* Stat card */
+.stat-card{border-radius:20px;padding:22px;transition:box-shadow .2s,transform .2s;cursor:default}
+.stat-card:hover{box-shadow:0 10px 40px rgba(13,33,69,0.13);transform:translateY(-2px)}
+.stat-val{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.stat-lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48);margin-top:5px}
+.stat-trend{font-size:12px;font-weight:600;margin-top:9px;display:flex;align-items:center;gap:4px}
+
+/* Mobile menu */
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Blobs */
+.blob-n{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(13,33,69,0.09) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.blob-g{position:absolute;width:440px;height:440px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-60px;left:-80px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+/* Fade up */
+.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.12s}.fu-3{animation-delay:.19s}.fu-4{animation-delay:.26s}.fu-5{animation-delay:.33s}
+
+/* Payout table - mobile cards */
+.payout-card{padding:16px 20px;border-bottom:1px solid #f0f2f6}
+.payout-card:last-child{border-bottom:none}
+.payout-row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.payout-row2{display:flex;justify-content:space-between;align-items:center}
+
+/* Payout table - desktop */
+.payout-table{width:100%;border-collapse:collapse}
+.payout-table th{background:rgba(13,33,69,0.02);text-align:left;padding:12px 20px;font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+.payout-table td{padding:14px 20px;border-bottom:1px solid #f0f2f6;font-size:14px;font-weight:500;color:#0d2145}
+.payout-table tr:hover td{background:rgba(13,33,69,0.012)}
+.payout-table tr:last-child td{border-bottom:none}
+
+/* Premium blur overlay */
+.premium-blur{filter:blur(4px);pointer-events:none}
+.premium-lock-wrap{position:relative}
+.premium-lock-overlay{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:20px}
+
+/* Pull-to-refresh indicator */
+.ptr-indicator{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-56px);z-index:190;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e2e8f0;border-radius:50px;padding:8px 18px 8px 12px;box-shadow:0 6px 24px rgba(13,33,69,0.10);font-size:13px;font-weight:600;color:#0d2145;opacity:0;pointer-events:none;transition:transform .28s cubic-bezier(.34,1.4,.64,1),opacity .22s ease;white-space:nowrap}
+.ptr-indicator.ptr-pulling{transform:translateX(-50%) translateY(8px);opacity:1}
+.ptr-indicator.ptr-loading{transform:translateX(-50%) translateY(8px);opacity:1}
+.ptr-spinner{width:18px;height:18px;border:2.5px solid rgba(45,138,94,0.20);border-top-color:#2d8a5e;border-radius:50%;animation:ptr-spin .7s linear infinite;flex-shrink:0}
+@keyframes ptr-spin{to{transform:rotate(360deg)}}
+
+/* Swipe-back left-edge glow */
+.swipe-hint{position:fixed;top:0;left:0;width:4px;height:100%;background:linear-gradient(to right,rgba(45,138,94,0.35),transparent);z-index:350;opacity:0;pointer-events:none;transition:opacity .18s}
+.swipe-hint.active{opacity:1}
+
+/* Responsive */
+@media(min-width:1024px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px}
+  #summary-cards{grid-template-columns:repeat(3,1fr)!important}
+  #premium-cards{grid-template-columns:repeat(4,1fr)!important}
+}
+@media(min-width:768px){
+  #page-content{padding:32px!important}
+  .stat-val{font-size:42px}
+  #summary-cards{grid-template-columns:1fr 1fr 1fr!important}
+  #premium-cards{grid-template-columns:1fr 1fr 1fr 1fr!important}
+  .payout-mobile{display:none!important}
+  .payout-desktop{display:table!important}
+  #chart-canvas-wrap{height:260px!important}
+}
+@media(max-width:767px){
+  .payout-desktop{display:none!important}
+}
+</style>
+
+<style id="mobile-first-patch">
+/* ═══════════════════════════════════════════════════
+   KREDDLO GLOBAL MOBILE-FIRST PATCH
+   Fixes: overflow, stat cards, hamburger, sidebar,
+   loading overlay, products grid, bottom sheet
+═══════════════════════════════════════════════════ */
+
+/* 1. ROOT OVERFLOW FIX — kills horizontal scroll/blank sides */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+/* 2. MAIN WRAP — never wider than viewport */
+#main-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* 3. PAGE CONTENT — proper mobile padding, no bleed */
+#page-content {
+  padding: 18px 16px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden;
+}
+@media (min-width: 1024px) {
+  #main-wrap { width: calc(100% - 248px); max-width: none; overflow-x: visible; }
+  #page-content { padding: 32px !important; width: 100% !important; max-width: none !important; margin: 0 !important; box-sizing: border-box; }
+}
+
+/* 4. STAT CARDS — mobile font scaling so text fits */
+@media (max-width: 400px) {
+  .stat-val { font-size: 22px !important; letter-spacing: -0.5px !important; }
+  .stat-lbl { font-size: 10px !important; letter-spacing: 1px !important; }
+  .stat-card { padding: 16px 14px !important; }
+  .badge { font-size: 10px !important; padding: 2px 8px !important; }
+}
+@media (min-width: 401px) and (max-width: 767px) {
+  .stat-val { font-size: 26px !important; }
+  .stat-card { padding: 18px 16px !important; }
+}
+
+/* 5. STAT GRID — 2-col always on mobile, min 0 to prevent overflow */
+#section-c > div, #stats-grid > div, #summary-cards > div {
+  min-width: 0;
+}
+.stat-card { min-width: 0; }
+
+/* 6. HAMBURGER — always visible on mobile, proper tap size */
+#hamburger {
+  display: flex !important;
+  width: 44px !important;
+  height: 44px !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: rgba(13,33,69,0.08);
+  border-radius: 10px;
+}
+@media (min-width: 1024px) {
+  #hamburger { display: none !important; }
+}
+
+/* 7. TOPBAR — full width, no overflow */
+header {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 14px !important;
+}
+header h1 {
+  font-size: 16px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+header > div:last-child {
+  flex-shrink: 0;
+  gap: 6px !important;
+}
+
+/* 8. MOBILE MENU — full height with safe area */
+#mobile-menu {
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding-top: max(30px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+
+/* 9. LOADING OVERLAY — full screen properly */
+
+
+/* 10. PRODUCTS GRID — single col mobile */
+#products-grid, #products-grid-sk {
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+}
+@media (min-width: 600px) {
+  #products-grid, #products-grid-sk {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (min-width: 1024px) {
+  #products-grid, #products-grid-sk {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* 11. PRODUCT CARDS — prevent overflow */
+.prod-card { min-width: 0; width: 100%; }
+.prod-title { word-break: break-word; }
+
+/* 12. BOTTOM SHEET (create product modal) — mobile first */
+.cp-overlay {
+  padding: 0 !important;
+  align-items: flex-end !important;
+}
+.cp-sheet {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-radius: 24px 24px 0 0 !important;
+  max-height: 92dvh !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (min-width: 600px) {
+  .cp-overlay { align-items: center !important; padding: 20px !important; }
+  .cp-sheet {
+    max-width: 600px !important;
+    border-radius: 24px !important;
+    max-height: 90dvh !important;
+  }
+}
+
+/* 13. QUICK CARDS — equal width, responsive */
+.qcard {
+  width: calc(33.333% - 8px) !important;
+  min-width: 0 !important;
+  padding: 12px 6px !important;
+}
+.qcard-lbl { font-size: 10px !important; }
+@media (max-width: 360px) {
+  .qcard { width: calc(33.333% - 6px) !important; padding: 10px 4px !important; }
+  .qcard-icon { width: 34px !important; height: 34px !important; }
+}
+
+/* 14. SECTION HEADER WRAP (products page title + button) */
+.fu.fu-1 > div { min-width: 0; }
+#create-product-btn { flex-shrink: 0; white-space: nowrap; }
+@media (max-width: 400px) {
+  /* Stack the title+button on very small screens */
+  .fu.fu-1[style*="justify-content:space-between"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+  #create-product-btn { width: 100% !important; }
+}
+
+/* 15. MODALS — full width on mobile */
+.modal-box {
+  width: calc(100vw - 32px) !important;
+  max-width: 500px !important;
+  max-height: 90dvh !important;
+  overflow-y: auto !important;
+  padding: 22px 18px 32px !important;
+}
+
+/* 16. GLASS CARDS — no overflow */
+.glass { min-width: 0; }
+
+/* 17. PERIOD PILLS (earnings) — wrap and small on mobile */
+.pill { padding: 8px 14px !important; font-size: 12px !important; }
+
+/* 18. EARNINGS SUMMARY CARDS — single col mobile */
+#summary-cards {
+  grid-template-columns: 1fr !important;
+}
+@media (min-width: 768px) {
+  #summary-cards { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+/* 19. PAYOUT TABLE — hide on mobile, show cards */
+@media (max-width: 767px) {
+  .payout-desktop { display: none !important; }
+  .payout-mobile { display: block !important; }
+}
+@media (min-width: 768px) {
+  .payout-desktop { display: table !important; }
+  .payout-mobile { display: none !important; }
+}
+
+/* 20. TOAST — above safe area on mobile */
+.toast {
+  bottom: max(24px, env(safe-area-inset-bottom, 24px)) !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+/* 21. NAV LINKS — prevent text overflow in sidebar */
+.nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+</style>
+</head>
+<body style="visibility:hidden" class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<!-- LOADING OVERLAY -->
+
+<style>
+</style>
+
+<!-- MOBILE BACKDROP -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:272px;height:100%;background:#091830;z-index:500;padding:30px 22px;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;margin-top:2px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="mb-signout" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <a href="/dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="dt-signout" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrap" style="min-height:100vh;display:flex;flex-direction:column;">
+
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Earnings</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="window.location.href='/notifications.html'" style="position:relative;width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;">MR</div>
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main id="page-content" style="flex:1;padding:22px 18px;width:100%;position:relative;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;">
+
+      <!-- SECTION A: Period selector -->
+      <div class="fu fu-1" style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+        <button class="pill pill-active" data-period="30d" onclick="selectPeriod('30d')">30 Days</button>
+        <button class="pill pill-inactive" data-period="3m" onclick="selectPeriod('3m')">3 Months</button>
+        <button class="pill pill-inactive" data-period="12m" onclick="selectPeriod('12m')">12 Months</button>
+      </div>
+
+      <!-- SECTION B: Summary stat cards -->
+      <div id="summary-cards" class="fu fu-2" style="display:grid;grid-template-columns:1fr;gap:13px;margin-bottom:26px;">
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(45,138,94,0.08),rgba(255,255,255,0.85));border:1px solid rgba(45,138,94,0.16);box-shadow:0 4px 24px rgba(45,138,94,0.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(45,138,94,0.12);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <span class="badge badge-green">Earned</span>
+          </div>
+          <div id="card-earned" class="stat-val sk" style="color:#2d8a5e;height:42px;width:60%;"></div>
+          <div class="stat-lbl">Total Earned</div>
+          <div id="trend-earned" class="stat-trend" style="color:#2d8a5e;visibility:hidden;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(13,33,69,0.04),rgba(255,255,255,0.85));border:1px solid rgba(255,255,255,0.55);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(13,33,69,0.07);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <span class="badge badge-navy">Withdrawn</span>
+          </div>
+          <div id="card-withdrawn" class="stat-val sk" style="height:42px;width:60%;"></div>
+          <div class="stat-lbl">Total Withdrawn</div>
+          <div id="trend-withdrawn" class="stat-trend" style="color:rgba(13,33,69,0.45);visibility:hidden;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(133,100,4,0.05),rgba(255,255,255,0.85));border:1px solid rgba(133,100,4,0.12);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(133,100,4,0.10);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <span class="badge badge-amber">Available</span>
+          </div>
+          <div id="card-pending" class="stat-val sk" style="color:#856404;height:42px;width:60%;"></div>
+          <div class="stat-lbl">Available to Withdraw</div>
+          <div id="trend-pending" class="stat-trend" style="color:rgba(13,33,69,0.45);visibility:hidden;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(13,33,69,0.04),rgba(255,255,255,0.85));border:1px solid rgba(255,255,255,0.55);box-shadow:0 4px 24px rgba(13,33,69,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:38px;height:38px;background:rgba(13,33,69,0.07);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <span class="badge badge-navy">Clearing</span>
+          </div>
+          <div id="card-clearing" class="stat-val sk" style="height:42px;width:60%;"></div>
+          <div class="stat-lbl">Pending Clearance</div>
+          <div id="trend-clearing" class="stat-trend" style="color:rgba(13,33,69,0.45);visibility:hidden;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            <span></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION C: Earnings chart -->
+      <div class="fu fu-3 glass" style="padding:24px;margin-bottom:26px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <h3 style="font-size:15px;font-weight:700;color:#0d2145;margin:0 0 2px;">Earnings Over Time</h3>
+            <p id="chart-subtitle" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.48);margin:0;">Last 30 days, grouped by day</p>
+          </div>
+        </div>
+        <div id="chart-canvas-wrap" style="position:relative;width:100%;height:200px;">
+          <canvas id="earnings-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- SECTION C5: Payments received ledger -->
+      <div class="fu fu-3b glass" style="overflow:hidden;margin-bottom:26px;">
+        <div style="padding:24px 24px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <h3 style="font-size:16px;font-weight:700;color:#0d2145;margin:0;">Payments Received</h3>
+          <span id="payments-count" style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.42);"></span>
+        </div>
+        <div style="height:1px;background:#e2e8f0;"></div>
+
+        <!-- Desktop table -->
+        <table class="payout-table payout-desktop" style="display:none;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="payments-table-body"></tbody>
+        </table>
+
+        <!-- Mobile cards -->
+        <div id="payments-cards" class="payout-mobile"></div>
+      </div>
+
+      <!-- SECTION D: Payout history -->
+      <div class="fu fu-4 glass" style="overflow:hidden;margin-bottom:26px;">
+        <div style="padding:24px 24px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <h3 style="font-size:16px;font-weight:700;color:#0d2145;margin:0;">Payout History</h3>
+          <button onclick="exportCSV()" style="display:flex;align-items:center;gap:6px;background:transparent;border:none;cursor:pointer;font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);transition:color .15s;padding:0;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.55)'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
+        <div style="height:1px;background:#e2e8f0;"></div>
+
+        <!-- Desktop table -->
+        <table class="payout-table payout-desktop" style="display:none;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Amount USD</th>
+              <th>Amount Crypto</th>
+              <th>Currency</th>
+              <th>Wallet</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="payout-table-body"></tbody>
+        </table>
+
+        <!-- Mobile cards -->
+        <div id="payout-cards" class="payout-mobile"></div>
+      </div>
+
+      <!-- SECTION E: Advanced analytics -->
+      <div class="fu fu-5" id="premium-section" style="margin-bottom:26px;"></div>
+
+      <!-- SECTION F: Boost upsell (Fix 5 — surface Boost from within the dashboard) -->
+      <div class="fu fu-6 glass" style="padding:20px;margin-bottom:26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="width:42px;height:42px;background:rgba(248,158,25,0.12);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f89e19" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:800;color:#0d2145;margin-bottom:2px;">Boost Your Profile</div>
+          <div style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.55);line-height:1.4;">Get featured at the top of search results and attract more buyers.</div>
+        </div>
+        <a href="/pricing.html#boost" style="display:inline-flex;align-items:center;gap:6px;background:#f89e19;color:#fff;border-radius:50px;padding:10px 18px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .15s;flex-shrink:0;" onmouseover="this.style.background='#d4840f'" onmouseout="this.style.background='#f89e19'">
+          Buy a Boost
+        </a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- PULL-TO-REFRESH INDICATOR -->
+<div id="ptr-indicator" class="ptr-indicator" aria-live="polite" aria-label="Refreshing">
+  <div class="ptr-spinner"></div>
+  <span id="ptr-label">Refreshing</span>
+</div>
+
+<!-- SWIPE-BACK EDGE HINT -->
+<div id="swipe-hint" class="swipe-hint"></div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ============ DEMO USER ============
+var DEMO = {
+  uid: null,
+  name: '',
+  premiumStatus: 'inactive',
+  availableBalance: 0
+};
+
+// ============ LIVE DATA — populated by loadEarningsData() in _boot ============
+function daysAgo(n) {
+  var d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+}
+var DEMO_PROJECTS = []; // filled from Firestore: projects (completed) + product-orders (paid)
+var DEMO_PAYOUTS  = []; // filled from Firestore: payouts collection
+var DEMO_PAYMENTS = []; // filled from Firestore: all incoming payments ledger
+
+var STATUS = {
+  completed: { label:'Completed', cls:'badge-green' },
+  pending:   { label:'Pending',   cls:'badge-amber' },
+  failed:    { label:'Failed',    cls:'badge-red'   }
+};
+
+var PAYMENT_STATUS = {
+  escrow:    { label:'In Escrow',  cls:'badge-amber' },
+  pending:   { label:'Pending',    cls:'badge-amber' },
+  clearing:  { label:'Clearing',   cls:'badge-amber' },
+  settled:   { label:'Settled',    cls:'badge-green' },
+  disputed:  { label:'Disputed',   cls:'badge-red'   },
+  refunded:  { label:'Refunded',   cls:'badge-grey'  }
+};
+
+var PAYMENT_TYPE_LABEL = {
+  project: 'Project',
+  product: 'Product',
+  invoice: 'Invoice'
+};
+
+var currentPeriod = '30d';
+var earningsChart = null;
+
+// ============ NAV ============
+var NAV = [
+  { label:'Dashboard',     href:'/dashboard.html',          icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Earnings',      href:'/dashboard-earnings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { label:'Projects',      href:'/dashboard-projects.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Invoices',     href:'/dashboard-invoices.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+  { label:'Store',         href:'/store.html',              icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Products',      href:'/dashboard-products.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { label:'Purchases',     href:'/buyer-purchases.html',    icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',     href:'/dashboard-affiliate.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Contracts',     href:'/dashboard-contracts.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Withdraw',      href:'/dashboard-withdraw.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' },
+  { label:'Browse',        href:'/browse.html',             icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Settings',      href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+];
+
+function buildNav(uid, affiliateEnabled) {
+  var cur = (window.location.pathname.split('/').pop() || 'dashboard.html');
+  var items = NAV.filter(function(n) {
+    if (n.label === 'Affiliate') return affiliateEnabled === true;
+    return true;
+  });
+  var html = items.map(function(n) {
+    var href = n.href;
+    if (n.label === 'Store'   && uid) href = '/store.html?uid='   + uid;
+    if (n.label === 'Profile' && uid) href = '/profile.html?uid=' + uid;
+    var active = cur === n.href.replace('/','') ? ' active' : '';
+    return '<a href="'+href+'" class="nav-link'+active+'">'+n.icon+n.label+'</a>';
+  }).join('');
+  document.getElementById('mobile-nav').innerHTML = html;
+  document.getElementById('desktop-nav').innerHTML = html;
+}
+
+// ============ MOBILE MENU ============
+function openMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ============ LOGOUT ============
+function handleLogout() { showToast('Signed out (demo mode)'); }
+document.getElementById('mb-signout').onclick = handleLogout;
+document.getElementById('dt-signout').onclick = handleLogout;
+
+// ============ TOAST ============
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+// ============ PERIOD FILTER HELPERS ============
+function periodToDays(period) {
+  if (period === '30d') return 30;
+  if (period === '3m')  return 90;
+  return 365; // 12m
+}
+
+function filterByPeriod(items, dateKey, period) {
+  var days = periodToDays(period);
+  var cutoff = daysAgo(days);
+  return items.filter(function(item) { return item[dateKey] >= cutoff; });
+}
+
+// ============ HELPERS ============
+// ── Currency helpers — delegate to shared module (assets/shared.js) ──────────
+function fmtCurrency(amount, currency) {
+  if (window.kreddloCurrency && window.kreddloCurrency.fmt) {
+    return window.kreddloCurrency.fmt(amount, currency);
+  }
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 2 }).format(Number(amount) || 0);
+  } catch(e) { return (currency || 'USD') + ' ' + Number(amount || 0).toFixed(2); }
+}
+// Stat-card renderer: big primary + tappable chips for secondary currencies
+function renderCurrencyLines(map) {
+  if (window.kreddloCurrency && window.kreddloCurrency.renderCard) {
+    return window.kreddloCurrency.renderCard(map, { primaryColor: 'inherit' });
+  }
+  var keys = Object.keys(map || {}).filter(function(c){ return Number(map[c]) > 0; });
+  return keys.length ? keys.map(function(c){ return fmtCurrency(map[c], c); }).join(' · ') : fmtCurrency(0, 'USD');
+}
+
+// Group an array of {netAmount, currency} items by currency, summing amounts
+function groupByCurrency(items) {
+  var map = {};
+  items.forEach(function(item) {
+    var cur = item.currency || 'USD';
+    map[cur] = (map[cur] || 0) + (item.netAmount || 0);
+  });
+  return map;
+}
+
+// ============ SUMMARY CARDS ============
+function renderSummaryCards(period) {
+  var projectsInPeriod = filterByPeriod(DEMO_PROJECTS, 'completedAt', period);
+  var payoutsInPeriod  = filterByPeriod(DEMO_PAYOUTS, 'date', period).filter(function(p){ return p.status === 'completed'; });
+
+  // Group earned amounts by currency
+  var earnedByCurrency = groupByCurrency(projectsInPeriod);
+
+  // Group withdrawn by currency (payouts may have currency field; fall back to USD)
+  var withdrawnByCurrency = {};
+  payoutsInPeriod.forEach(function(p) {
+    var cur = (p.currency && p.currency !== 'USDT') ? p.currency : 'USD';
+    withdrawnByCurrency[cur] = (withdrawnByCurrency[cur] || 0) + (p.amountUsd || 0);
+  });
+
+  // Available balance from per-currency balances map
+  var balances = DEMO.balances || {};
+
+  var cardEarned = document.getElementById('card-earned');
+  cardEarned.classList.remove('sk');
+  cardEarned.style.width = 'auto';
+  cardEarned.style.height = 'auto';
+  cardEarned.innerHTML = renderCurrencyLines(earnedByCurrency);
+
+  var cardWithdrawn = document.getElementById('card-withdrawn');
+  cardWithdrawn.classList.remove('sk');
+  cardWithdrawn.style.width = 'auto';
+  cardWithdrawn.style.height = 'auto';
+  cardWithdrawn.innerHTML = renderCurrencyLines(withdrawnByCurrency);
+
+  var cardPending = document.getElementById('card-pending');
+  cardPending.classList.remove('sk');
+  cardPending.style.width = 'auto';
+  cardPending.style.height = 'auto';
+  if (Object.keys(balances).length) {
+    cardPending.innerHTML = renderCurrencyLines(
+      Object.fromEntries(Object.entries(balances).map(function(e){ return [e[0], e[1]]; }))
+    );
+  } else {
+    cardPending.textContent = fmtCurrency(0, 'USD');
+  }
+
+  var trendEarned = document.getElementById('trend-earned');
+  trendEarned.querySelector('span').textContent = projectsInPeriod.length + ' projects completed';
+  trendEarned.style.visibility = 'visible';
+
+  var trendWithdrawn = document.getElementById('trend-withdrawn');
+  trendWithdrawn.querySelector('span').textContent = payoutsInPeriod.length + ' payouts sent';
+  trendWithdrawn.style.visibility = 'visible';
+
+  var trendPending = document.getElementById('trend-pending');
+  trendPending.querySelector('span').textContent = 'Ready to withdraw';
+  trendPending.style.visibility = 'visible';
+
+  // Pending-clearance card (Item 9 — earnings holding period)
+  var pendingClearance = DEMO.pendingBalances || {};
+  var cardClearing = document.getElementById('card-clearing');
+  cardClearing.classList.remove('sk');
+  cardClearing.style.width = 'auto';
+  cardClearing.style.height = 'auto';
+  if (Object.keys(pendingClearance).length) {
+    cardClearing.innerHTML = renderCurrencyLines(pendingClearance);
+  } else {
+    cardClearing.textContent = fmtCurrency(0, 'USD');
+  }
+
+  var trendClearing = document.getElementById('trend-clearing');
+  trendClearing.querySelector('span').textContent = 'Clears automatically';
+  trendClearing.style.visibility = 'visible';
+}
+
+// ============ CHART GROUPING ============
+function fmtDateShort(d) {
+  return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+}
+function fmtMonthShort(d) {
+  return d.toLocaleDateString('en-GB', { month:'short', year:'2-digit' });
+}
+
+function buildChartData(period) {
+  var projectsInPeriod = filterByPeriod(DEMO_PROJECTS, 'completedAt', period);
+  var labels = [];
+  var data = [];
+
+  if (period === '30d') {
+    // group by day, last 30 days
+    var buckets = {};
+    for (var i = 29; i >= 0; i--) {
+      var d = daysAgo(i);
+      var key = d.toDateString();
+      buckets[key] = { label: fmtDateShort(d), value: 0 };
+    }
+    projectsInPeriod.forEach(function(p) {
+      var key = p.completedAt.toDateString();
+      if (buckets[key]) buckets[key].value += p.netAmount;
+    });
+    Object.keys(buckets).forEach(function(k) {
+      labels.push(buckets[k].label);
+      data.push(buckets[k].value);
+    });
+  } else if (period === '3m') {
+    // group by week, last ~13 weeks
+    var weeks = 13;
+    var weekBuckets = [];
+    for (var w = weeks - 1; w >= 0; w--) {
+      var start = daysAgo(w * 7 + 6);
+      var end = daysAgo(w * 7);
+      weekBuckets.push({ start: start, end: end, value: 0, label: fmtDateShort(start) });
+    }
+    projectsInPeriod.forEach(function(p) {
+      for (var b = 0; b < weekBuckets.length; b++) {
+        if (p.completedAt >= weekBuckets[b].start && p.completedAt <= weekBuckets[b].end) {
+          weekBuckets[b].value += p.netAmount;
+          break;
+        }
+      }
+    });
+    weekBuckets.forEach(function(b) {
+      labels.push(b.label);
+      data.push(b.value);
+    });
+  } else {
+    // group by month, last 12 months
+    var monthBuckets = [];
+    var now = new Date();
+    for (var m = 11; m >= 0; m--) {
+      var monthDate = new Date(now.getFullYear(), now.getMonth() - m, 1);
+      monthBuckets.push({ year: monthDate.getFullYear(), month: monthDate.getMonth(), value: 0, label: fmtMonthShort(monthDate) });
+    }
+    projectsInPeriod.forEach(function(p) {
+      var py = p.completedAt.getFullYear();
+      var pm = p.completedAt.getMonth();
+      for (var b = 0; b < monthBuckets.length; b++) {
+        if (monthBuckets[b].year === py && monthBuckets[b].month === pm) {
+          monthBuckets[b].value += p.netAmount;
+          break;
+        }
+      }
+    });
+    monthBuckets.forEach(function(b) {
+      labels.push(b.label);
+      data.push(b.value);
+    });
+  }
+
+  return { labels: labels, data: data };
+}
+
+// ============ RENDER CHART ============
+function renderChart(period) {
+  var chartData = buildChartData(period);
+  var canvas = document.getElementById('earnings-chart');
+  var ctx = canvas.getContext('2d');
+
+  var gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 200);
+  gradient.addColorStop(0, 'rgba(45,138,94,0.15)');
+  gradient.addColorStop(1, 'rgba(45,138,94,0.00)');
+
+  if (earningsChart) earningsChart.destroy();
+
+  earningsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartData.labels,
+      datasets: [{
+        data: chartData.data,
+        borderColor: '#2d8a5e',
+        borderWidth: 2.5,
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: '#2d8a5e',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          grid: { color: 'rgba(13,33,69,0.06)', drawBorder: false },
+          ticks: { color: 'rgba(13,33,69,0.50)', font: { family: "'Plus Jakarta Sans'", size: 11 }, maxRotation: 0, autoSkip: true }
+        },
+        y: {
+          grid: { color: 'rgba(13,33,69,0.06)', drawBorder: false },
+          ticks: {
+            color: 'rgba(13,33,69,0.50)',
+            font: { family: "'Plus Jakarta Sans'", size: 11 },
+            callback: function(v) { return v.toLocaleString(); }
+          }
+        }
+      }
+    }
+  });
+
+  var subtitleMap = {
+    '30d': 'Last 30 days, grouped by day',
+    '3m':  'Last 3 months, grouped by week',
+    '12m': 'Last 12 months, grouped by month'
+  };
+  document.getElementById('chart-subtitle').textContent = subtitleMap[period];
+}
+
+// ============ PAYMENTS LEDGER ============
+function renderPaymentsLedger() {
+  var tbody = document.getElementById('payments-table-body');
+  var cards = document.getElementById('payments-cards');
+  var countEl = document.getElementById('payments-count');
+  if (!tbody || !cards) return;
+
+  if (!DEMO_PAYMENTS.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px 20px;color:rgba(13,33,69,0.45);font-size:14px;">No payments received yet</td></tr>';
+    cards.innerHTML = '<p style="text-align:center;padding:32px 20px;color:rgba(13,33,69,0.45);font-size:14px;">No payments received yet</p>';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  if (countEl) countEl.textContent = DEMO_PAYMENTS.length + (DEMO_PAYMENTS.length === 1 ? ' payment' : ' payments');
+
+  function typeIcon(type) {
+    if (type === 'invoice') return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+    if (type === 'product') return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>';
+    return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
+  }
+
+  tbody.innerHTML = DEMO_PAYMENTS.map(function(p) {
+    var s = PAYMENT_STATUS[p.status] || PAYMENT_STATUS.pending;
+    var typeLabel = PAYMENT_TYPE_LABEL[p.type] || p.type;
+    var dateStr = p.date.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    var amtStr  = fmtCurrency(p.amount, p.currency);
+    var origNote = (p.originalCurrency && p.originalCurrency !== p.currency)
+      ? '<div style="font-size:10px;font-weight:600;color:rgba(13,33,69,0.4);margin-top:1px;white-space:nowrap;">orig. ' + fmtCurrency(p.originalAmount, p.originalCurrency) + '</div>'
+      : '';
+    return '<tr>'
+      + '<td style="font-size:13px;color:rgba(13,33,69,0.55);">' + dateStr + '</td>'
+      + '<td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(13,33,69,0.6);">' + typeIcon(p.type) + typeLabel + '</span></td>'
+      + '<td style="font-size:13px;color:rgba(13,33,69,0.70);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (p.description || '—') + '</td>'
+      + '<td><span style="font-weight:700;color:#0d2145;">' + amtStr + '</span>' + origNote + '</td>'
+      + '<td><span class="badge ' + s.cls + '">' + s.label + '</span></td>'
+      + '</tr>';
+  }).join('');
+
+  cards.innerHTML = DEMO_PAYMENTS.map(function(p) {
+    var s = PAYMENT_STATUS[p.status] || PAYMENT_STATUS.pending;
+    var typeLabel = PAYMENT_TYPE_LABEL[p.type] || p.type;
+    var dateStr = p.date.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    var amtStr  = fmtCurrency(p.amount, p.currency);
+    var origNote = (p.originalCurrency && p.originalCurrency !== p.currency)
+      ? '<div style="font-size:10px;font-weight:600;color:rgba(13,33,69,0.4);margin-top:1px;text-align:right;">orig. ' + fmtCurrency(p.originalAmount, p.originalCurrency) + '</div>'
+      : '';
+    return '<div class="payout-card">'
+      + '<div class="payout-row1">'
+        + '<span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(13,33,69,0.55);">' + typeIcon(p.type) + typeLabel + ' &middot; ' + dateStr + '</span>'
+        + '<div style="display:flex;flex-direction:column;align-items:flex-end;">'
+          + '<span style="font-size:15px;font-weight:700;color:#0d2145;">' + amtStr + '</span>'
+          + origNote
+        + '</div>'
+      + '</div>'
+      + '<div class="payout-row2">'
+        + '<span style="font-size:12px;color:rgba(13,33,69,0.50);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (p.description || '—') + '</span>'
+        + '<span class="badge ' + s.cls + '">' + s.label + '</span>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+// ============ PAYOUT TABLE ============
+function renderPayouts() {
+  var tbody = document.getElementById('payout-table-body');
+  var cards = document.getElementById('payout-cards');
+
+  if (!DEMO_PAYOUTS.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px 20px;color:rgba(13,33,69,0.45);font-size:14px;">No payouts yet</td></tr>';
+    cards.innerHTML = '<p style="text-align:center;padding:32px 20px;color:rgba(13,33,69,0.45);font-size:14px;">No payouts yet</p>';
+    return;
+  }
+  tbody.innerHTML = DEMO_PAYOUTS.map(function(p) {
+    var s = STATUS[p.status] || STATUS.completed;
+    var dateStr = p.date.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    var cryptoStr = p.currency === 'USDT' ? p.amountCrypto.toFixed(2) : p.amountCrypto.toFixed(4);
+    return '<tr>'
+      + '<td style="font-size:13px;color:rgba(13,33,69,0.55);">'+dateStr+'</td>'
+      + '<td style="font-weight:700;color:#0d2145;">'+fmtCurrency(p.amountUsd, p.fiatCurrency||(p.currency!=='USDT'?p.currency:'USD'))+'</td>'
+      + '<td style="font-size:13px;color:#2d8a5e;font-weight:600;">'+cryptoStr+'</td>'
+      + '<td style="font-size:13px;color:rgba(13,33,69,0.55);">'+p.currency+'</td>'
+      + '<td style="font-size:13px;color:rgba(13,33,69,0.55);font-family:monospace;">'+p.wallet+'</td>'
+      + '<td><span class="badge '+s.cls+'">'+s.label+'</span></td>'
+      + '</tr>';
+  }).join('');
+
+  cards.innerHTML = DEMO_PAYOUTS.map(function(p) {
+    var s = STATUS[p.status] || STATUS.completed;
+    var dateStr = p.date.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    var cryptoStr = p.currency === 'USDT' ? p.amountCrypto.toFixed(2) : p.amountCrypto.toFixed(4);
+    return '<div class="payout-card">'
+      + '<div class="payout-row1">'
+        + '<span style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.55);">'+dateStr+'</span>'
+        + '<span style="font-size:15px;font-weight:700;color:#0d2145;">'+fmtCurrency(p.amountUsd, p.fiatCurrency||(p.currency!=='USDT'?p.currency:'USD'))+'</span>'
+      + '</div>'
+      + '<div class="payout-row2">'
+        + '<span style="font-size:13px;font-weight:600;color:#2d8a5e;">'+cryptoStr+' '+p.currency+'</span>'
+        + '<span class="badge '+s.cls+'">'+s.label+'</span>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+// ============ EXPORT CSV ============
+function exportCSV() {
+  var rows = [['Date','Amount USD','Amount Crypto','Currency','Wallet','Status']];
+  DEMO_PAYOUTS.forEach(function(p) {
+    var dateStr = p.date.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    var cryptoStr = p.currency === 'USDT' ? p.amountCrypto.toFixed(2) : p.amountCrypto.toFixed(4);
+    rows.push([dateStr, p.amountUsd, cryptoStr, p.currency, p.wallet, p.status]);
+  });
+  var csv = rows.map(function(r) {
+    return r.map(function(cell) {
+      var s = String(cell);
+      if (s.indexOf(',') !== -1) return '"'+s+'"';
+      return s;
+    }).join(',');
+  }).join('\n');
+
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'kreddlo-payout-history.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Payout history exported');
+}
+
+// ============ PREMIUM ANALYTICS (Fix G) ============
+// Replaces the old hardcoded "Profile Views / Conversion Rate / Top
+// Performing Skills" block — none of that was backed by any real tracking
+// (no page-view or skill-tagging data exists anywhere in the schema), so it
+// showed the exact same numbers to every freelancer, including paying Pro
+// users. Everything below is computed from the freelancer's own completed
+// projects + paid product orders (the same records the rest of this page
+// already loads), so the figures are always real, even if a freelancer has
+// no completed work yet (handled with honest empty values, not made-up ones).
+function computePremiumStats(items) {
+  var empty = { avgByCurrency: {}, totalClients: 0, repeatClients: 0, retentionPct: null, topEarners: [], dominantCurrency: 'USD' };
+  if (!items || !items.length) return empty;
+
+  // Average project/order value — grouped by currency so amounts in
+  // different currencies are never silently combined into one number.
+  var sumByCurrency = {};
+  var countByCurrency = {};
+  items.forEach(function(it) {
+    var cur = it.currency || 'USD';
+    sumByCurrency[cur]   = (sumByCurrency[cur]   || 0) + (it.netAmount || 0);
+    countByCurrency[cur] = (countByCurrency[cur] || 0) + 1;
+  });
+  var avgByCurrency = {};
+  Object.keys(sumByCurrency).forEach(function(cur) {
+    avgByCurrency[cur] = sumByCurrency[cur] / countByCurrency[cur];
+  });
+
+  // Client retention — % of unique buyers who show up on more than one
+  // completed transaction (real repeat-client rate, not an estimate).
+  var buyerCounts = {};
+  items.forEach(function(it) {
+    if (!it.buyerUid) return;
+    buyerCounts[it.buyerUid] = (buyerCounts[it.buyerUid] || 0) + 1;
+  });
+  var buyerUids     = Object.keys(buyerCounts);
+  var totalClients  = buyerUids.length;
+  var repeatClients = buyerUids.filter(function(u) { return buyerCounts[u] > 1; }).length;
+  var retentionPct  = totalClients ? Math.round((repeatClients / totalClients) * 100) : null;
+
+  // Top earning projects/products — ranked within the freelancer's dominant
+  // currency only, so the ranking never mixes amounts across currencies.
+  var dominantCurrency = Object.keys(sumByCurrency).sort(function(a, b) {
+    return sumByCurrency[b] - sumByCurrency[a];
+  })[0] || 'USD';
+  var totalsByTitle = {};
+  items.forEach(function(it) {
+    if ((it.currency || 'USD') !== dominantCurrency) return;
+    var t = it.title || 'Untitled';
+    totalsByTitle[t] = (totalsByTitle[t] || 0) + (it.netAmount || 0);
+  });
+  var topEarners = Object.keys(totalsByTitle)
+    .map(function(t) { return { title: t, total: totalsByTitle[t] }; })
+    .sort(function(a, b) { return b.total - a.total; })
+    .slice(0, 5);
+
+  return {
+    avgByCurrency:    avgByCurrency,
+    totalClients:     totalClients,
+    repeatClients:    repeatClients,
+    retentionPct:     retentionPct,
+    topEarners:       topEarners,
+    dominantCurrency: dominantCurrency,
+    topLocations:     computeTopLocations(items)
+  };
+}
+
+/* Returns top 5 buyer countries by order count.
+   Only countries with a non-empty ISO code are included.
+   Orders without a buyerCountry (created before this field was added) are
+   silently skipped — they do not produce an "Unknown" row. */
+function computeTopLocations(items) {
+  var counts = {};
+  (items || []).forEach(function(it) {
+    var c = (it.buyerCountry || '').trim().toUpperCase();
+    if (!c) return;
+    counts[c] = (counts[c] || 0) + 1;
+  });
+  var total = Object.keys(counts).reduce(function(s, k) { return s + counts[k]; }, 0);
+  return Object.keys(counts)
+    .map(function(code) { return { code: code, count: counts[code], pct: total ? Math.round((counts[code] / total) * 100) : 0 }; })
+    .sort(function(a, b) { return b.count - a.count; })
+    .slice(0, 5);
+}
+
+// ISO 3166-1 alpha-2 → display name (covers the most common codes; falls back to the code itself)
+var COUNTRY_NAMES = {
+  US:'United States', GB:'United Kingdom', NG:'Nigeria', CA:'Canada', AU:'Australia',
+  DE:'Germany', FR:'France', IN:'India', ZA:'South Africa', KE:'Kenya', GH:'Ghana',
+  PK:'Pakistan', BR:'Brazil', NL:'Netherlands', SG:'Singapore', AE:'UAE',
+  PH:'Philippines', EG:'Egypt', TZ:'Tanzania', UG:'Uganda', RW:'Rwanda', CM:'Cameroon',
+  LS:'Lesotho', ET:'Ethiopia', ZW:'Zimbabwe', SN:'Senegal', CI:'Ivory Coast',
+  TN:'Tunisia', MA:'Morocco', MX:'Mexico', AR:'Argentina', CO:'Colombia', CL:'Chile',
+  IT:'Italy', ES:'Spain', PT:'Portugal', SE:'Sweden', NO:'Norway', DK:'Denmark',
+  FI:'Finland', PL:'Poland', RO:'Romania', TR:'Turkey', JP:'Japan', KR:'South Korea',
+  CN:'China', MY:'Malaysia', ID:'Indonesia', TH:'Thailand', VN:'Vietnam', BD:'Bangladesh',
+  NZ:'New Zealand', IE:'Ireland', BE:'Belgium', AT:'Austria', CH:'Switzerland',
+};
+
+function countryFlag(code) {
+  // Convert ISO code to regional indicator emoji flag
+  try {
+    return code.toUpperCase().replace(/./g, function(c) {
+      return String.fromCodePoint(c.charCodeAt(0) + 127397);
+    });
+  } catch(e) { return ''; }
+}
+
+// ============ PREMIUM SECTION ============
+function renderPremiumSection() {
+  var wrap = document.getElementById('premium-section');
+  var stats = DEMO.premiumStats || { avgByCurrency: {}, totalClients: 0, repeatClients: 0, retentionPct: null, topEarners: [], dominantCurrency: 'USD' };
+
+  var avgLine = Object.keys(stats.avgByCurrency).length
+    ? renderCurrencyLines(stats.avgByCurrency)
+    : fmtCurrency(0, 'USD');
+  var retentionLabel = (stats.retentionPct === null) ? '—' : stats.retentionPct + '%';
+
+  // Real cards only — Profile Views / Conversion Rate are gone because no
+  // view-tracking exists anywhere in the schema to back them honestly.
+  var cardsHTML =
+      premiumCardHTML('Avg Project Value', avgLine, 'badge-navy', 'Per engagement')
+    + premiumCardHTML('Client Retention', retentionLabel, 'badge-amber', 'Repeat clients')
+    + premiumCardHTML('Total Clients', String(stats.totalClients), 'badge-blue', 'Lifetime')
+    + premiumCardHTML('Repeat Clients', String(stats.repeatClients), 'badge-green', 'More than 1 order');
+
+  // ── Top Locations card ──
+  var locs = Array.isArray(stats.topLocations) ? stats.topLocations : [];
+  var locRows = locs.length
+    ? locs.map(function(l) {
+        var name = COUNTRY_NAMES[l.code] || l.code;
+        var flag = countryFlag(l.code);
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(13,33,69,0.06);">'
+          + '<span style="font-size:20px;line-height:1;flex-shrink:0;">' + flag + '</span>'
+          + '<span style="flex:1;font-size:13px;font-weight:600;color:#0d2145;">' + name + '</span>'
+          + '<div style="display:flex;align-items:center;gap:8px;">'
+            + '<div style="width:80px;height:5px;background:rgba(13,33,69,0.08);border-radius:99px;overflow:hidden;">'
+              + '<div style="height:100%;width:' + l.pct + '%;background:#2d8a5e;border-radius:99px;"></div>'
+            + '</div>'
+            + '<span style="font-size:12px;font-weight:700;color:rgba(13,33,69,0.55);min-width:28px;text-align:right;">' + l.pct + '%</span>'
+          + '</div>'
+        + '</div>';
+      }).join('')
+    : '<p style="text-align:center;padding:20px 0;color:rgba(13,33,69,0.40);font-size:13px;">Location data will appear as orders come in</p>';
+
+  var locSectionHTML =
+    '<div class="glass" style="padding:24px;margin-top:14px;">'
+      + '<h3 style="font-size:15px;font-weight:700;color:#0d2145;margin:0 0 4px;">Top Locations</h3>'
+      + '<p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.45);margin:0 0 14px;">Where your buyers are coming from</p>'
+      + locRows
+    + '</div>';
+
+  var chartHTML = stats.topEarners.length
+    ? '<div style="position:relative;width:100%;height:220px;"><canvas id="skills-chart"></canvas></div>'
+    : '<p style="text-align:center;padding:32px 0;color:rgba(13,33,69,0.45);font-size:14px;">No completed projects yet</p>';
+
+  var chartSectionHTML =
+      '<div class="glass" style="padding:24px;">'
+        + '<h3 style="font-size:15px;font-weight:700;color:#0d2145;margin:0 0 16px;">Top Earning Projects</h3>'
+        + chartHTML
+      + '</div>';
+
+  if (DEMO.premiumStatus !== 'active' && DEMO.plan !== 'pro') {
+    wrap.innerHTML =
+      '<div class="premium-lock-wrap">'
+        + '<div class="premium-blur">'
+          + '<div id="premium-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px;">'
+            + cardsHTML
+          + '</div>'
+          + chartSectionHTML
+          + locSectionHTML
+        + '</div>'
+        + '<div class="premium-lock-overlay">'
+          + '<div class="glass" style="max-width:360px;width:100%;padding:32px;text-align:center;">'
+            + '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" style="margin:0 auto 16px;display:block;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+            + '<h3 style="font-size:18px;font-weight:800;color:#0d2145;margin:0 0 8px;">Unlock Advanced Analytics</h3>'
+            + '<p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);margin:0 0 20px;line-height:1.6;">Get a deeper breakdown of your project value, client retention, top earning work, and buyer locations with Kreddlo Pro.</p>'
+            + '<button class="btn-green" onclick="window.location.href=\'/pricing.html\'">Upgrade to Pro</button>'
+          + '</div>'
+        + '</div>'
+      + '</div>';
+  } else {
+    wrap.innerHTML =
+      '<div id="premium-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px;">'
+        + cardsHTML
+      + '</div>'
+      + chartSectionHTML
+      + locSectionHTML;
+  }
+
+  // Render the chart after the DOM update, and only if there's real data to plot
+  if (stats.topEarners.length) setTimeout(renderTopEarnersChart, 50);
+}
+
+
+function premiumCardHTML(label, value, badgeCls, sub) {
+  return '<div class="stat-card" style="background:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.55);box-shadow:0 4px 24px rgba(13,33,69,0.06);">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
+      + '<span class="badge '+badgeCls+'">'+sub+'</span>'
+    + '</div>'
+    + '<div class="stat-val" style="font-size:28px;">'+value+'</div>'
+    + '<div class="stat-lbl">'+label+'</div>'
+  + '</div>';
+}
+
+function renderTopEarnersChart() {
+  var canvas = document.getElementById('skills-chart');
+  if (!canvas) return;
+  var stats = DEMO.premiumStats || { topEarners: [], dominantCurrency: 'USD' };
+  if (!stats.topEarners.length) return;
+  var ctx = canvas.getContext('2d');
+
+  var gradient = ctx.createLinearGradient(0, 0, canvas.width || 300, 0);
+  gradient.addColorStop(0, '#2d8a5e');
+  gradient.addColorStop(1, '#3dbd7a');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: stats.topEarners.map(function(e) { return e.title; }),
+      datasets: [{
+        data: stats.topEarners.map(function(e) { return e.total; }),
+        backgroundColor: gradient,
+        borderRadius: 8,
+        barThickness: 18
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return fmtCurrency(ctx.parsed.x, stats.dominantCurrency); }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(13,33,69,0.06)', drawBorder: false },
+          ticks: {
+            color: 'rgba(13,33,69,0.50)',
+            font: { family: "'Plus Jakarta Sans'", size: 11 },
+            callback: function(v) { return fmtCurrency(v, stats.dominantCurrency); }
+          }
+        },
+        y: {
+          grid: { display: false, drawBorder: false },
+          ticks: { color: 'rgba(13,33,69,0.65)', font: { family: "'Plus Jakarta Sans'", size: 12, weight: '600' } }
+        }
+      }
+    }
+  });
+}
+
+// ============ PERIOD SELECTION ============
+function selectPeriod(period) {
+  currentPeriod = period;
+  document.querySelectorAll('.pill').forEach(function(btn) {
+    if (btn.dataset.period === period) {
+      btn.classList.add('pill-active');
+      btn.classList.remove('pill-inactive');
+    } else {
+      btn.classList.add('pill-inactive');
+      btn.classList.remove('pill-active');
+    }
+  });
+  renderSummaryCards(period);
+  renderChart(period);
+}
+
+// ============ PULL TO REFRESH ============
+function refreshPageData() {
+  if (DEMO.uid) {
+    loadEarningsData(DEMO.uid);
+  } else {
+    renderSummaryCards(currentPeriod);
+    renderChart(currentPeriod);
+    renderPayouts();
+    renderPremiumSection();
+  }
+}
+
+(function initPullToRefresh() {
+  var touchStartY   = 0;
+  var touchStartX   = 0;
+  var isPulling     = false;
+  var PTR_THRESHOLD = 80;
+  var indicator     = document.getElementById('ptr-indicator');
+  var label         = document.getElementById('ptr-label');
+  var _ptrCooldown  = false;
+
+  document.addEventListener('touchstart', function(e) {
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+    isPulling   = false;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (_ptrCooldown) return;
+    var dy = e.touches[0].clientY - touchStartY;
+    var dx = Math.abs(e.touches[0].clientX - touchStartX);
+    // Only activate when at the very top, pulling down, not scrolling sideways
+    if (window.scrollY < 10 && dy > 30 && dx < 60) {
+      isPulling = true;
+      label.textContent = dy > PTR_THRESHOLD ? 'Release to refresh' : 'Pull to refresh';
+      indicator.classList.add('ptr-pulling');
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    if (!isPulling) return;
+    isPulling = false;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+
+    if (window.scrollY < 10 && dy > PTR_THRESHOLD) {
+      _ptrCooldown = true;
+      label.textContent = 'Refreshing';
+      indicator.classList.remove('ptr-pulling');
+      indicator.classList.add('ptr-loading');
+
+      // Haptic pulse on trigger
+      try { navigator.vibrate && navigator.vibrate([30, 40, 30]); } catch(err) {}
+
+      var result = refreshPageData();
+      var done = function() {
+        indicator.classList.remove('ptr-loading');
+        setTimeout(function() {
+          _ptrCooldown = false;
+          showToast('Earnings refreshed');
+        }, 300);
+      };
+      if (result && typeof result.then === 'function') {
+        result.then(done).catch(done);
+      } else {
+        setTimeout(done, 800);
+      }
+    } else {
+      indicator.classList.remove('ptr-pulling');
+    }
+  }, { passive: true });
+})();
+
+// ============ STEP 18B: HAPTIC FEEDBACK ON CONFIRM / APPROVE BUTTONS ============
+(function initHaptic() {
+  // Delegation on document covers any dynamically injected buttons too
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('button, [role="button"]');
+    if (!btn) return;
+    var txt = (btn.textContent || '').trim().toLowerCase();
+    if (/^(confirm|approve|upgrade to pro)/.test(txt)) {
+      try { navigator.vibrate && navigator.vibrate(50); } catch(err) {}
+    }
+  }, { passive: true });
+})();
+
+// ============ STEP 18C: SWIPE TO GO BACK ============
+(function initSwipeBack() {
+  var touchStartX  = 0;
+  var touchStartY  = 0;
+  var EDGE_ZONE    = 30;
+  var SWIPE_MIN_DX = 60;
+  var hint         = document.getElementById('swipe-hint');
+  var isEdgeSwipe  = false;
+
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    isEdgeSwipe = touchStartX < EDGE_ZONE;
+    if (isEdgeSwipe) hint.classList.add('active');
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    if (!isEdgeSwipe) return;
+    hint.classList.remove('active');
+
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+
+    if (dx > SWIPE_MIN_DX && dy < dx * 0.6) {
+      // Close mobile menu if open instead of navigating away
+      if (document.getElementById('mobile-menu').classList.contains('open')) {
+        closeMobileMenu();
+        isEdgeSwipe = false;
+        return;
+      }
+      try { navigator.vibrate && navigator.vibrate(30); } catch(err) {}
+      window.history.back();
+    }
+    isEdgeSwipe = false;
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', function() {
+    hint.classList.remove('active');
+    isEdgeSwipe = false;
+  }, { passive: true });
+})();
+
+// ============ ESCAPE KEY ============
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeMobileMenu();
+});
+
+// ============ LOAD EARNINGS DATA FROM FIRESTORE ============
+async function loadEarningsData(uid) {
+  if (!window.db || !window._fsQ) return;
+  var fsQ = window._fsQ;
+
+  try {
+    // ── Query 1: completed projects (freelancer side) ──
+    var q1 = fsQ.query(
+      fsQ.collection(window.db, 'projects'),
+      fsQ.where('freelancerUid', '==', uid),
+      fsQ.where('status', '==', 'completed')
+    );
+    var snap1 = await fsQ.getDocs(q1);
+    var projectEarnings = snap1.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.completedAt;
+      return {
+        netAmount:   data.netAmount || data.amount || 0,
+        currency:    (data.currency || 'USD').toUpperCase(),
+        completedAt: ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : new Date(),
+        // Fix G — needed for real "Top Earning Projects" + "Client Retention" stats below
+        title:       data.projectTitle || 'Project',
+        buyerUid:    data.buyerUid || null,
+        buyerCountry: data.buyerCountry || ''
+      };
+    });
+
+    // ── Query 2: paid product orders (seller side) ──
+    var q2 = fsQ.query(
+      fsQ.collection(window.db, 'product-orders'),
+      fsQ.where('sellerUid', '==', uid),
+      fsQ.where('paymentStatus', '==', 'paid')
+    );
+    var snap2 = await fsQ.getDocs(q2);
+    var productEarnings = snap2.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.deliveredAt || data.createdAt;
+      return {
+        netAmount:   data.sellerAmount || 0,
+        currency:    (data.currency || 'USD').toUpperCase(),
+        completedAt: ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : new Date(),
+        // Fix G — needed for real "Top Earning Projects" + "Client Retention" stats below
+        title:       data.productTitle || 'Product',
+        buyerUid:    data.buyerUid || null,
+        buyerCountry: data.buyerCountry || ''
+      };
+    });
+
+    // Merge both into DEMO_PROJECTS (shape filterByPeriod already expects)
+    DEMO_PROJECTS = projectEarnings.concat(productEarnings);
+
+    // ── Fix G: real Pro-analytics figures, computed from the same records
+    // above — no fabricated numbers, nothing here is hardcoded. ──
+    DEMO.premiumStats = computePremiumStats(DEMO_PROJECTS);
+
+    // ── Build payments ledger from Q1 (completed projects — settled) ──
+    var paymentsFromProjects = snap1.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.completedAt || data.paymentConfirmedAt;
+      return {
+        date:        ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : new Date(),
+        type:        'project',
+        description: data.projectTitle || 'Project',
+        amount:      data.netAmount || data.amount || 0,
+        currency:    (data.currency || 'USD').toUpperCase(),
+        status:      'settled'
+      };
+    });
+
+    // ── Query 1b: funded/in-progress projects (escrow held for freelancer) ──
+    var q1b = fsQ.query(
+      fsQ.collection(window.db, 'projects'),
+      fsQ.where('freelancerUid', '==', uid),
+      fsQ.where('escrowStatus', '==', 'funded')
+    );
+    var snap1b = await fsQ.getDocs(q1b);
+    var paymentsFromProjectsEscrow = snap1b.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.paymentConfirmedAt || data.updatedAt || data.createdAt;
+      // Only include if status isn't already completed (avoid double-counting)
+      if (data.status === 'completed') return null;
+      return {
+        date:        ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : new Date(),
+        type:        'project',
+        description: data.projectTitle || 'Project',
+        amount:      data.netAmount || data.amount || 0,
+        currency:    (data.currency || 'USD').toUpperCase(),
+        status:      data.status === 'disputed' ? 'disputed' : 'escrow'
+      };
+    }).filter(Boolean);
+
+    // ── Query 2b: product sale clearing status ────────────────────────────────
+    // product-earnings is a server-only collection (allow read, write: if false)
+    // so we cannot query it from the client. Instead we replicate the server's
+    // own logic: deliver-product.js sets clearsAt = deliveredAt + holdingDays,
+    // and scheduled-clear-earnings.js flips cleared=true once clearsAt passes.
+    // We fetch the same holdingDays value from the public config/platform doc
+    // and re-derive clearsAt from deliveredAt on each product-order, which
+    // gives identical results without touching any blocked collection.
+    var productSaleHoldingDays = 0; // default: instant clearance (same as server default)
+    try {
+      var platSnap2b = await fsQ.getDoc(fsQ.doc(window.db, 'config', 'platform'));
+      if (platSnap2b.exists()) {
+        var platData2b = platSnap2b.data();
+        productSaleHoldingDays = Number(platData2b.productSaleHoldingDays) || 0;
+      }
+    } catch(e) {
+      // Non-fatal: config/platform is public-read, this only fails offline.
+      // Fall back to 0 (instant clearance) so the ledger still renders.
+      console.warn('[earnings] config/platform fetch failed, assuming 0-day hold:', e.message);
+    }
+
+    // ── Build payments ledger from Q2 (product orders) ──
+    // Derive clearing status from deliveredAt + productSaleHoldingDays (same
+    // formula deliver-product.js uses) instead of reading product-earnings.
+    // 'clearing' = funds received but still inside holding window
+    // 'settled'  = holding window has elapsed; funds are withdrawable
+    var now2b = Date.now();
+    var paymentsFromProducts = snap2.docs.map(function(d) {
+      var data = d.data();
+      var ts = data.paymentConfirmedAt || data.createdAt;
+      var payCurrency  = (data.chargedCurrency || data.currency || 'USD').toUpperCase();
+      var origCurrency = (data.originalCurrency || data.currency || 'USD').toUpperCase();
+
+      // Derive clearsAt the same way deliver-product.js does on the server.
+      // deliveredAt is set when deliver-product.js runs; fall back to
+      // createdAt for orders delivered before this field existed, or for
+      // instant-auto products where delivery and payment are simultaneous.
+      var deliveredAtRaw = data.deliveredAt || data.createdAt;
+      var deliveredAtMs  = deliveredAtRaw
+        ? (deliveredAtRaw.toDate ? deliveredAtRaw.toDate().getTime() : new Date(deliveredAtRaw).getTime())
+        : now2b;
+      var clearsAtMs   = deliveredAtMs + productSaleHoldingDays * 24 * 60 * 60 * 1000;
+      var isCleared    = productSaleHoldingDays <= 0 || now2b >= clearsAtMs;
+      var ledgerStatus = isCleared ? 'settled' : 'clearing';
+
+      return {
+        date:             ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : new Date(),
+        type:             'product',
+        description:      data.productTitle || data.productName || 'Product sale',
+        amount:           data.sellerAmount || 0,
+        currency:         payCurrency,
+        originalAmount:   data.originalAmount != null ? data.originalAmount : (data.amount || 0),
+        originalCurrency: origCurrency,
+        status:           ledgerStatus
+      };
+    });
+
+    // ── Query 4: invoice-orders (seller side) ──
+    var q4 = fsQ.query(
+      fsQ.collection(window.db, 'invoice-orders'),
+      fsQ.where('sellerUid', '==', uid),
+      fsQ.where('paymentStatus', '==', 'paid'),
+      fsQ.orderBy('createdAt', 'desc')
+    );
+    var snap4 = await fsQ.getDocs(q4);
+
+    // Cross-reference parent invoice docs to get live escrow/settled status
+    // invoice-orders only store invoiceId; the live status lives on the invoice doc.
+    // Fields on invoice doc: status ('escrow'|'delivered'|'completed'|'disputed'|'refunded')
+    // Fields on invoice-order doc: invoiceId, sellerUid, clientName, amount, currency,
+    //   sellerAmount, paymentStatus, paymentConfirmedAt, createdAt
+    // description comes from invoice.invoiceNumber (fetched below)
+    var invoiceIds4 = snap4.docs.map(function(d) { return d.data().invoiceId || null; }).filter(Boolean);
+    var invoiceDataMap = {}; // invoiceId -> { status, invoiceNumber }
+    if (invoiceIds4.length) {
+      var chunks4 = [];
+      for (var ci = 0; ci < invoiceIds4.length; ci += 10) chunks4.push(invoiceIds4.slice(ci, ci + 10));
+      for (var ch = 0; ch < chunks4.length; ch++) {
+        try {
+          var invSnap4 = await fsQ.getDocs(fsQ.query(
+            fsQ.collection(window.db, 'invoices'),
+            fsQ.where(fsQ.documentId(), 'in', chunks4[ch])
+          ));
+          invSnap4.docs.forEach(function(d) {
+            var idata = d.data();
+            invoiceDataMap[d.id] = {
+              status:        idata.status || 'escrow',
+              invoiceNumber: idata.invoiceNumber || ''
+            };
+          });
+        } catch(e) { console.warn('[payments] invoice fetch error:', e.message); }
+      }
+    }
+
+    var paymentsFromInvoices = snap4.docs.map(function(d) {
+      var data   = d.data();
+      var ts     = data.paymentConfirmedAt || data.createdAt;
+      var invId  = data.invoiceId || null;
+      var invInfo = invId ? (invoiceDataMap[invId] || {}) : {};
+      var invStatus = invInfo.status || 'escrow';
+      // Map live invoice status → ledger display status
+      // 'completed' = buyer confirmed delivery, funds released → settled
+      // 'escrow' or 'delivered' = funds still held → escrow
+      // 'disputed' → disputed, 'refunded' → refunded
+      var ledgerStatus;
+      if      (invStatus === 'completed')            ledgerStatus = 'settled';
+      else if (invStatus === 'disputed')             ledgerStatus = 'disputed';
+      else if (invStatus === 'refunded')             ledgerStatus = 'refunded';
+      else /* escrow | delivered | anything else */  ledgerStatus = 'escrow';
+      var invNum = invInfo.invoiceNumber || invId || '';
+      return {
+        date:        ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : new Date(),
+        type:        'invoice',
+        description: invNum ? ('Invoice ' + invNum) : 'Invoice payment',
+        amount:      data.sellerAmount || 0,
+        currency:    (data.currency || 'USD').toUpperCase(),
+        status:      ledgerStatus
+      };
+    });
+
+    // Merge all into DEMO_PAYMENTS sorted newest first
+    DEMO_PAYMENTS = paymentsFromProjects
+      .concat(paymentsFromProjectsEscrow)
+      .concat(paymentsFromProducts)
+      .concat(paymentsFromInvoices)
+      .sort(function(a, b) { return b.date - a.date; });
+
+    // ── Query 3: payouts ──
+    // Wrapped in its own try/catch — a missing composite index here
+    // (payouts.userUid + payouts.createdAt) should only affect the payouts
+    // list, not the balances/plan fetch that runs after it.
+    try {
+      var q3 = fsQ.query(
+        fsQ.collection(window.db, 'payouts'),
+        fsQ.where('userUid', '==', uid),
+        fsQ.orderBy('createdAt', 'desc')
+      );
+      var snap3 = await fsQ.getDocs(q3);
+      DEMO_PAYOUTS = snap3.docs.map(function(d) {
+        var data = d.data();
+        var ts = data.createdAt;
+        return {
+          date:        ts ? (ts.toDate ? ts.toDate() : new Date(ts)) : new Date(),
+          amountUsd:   data.amount       || 0,
+          amountCrypto: data.amountCoin  || data.amount || 0,
+          currency:    data.currency     || 'USDT',
+          wallet:      data.walletAddress ? data.walletAddress.slice(0,6) + '...' + data.walletAddress.slice(-4) : '—',
+          status:      data.status       || 'pending'
+        };
+      });
+    } catch (errPayouts) {
+      if (errPayouts && (errPayouts.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(errPayouts.message || ''))) {
+        console.error('[loadEarningsData] missing composite index on payouts.userUid + payouts.createdAt — see FIRESTORE_INDEXES.md, or check this error for a Firebase auto-create link:', errPayouts);
+        showToast('Setting up — try again in a minute.');
+      } else {
+        console.error('[loadEarningsData] payouts query failed:', errPayouts);
+        showToast('Could not load payouts. Pull to refresh.');
+      }
+    }
+
+    // ── User doc: balances map + plan ──
+    var userSnap = await fsQ.getDoc(fsQ.doc(window.db, 'users', uid));
+    if (userSnap.exists()) {
+      var ud = userSnap.data();
+      // Support new per-currency balances map; fall back to legacy availableBalance
+      var balancesMap = ud.balances || {};
+      if (!Object.keys(balancesMap).length && ud.availableBalance) {
+        balancesMap['USD'] = ud.availableBalance;
+      }
+      DEMO.balances      = balancesMap;
+
+      // Pending-clearance balances (Item 9 — earnings holding period)
+      var pendingMap = ud.pendingBalances || {};
+      if (!Object.keys(pendingMap).length && ud.pendingBalance) {
+        pendingMap['USD'] = ud.pendingBalance;
+      }
+      DEMO.pendingBalances = pendingMap;
+
+      DEMO.premiumStatus = ud.premiumStatus || 'inactive';
+      DEMO.plan          = ud.plan          || '';
+    }
+
+  } catch(err) {
+    if (err && (err.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(err.message || ''))) {
+      console.error('[loadEarningsData] missing composite index — see FIRESTORE_INDEXES.md, or check this error for a Firebase auto-create link:', err);
+      showToast('Setting up — try again in a minute.');
+    } else {
+      console.error('[loadEarningsData]', err);
+      showToast('Could not load earnings data. Pull to refresh.');
+    }
+  }
+
+  renderSummaryCards(currentPeriod);
+  renderChart(currentPeriod);
+  renderPaymentsLedger();
+  renderPayouts();
+  renderPremiumSection();
+  document.body.style.visibility = 'visible';
+}
+
+// ============ BOOT ============
+window._boot = function(user, affiliateEnabled) {
+  DEMO.uid  = user.uid;
+  DEMO.name = user.displayName || user.email || 'User';
+
+  // Avatar initials
+  var parts = DEMO.name.trim().split(' ');
+  document.getElementById('user-avatar').textContent =
+    parts.length >= 2 ? parts[0][0]+parts[parts.length-1][0] : DEMO.name.slice(0,2).toUpperCase();
+
+  // Nav
+  buildNav(user.uid, affiliateEnabled);
+
+  // Bell dot
+  document.getElementById('bell-dot').style.display = 'block';
+
+  // Load real data from Firestore
+  loadEarningsData(user.uid);
+};
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+<script>
+// Safety: force-hide loading overlay after 10s if auth/boot stalls
+(function() {
+  var _safetyTimer = setTimeout(function() {
+    document.body.style.visibility = 'visible';
+  }, 10000);
+  window._clearSafetyTimer = function() { clearTimeout(_safetyTimer); };
+})();
+</script>
+
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, collection, query, where, orderBy, getDocs, getDoc, doc, documentId } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+    authDomain:        'kreddlo.firebaseapp.com',
+    projectId:         'kreddlo',
+    storageBucket:     'kreddlo.firebasestorage.app',
+    messagingSenderId: '764500458567',
+    appId:             '1:764500458567:web:2389d5cf8c688caafd0562',
+  };
+  const app  = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  window.auth = auth;
+  window.handleLogout = function() {
+    signOut(auth).then(function(){ window.location.href = '/login.html'; })
+      .catch(function(){ window.location.href = '/login.html'; });
+  };
+  document.getElementById('mb-signout').onclick = window.handleLogout;
+  document.getElementById('dt-signout').onclick = window.handleLogout;
+  window.db   = getFirestore(app);
+  window._fsQ = { collection, query, where, orderBy, getDocs, getDoc, doc, documentId };
+  onAuthStateChanged(auth, function(user) {
+    if (!user) { window.location.href = '/login.html'; return; }
+    getDoc(doc(window.db, 'users', user.uid)).then(function(snap) {
+      var role = snap.exists() ? snap.data().role : null;
+      if (role && role !== 'freelancer') { window.location.href = '/login.html'; return; }
+      var affiliateEnabled = snap.exists() ? (snap.data().affiliateEnabled === true) : false;
+      if (typeof window._boot === 'function') window._boot(user, affiliateEnabled);
+    }).catch(function() { window.location.href = '/login.html'; });
+  });
+</script>
+</body>
+</html>

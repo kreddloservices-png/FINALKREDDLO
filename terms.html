@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Terms of Service — Kreddlo</title>
+<meta id="meta-description" name="description" content="Read the Kreddlo terms of service covering platform rules, fees, dispute resolution and user responsibilities."/>
+<meta property="og:title" content="Terms of Service — Kreddlo"/>
+<meta property="og:description" content="Read the Kreddlo terms of service covering platform rules, fees, dispute resolution and user responsibilities."/>
+<meta property="og:url" content="https://kreddlo.space/terms.html"/>
+<meta property="og:image" content="/assets/kreddlo-og-banner.png"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link id="canonical" rel="canonical" href="https://kreddlo.space/terms.html"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+/* Glass */
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+/* Buttons */
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:11px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.28);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px)}
+.btn-outline{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#0d2145;border:1.5px solid #e2e8f0;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+.btn-outline:hover{border-color:#0d2145;background:rgba(13,33,69,0.04);transform:translateY(-1px)}
+
+/* Nav */
+.nav-lnk{font-size:14px;font-weight:600;color:rgba(13,33,69,0.60);text-decoration:none;transition:color .15s}
+.nav-lnk:hover{color:#0d2145}
+
+/* Mobile menu */
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+.mob-lnk{display:block;font-size:16px;font-weight:600;color:rgba(255,255,255,0.72);text-decoration:none;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.07);transition:color .15s}
+.mob-lnk:hover{color:#fff}
+.mob-lnk:last-child{border-bottom:none}
+
+/* Blobs */
+.blob-n{position:absolute;width:560px;height:560px;background:radial-gradient(circle,rgba(13,33,69,0.10) 0%,transparent 70%);top:-120px;right:-120px;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.blob-g{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(45,138,94,0.08) 0%,transparent 70%);bottom:-80px;left:-100px;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+
+/* Fade up */
+.fu{opacity:0;transform:translateY(18px);animation:fu .5s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.14s}.fu-3{animation-delay:.23s}
+
+/* Policy content */
+.policy-section{margin-bottom:32px}
+.policy-section:last-child{margin-bottom:0}
+.policy-h{font-size:16px;font-weight:700;color:#0d2145;margin:0 0 12px;letter-spacing:-0.2px;display:flex;align-items:center;gap:10px}
+.policy-h::before{content:'';display:inline-block;width:4px;height:18px;background:#0d2145;border-radius:2px;flex-shrink:0}
+.policy-p{font-size:14px;font-weight:500;color:rgba(13,33,69,0.66);line-height:1.8;margin:0 0 10px}
+.policy-p:last-child{margin-bottom:0}
+.policy-ul{list-style:none;padding:0;margin:0 0 10px}
+.policy-ul li{font-size:14px;font-weight:500;color:rgba(13,33,69,0.66);line-height:1.7;padding:5px 0 5px 20px;position:relative}
+.policy-ul li::before{content:'';position:absolute;left:0;top:13px;width:6px;height:6px;border-radius:50%;background:#0d2145;opacity:.28}
+.policy-divider{height:1px;background:linear-gradient(to right,transparent,#e2e8f0,transparent);margin:24px 0}
+.policy-highlight{border-radius:10px;padding:12px 16px;margin:12px 0}
+.policy-highlight.warn{background:#fff3cd;border-left:3px solid #856404}
+.policy-highlight.warn p{font-size:13px;font-weight:600;color:#856404;margin:0;line-height:1.6}
+.policy-highlight.info{background:#e8f5ef;border-left:3px solid #2d8a5e;border-radius:0 10px 10px 0}
+.policy-highlight.info p{font-size:13px;font-weight:600;color:#2d8a5e;margin:0;line-height:1.6}
+.policy-highlight.red{background:#fde8e8;border-left:3px solid #c81e1e;border-radius:0 10px 10px 0}
+.policy-highlight.red p{font-size:13px;font-weight:600;color:#c81e1e;margin:0;line-height:1.6}
+
+/* Fee table — mobile-first: stacked cards on small screens, table on large */
+.fee-table{width:100%;border-collapse:collapse;margin:14px 0;display:none}
+.fee-table th{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:rgba(13,33,69,0.42);padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+.fee-table td{font-size:13px;font-weight:500;color:rgba(13,33,69,0.70);padding:11px 12px;border-bottom:1px solid #f0f2f6;line-height:1.5;vertical-align:top}
+.fee-table tr:last-child td{border-bottom:none}
+.fee-table td:first-child{font-weight:700;color:#0d2145}
+.fee-table tr:hover td{background:rgba(13,33,69,0.02)}
+
+/* Fee cards — mobile default */
+.fee-cards{display:flex;flex-direction:column;gap:10px;margin:14px 0 16px}
+.fee-card{background:#f8f9fb;border-radius:12px;padding:14px 16px;border:1px solid #e2e8f0}
+.fee-card-title{font-size:14px;font-weight:700;color:#0d2145;margin:0 0 8px}
+.fee-card-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.fee-card-row:last-child{margin-bottom:0}
+.fee-card-label{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(13,33,69,0.40);white-space:nowrap;flex-shrink:0}
+.fee-card-value{font-size:13px;font-weight:600;color:rgba(13,33,69,0.70);text-align:right}
+
+/* TOC */
+.toc-link{display:block;font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);text-decoration:none;padding:7px 12px;border-radius:8px;transition:all .15s;border-left:2px solid transparent}
+.toc-link:hover,.toc-link:focus{color:#0d2145;background:rgba(13,33,69,0.04);border-left-color:#e2e8f0}
+
+/* Mobile TOC accordion */
+.toc-mobile{background:rgba(255,255,255,0.80);border:1px solid #e2e8f0;border-radius:14px;margin-bottom:16px;overflow:hidden}
+.toc-mobile-btn{width:100%;background:transparent;border:none;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#0d2145;cursor:pointer;letter-spacing:.3px}
+.toc-mobile-btn svg{transition:transform .2s;flex-shrink:0}
+.toc-mobile-btn.open svg{transform:rotate(180deg)}
+.toc-mobile-links{display:none;padding:4px 12px 12px;display:flex;flex-direction:column;gap:2px}
+.toc-mobile-links.hidden{display:none}
+
+/* Prohibited list */
+.prohibited-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #f0f2f6}
+.prohibited-item:last-child{border-bottom:none}
+.prohibited-icon{width:26px;height:26px;border-radius:8px;background:#fde8e8;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+/* Responsive */
+@media(min-width:768px){.hide-desktop{display:none!important}}
+@media(max-width:767px){.hide-mobile{display:none!important}}
+
+@media(min-width:600px){
+  .policy-h{font-size:18px}
+  .policy-p,.policy-ul li{font-size:15px}
+  .policy-highlight.warn p,.policy-highlight.info p,.policy-highlight.red p{font-size:14px}
+  .fee-table{display:table}
+  .fee-cards{display:none}
+  .toc-mobile{display:none}
+}
+</style>
+</head>
+<body class="overflow-x-hidden">
+
+<!-- PUBLIC NAVBAR -->
+<nav style="position:sticky;top:0;z-index:300;background:rgba(248,249,251,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #e2e8f0;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;">
+    <a href="index.html" style="font-size:22px;font-weight:800;color:#0d2145;text-decoration:none;letter-spacing:-0.5px;flex-shrink:0;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+    <div class="hide-mobile" style="display:flex;align-items:center;gap:32px;">
+      <a href="how-it-works.html" class="nav-lnk">How it works</a>
+      <a href="browse.html" class="nav-lnk">Browse</a>
+      <a href="pricing.html" class="nav-lnk">Pricing</a>
+      <a href="about.html" class="nav-lnk">About</a>
+    </div>
+    <div class="hide-mobile" style="display:flex;align-items:center;gap:12px;">
+      <a href="login.html" class="btn-outline" style="padding:9px 20px;font-size:13px;">Log In</a>
+      <a href="signup.html" class="btn-green" style="padding:9px 20px;font-size:13px;">Get Started</a>
+    </div>
+    <button class="hide-desktop" onclick="openMobileMenu()" style="width:40px;height:40px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE BACKDROP -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:280px;height:100%;background:#091830;z-index:500;padding:32px 24px;display:flex;flex-direction:column;overflow-y:auto;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav style="flex:1;display:flex;flex-direction:column;">
+    <a href="how-it-works.html" class="mob-lnk">How it works</a>
+    <a href="browse.html" class="mob-lnk">Browse</a>
+    <a href="pricing.html" class="mob-lnk">Pricing</a>
+    <a href="about.html" class="mob-lnk">About</a>
+  </nav>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:32px;">
+    <a href="login.html" style="display:block;text-align:center;padding:13px;border:1.5px solid rgba(255,255,255,0.18);border-radius:50px;color:rgba(255,255,255,0.80);font-size:14px;font-weight:600;text-decoration:none;">Log In</a>
+    <a href="signup.html" style="display:block;text-align:center;padding:13px;background:#2d8a5e;border-radius:50px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);">Get Started</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section style="position:relative;overflow:hidden;background:linear-gradient(160deg,#091830 0%,#0d2145 55%,#162f5e 100%);padding:52px 20px 44px;">
+  <div class="blob-n" style="opacity:.5;"></div>
+  <div class="blob-g" style="opacity:.4;"></div>
+  <div style="position:relative;z-index:1;max-width:720px;margin:0 auto;text-align:center;">
+    <div class="fu fu-1" style="display:inline-flex;align-items:center;gap:8px;background:rgba(13,33,69,0.40);border:1px solid rgba(255,255,255,0.12);border-radius:50px;padding:5px 14px;margin-bottom:20px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.70)" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.65);letter-spacing:.5px;">LEGAL</span>
+    </div>
+    <h1 class="fu fu-2" style="font-size:clamp(26px,6vw,36px);font-weight:800;color:#fff;letter-spacing:-0.8px;line-height:1.15;margin:0 0 16px;">Terms of Service</h1>
+    <p class="fu fu-3" style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.55);margin:0;line-height:1.6;">Last updated: 13 June 2026. By creating a Kreddlo account you agree to these terms in full.</p>
+  </div>
+</section>
+
+<!-- CONTENT -->
+<section style="padding:24px 16px 64px;position:relative;">
+  <div style="max-width:720px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:24px;" id="content-grid">
+
+    <!-- TOC mobile accordion -->
+    <div class="toc-mobile fu fu-1" id="toc-mobile-wrap" style="display:block;">
+      <button class="toc-mobile-btn" id="toc-toggle" onclick="toggleToc()">
+        <span>On this page</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="toc-mobile-links hidden" id="toc-links-mobile">
+        <a href="#t1" class="toc-link" onclick="closeToc()">Eligibility</a>
+        <a href="#t2" class="toc-link" onclick="closeToc()">Our Services</a>
+        <a href="#t3" class="toc-link" onclick="closeToc()">Fees</a>
+        <a href="#t4" class="toc-link" onclick="closeToc()">Escrow</a>
+        <a href="#t5" class="toc-link" onclick="closeToc()">Disputes</a>
+        <a href="#t6" class="toc-link" onclick="closeToc()">Prohibited Activities</a>
+        <a href="#t7" class="toc-link" onclick="closeToc()">Termination</a>
+        <a href="#t8" class="toc-link" onclick="closeToc()">Limitation of Liability</a>
+        <a href="#t9" class="toc-link" onclick="closeToc()">Governing Law</a>
+        <a href="#t10" class="toc-link" onclick="closeToc()">Changes to Terms</a>
+      </div>
+    </div>
+
+    <!-- TOC (desktop sidebar) -->
+    <div class="hide-mobile fu fu-1" id="toc-box" style="background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08);padding:24px;margin-bottom:4px;">
+      <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(13,33,69,0.40);margin:0 0 12px;">ON THIS PAGE</p>
+      <a href="#t1" class="toc-link">Eligibility</a>
+      <a href="#t2" class="toc-link">Our Services</a>
+      <a href="#t3" class="toc-link">Fees</a>
+      <a href="#t4" class="toc-link">Escrow</a>
+      <a href="#t5" class="toc-link">Disputes</a>
+      <a href="#t6" class="toc-link">Prohibited Activities</a>
+      <a href="#t7" class="toc-link">Termination</a>
+      <a href="#t8" class="toc-link">Limitation of Liability</a>
+      <a href="#t9" class="toc-link">Governing Law</a>
+      <a href="#t10" class="toc-link">Changes to Terms</a>
+    </div>
+
+    <!-- Main card -->
+    <div class="glass fu fu-2" style="padding:20px 16px;" id="policy-card">
+
+      <!-- Section 1 -->
+      <div class="policy-section" id="t1">
+        <h2 class="policy-h">Eligibility</h2>
+        <p class="policy-p">To use Kreddlo, you must meet the following eligibility requirements at the time of registration and throughout your use of the platform:</p>
+        <ul class="policy-ul">
+          <li>You must be at least 18 years of age. Kreddlo does not permit accounts for minors under any circumstances.</li>
+          <li>You must be a human individual. Automated registrations, bots, and non-human accounts are strictly prohibited.</li>
+          <li>You must complete KYC identity verification using a valid government-issued identity document before accessing platform features including posting services, accepting contracts, or making withdrawals.</li>
+          <li>You must provide accurate, truthful information during registration and verification. Submitting false identity documents is a criminal offence and will result in permanent account termination and referral to relevant authorities.</li>
+          <li>You must be legally permitted to enter into contracts in your country of residence. If you are operating as a business, you confirm you are authorised to act on behalf of that entity.</li>
+        </ul>
+        <div class="policy-highlight warn">
+          <p>Creating multiple accounts to circumvent a ban, avoid fees, or manipulate the platform is strictly prohibited and will result in permanent termination of all associated accounts.</p>
+        </div>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 2 -->
+      <div class="policy-section" id="t2">
+        <h2 class="policy-h">Our Services</h2>
+        <p class="policy-p">Kreddlo provides a verified global freelance operating platform that connects KYC-verified freelancers with buyers from around the world. Specifically, Kreddlo provides:</p>
+        <ul class="policy-ul">
+          <li>A verified professional directory allowing buyers to find, evaluate, and engage identity-verified freelancers</li>
+          <li>Digital contract creation and signing tools to formalise service agreements between freelancers and buyers</li>
+          <li>Escrow payment infrastructure that holds buyer funds securely until work is delivered and approved</li>
+          <li>Cryptocurrency withdrawal tools allowing freelancers to receive earnings to their personal crypto wallets</li>
+          <li>Dispute resolution services to mediate disagreements between parties when they cannot reach resolution independently</li>
+          <li>Subscription-based Pro features including profile boosting, advanced analytics, priority dispute handling, and early payout access</li>
+        </ul>
+        <p class="policy-p">Kreddlo is a platform facilitator, not a party to contracts between freelancers and buyers. We do not guarantee the quality of work delivered or the timely payment of funds beyond our escrow obligations.</p>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 3 -->
+      <div class="policy-section" id="t3">
+        <h2 class="policy-h">Fees</h2>
+        <p class="policy-p">Kreddlo charges the following fees. All fees are displayed clearly before any transaction is confirmed.</p>
+        <!-- Fee cards: mobile -->
+        <div class="fee-cards">
+          <div class="fee-card">
+            <p class="fee-card-title">Platform fee</p>
+            <div class="fee-card-row"><span class="fee-card-label">Who pays</span><span class="fee-card-value">Freelancer</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">Amount</span><span class="fee-card-value">8% of project value</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">When</span><span class="fee-card-value">On escrow release</span></div>
+          </div>
+          <div class="fee-card">
+            <p class="fee-card-title">Project protection fee</p>
+            <div class="fee-card-row"><span class="fee-card-label">Who pays</span><span class="fee-card-value">Buyer</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">Amount</span><span class="fee-card-value">3% of project value</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">When</span><span class="fee-card-value">At checkout</span></div>
+          </div>
+          <div class="fee-card">
+            <p class="fee-card-title">Withdrawal fee</p>
+            <div class="fee-card-row"><span class="fee-card-label">Who pays</span><span class="fee-card-value">Freelancer</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">Amount</span><span class="fee-card-value">2.5% of amount</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">When</span><span class="fee-card-value">Per withdrawal</span></div>
+          </div>
+          <div class="fee-card">
+            <p class="fee-card-title">Pro subscription</p>
+            <div class="fee-card-row"><span class="fee-card-label">Who pays</span><span class="fee-card-value">Freelancer</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">Amount</span><span class="fee-card-value">$19 / month</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">When</span><span class="fee-card-value">Monthly in advance</span></div>
+          </div>
+          <div class="fee-card">
+            <p class="fee-card-title">Profile boost</p>
+            <div class="fee-card-row"><span class="fee-card-label">Who pays</span><span class="fee-card-value">Freelancer</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">Amount</span><span class="fee-card-value">$9 / 7 days</span></div>
+            <div class="fee-card-row"><span class="fee-card-label">When</span><span class="fee-card-value">At time of purchase</span></div>
+          </div>
+        </div>
+        <!-- Fee table: tablet+ -->
+        <div style="overflow-x:auto;margin:4px 0 16px;border-radius:14px;border:1px solid #e2e8f0;">
+          <table class="fee-table">
+            <thead>
+              <tr>
+                <th>Fee Type</th>
+                <th>Who Pays</th>
+                <th>Amount</th>
+                <th>When</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Platform fee</td>
+                <td>Freelancer</td>
+                <td>8% of project value</td>
+                <td>Deducted on escrow release</td>
+              </tr>
+              <tr>
+                <td>Project protection fee</td>
+                <td>Buyer</td>
+                <td>3% of project value</td>
+                <td>Added at checkout</td>
+              </tr>
+              <tr>
+                <td>Withdrawal fee</td>
+                <td>Freelancer</td>
+                <td>2.5% of withdrawal amount</td>
+                <td>Deducted per withdrawal</td>
+              </tr>
+              <tr>
+                <td>Pro subscription</td>
+                <td>Freelancer</td>
+                <td>$19 / month</td>
+                <td>Monthly, billed in advance</td>
+              </tr>
+              <tr>
+                <td>Profile boost</td>
+                <td>Freelancer</td>
+                <td>$9 / 7 days</td>
+                <td>One-time at time of purchase</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="policy-p">Kreddlo reserves the right to update its fee structure with 30 days notice communicated via email and in-app notification. Fees applicable at the time of contract creation apply to that contract regardless of subsequent changes.</p>
+        <div class="policy-highlight info">
+          <p>Pro subscribers receive a reduced platform fee of 5% instead of 8%, saving on every completed project.</p>
+        </div>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 4 -->
+      <div class="policy-section" id="t4">
+        <h2 class="policy-h">Escrow</h2>
+        <p class="policy-p">Kreddlo operates a milestone-based escrow system to protect both parties in every transaction.</p>
+        <ul class="policy-ul">
+          <li>Once a contract is signed by both parties, the buyer is required to fund escrow before the freelancer begins work. Kreddlo will not allow the freelancer to begin until funds are confirmed.</li>
+          <li>Funds held in escrow are controlled by Kreddlo and cannot be accessed by either party until a release condition is met.</li>
+          <li>Escrow is released to the freelancer's available balance when the buyer clicks Approve Delivery, confirming the work meets the agreed requirements.</li>
+          <li>If the buyer does not approve or dispute the delivery within 7 days of the freelancer marking work as delivered, escrow is automatically released to the freelancer.</li>
+          <li>In the event of a dispute, escrow is frozen pending Kreddlo's investigation and ruling. The funds are held until a final decision is made.</li>
+          <li>Kreddlo does not hold escrow funds in a personal bank account. Funds are processed through NOWPayments' regulated payment infrastructure.</li>
+        </ul>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 5 -->
+      <div class="policy-section" id="t5">
+        <h2 class="policy-h">Disputes</h2>
+        <p class="policy-p">When a buyer and freelancer cannot resolve a disagreement independently, either party may raise a formal dispute through the platform.</p>
+        <ul class="policy-ul">
+          <li>Disputes must be raised within 7 days of the delivery being marked as complete. Disputes raised after this window may be declined.</li>
+          <li>Both parties will be asked to submit evidence including messages, files, screenshots, contract terms, and any other relevant documentation.</li>
+          <li>The Kreddlo dispute team will review all evidence and reach a decision within 3 to 5 business days of receiving complete submissions from both parties.</li>
+          <li>The Kreddlo team's decision is final and binding. By using the platform, you agree to accept this decision as the resolution of the dispute.</li>
+          <li>In cases of clear fraud or bad faith participation in the dispute process, the offending account may be suspended or permanently banned.</li>
+          <li>Kreddlo may rule for a full refund, partial refund, full release to the freelancer, or a split depending on the evidence.</li>
+        </ul>
+        <div class="policy-highlight warn">
+          <p>Raising a dispute in bad faith, submitting fabricated evidence, or using the dispute system to harass the other party will result in immediate account suspension.</p>
+        </div>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 6 -->
+      <div class="policy-section" id="t6">
+        <h2 class="policy-h">Prohibited Activities</h2>
+        <p class="policy-p">The following activities are strictly prohibited on Kreddlo. Engaging in any of them will result in immediate account suspension and may result in legal action:</p>
+        <div style="margin-top:8px;">
+          <div class="prohibited-item">
+            <div class="prohibited-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div>
+              <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 3px;">Fraud and misrepresentation</p>
+              <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);margin:0;line-height:1.6;">Submitting false identity documents, impersonating another person, or misrepresenting your skills, qualifications, or portfolio.</p>
+            </div>
+          </div>
+          <div class="prohibited-item">
+            <div class="prohibited-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div>
+              <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 3px;">Money laundering</p>
+              <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);margin:0;line-height:1.6;">Using Kreddlo to process funds derived from illegal activity, or any transaction that violates anti-money laundering regulations in any jurisdiction.</p>
+            </div>
+          </div>
+          <div class="prohibited-item">
+            <div class="prohibited-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div>
+              <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 3px;">Fake or manipulated reviews</p>
+              <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);margin:0;line-height:1.6;">Creating fake reviews, coordinating review exchanges, or coercing another user to submit a positive review.</p>
+            </div>
+          </div>
+          <div class="prohibited-item">
+            <div class="prohibited-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div>
+              <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 3px;">Fee circumvention</p>
+              <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);margin:0;line-height:1.6;">Agreeing with another user to take a transaction off-platform to avoid Kreddlo fees after making initial contact on the platform.</p>
+            </div>
+          </div>
+          <div class="prohibited-item">
+            <div class="prohibited-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div>
+              <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 3px;">Harassment and abuse</p>
+              <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);margin:0;line-height:1.6;">Threatening, intimidating, or harassing any other user, Kreddlo staff, or the platform itself through any channel.</p>
+            </div>
+          </div>
+          <div class="prohibited-item">
+            <div class="prohibited-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div>
+              <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 3px;">Illegal content or services</p>
+              <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.58);margin:0;line-height:1.6;">Listing, purchasing, or facilitating services that are illegal in the user's country of residence or the country of delivery.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 7 -->
+      <div class="policy-section" id="t7">
+        <h2 class="policy-h">Termination</h2>
+        <p class="policy-p">Kreddlo may suspend or permanently terminate your account under the following conditions:</p>
+        <ul class="policy-ul">
+          <li>Engaging in any prohibited activity listed in Section 6 above</li>
+          <li>Providing false information during registration or KYC verification</li>
+          <li>Repeated violations of platform policies after receiving prior warnings</li>
+          <li>Account inactivity exceeding 24 months with no active projects or transactions</li>
+          <li>Receiving a court order, regulatory directive, or law enforcement request requiring account closure</li>
+          <li>Any conduct that Kreddlo determines poses a risk to the integrity of the platform or the safety of other users</li>
+        </ul>
+        <p class="policy-p">If your account is terminated for a policy violation, any funds held in escrow at the time of termination will be handled according to the ruling in any active disputes, or returned to the buyer in the absence of a completed delivery.</p>
+        <p class="policy-p">You may close your own account at any time from your account settings page. Closing your account does not entitle you to a refund of any fees already paid.</p>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 8 -->
+      <div class="policy-section" id="t8">
+        <h2 class="policy-h">Limitation of Liability</h2>
+        <p class="policy-p">Kreddlo provides the platform on an as-is basis. To the maximum extent permitted by applicable law:</p>
+        <ul class="policy-ul">
+          <li>Kreddlo is not liable for any indirect, incidental, special, or consequential loss arising from your use of the platform</li>
+          <li>Kreddlo's total liability to you for any claim arising from your use of the platform is limited to the total platform fees you paid to Kreddlo in the 3 months preceding the event giving rise to the claim</li>
+          <li>Kreddlo does not guarantee uninterrupted access to the platform and is not liable for losses arising from service outages, maintenance, or circumstances beyond our control</li>
+          <li>Kreddlo is not responsible for the quality, legality, or delivery of services exchanged between freelancers and buyers</li>
+          <li>Kreddlo is not liable for losses arising from cryptocurrency exchange rate fluctuations between the time of payment and the time of withdrawal</li>
+        </ul>
+        <div class="policy-highlight red">
+          <p>Nothing in these terms limits Kreddlo's liability for fraud, gross negligence, or any liability that cannot be excluded under applicable law.</p>
+        </div>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 9 -->
+      <div class="policy-section" id="t9">
+        <h2 class="policy-h">Governing Law</h2>
+        <p class="policy-p">These Terms of Service and any disputes arising from your use of Kreddlo are governed by the laws of the Republic of Estonia, without regard to its conflict of law provisions.</p>
+        <p class="policy-p">Any dispute that cannot be resolved through Kreddlo's internal dispute process and that escalates to formal legal proceedings shall be subject to the exclusive jurisdiction of the courts of Estonia.</p>
+        <p class="policy-p">If you are a consumer located in a jurisdiction with mandatory consumer protection laws, those protections apply to you in addition to these terms, not in place of them.</p>
+      </div>
+
+      <div class="policy-divider"></div>
+
+      <!-- Section 10 -->
+      <div class="policy-section" id="t10">
+        <h2 class="policy-h">Changes to Terms</h2>
+        <p class="policy-p">Kreddlo reserves the right to update these Terms of Service at any time. When we make changes, we will:</p>
+        <ul class="policy-ul">
+          <li>Update the "Last updated" date at the top of this page</li>
+          <li>Send an email notification to all registered users at least 14 days before the changes take effect</li>
+          <li>Display a prominent in-app banner on your dashboard for 14 days before the new terms come into force</li>
+        </ul>
+        <p class="policy-p">Your continued use of Kreddlo after the effective date of any changes constitutes your acceptance of the updated terms. If you do not agree to the revised terms, you must close your account before the effective date.</p>
+        <div class="policy-highlight info">
+          <p>We will never change terms in a way that reduces your rights to funds already held in escrow on active contracts. Changes apply to new contracts only.</p>
+        </div>
+
+        <div style="margin-top:28px;padding:20px 22px;background:rgba(13,33,69,0.04);border-radius:14px;">
+          <p style="font-size:14px;font-weight:700;color:#0d2145;margin:0 0 4px;">Questions about these terms?</p>
+          <a href="mailto:legal@kreddlo.com" id="legal-mailto-link" style="font-size:14px;font-weight:600;color:#2d8a5e;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span id="legal-mailto-text">Legal Contact</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#091830;padding:48px 20px 32px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="display:flex;flex-direction:column;gap:32px;">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:10px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+        <p style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.42);max-width:300px;line-height:1.7;margin:0;">The complete freelance operating system for verified professionals worldwide.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div>
+          <p style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.30);margin:0 0 14px;">Platform</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="how-it-works.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">How it works</a>
+            <a href="pricing.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Pricing</a>
+            <a href="browse.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Browse</a>
+            <a href="about.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">About</a>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.30);margin:0 0 14px;">Legal</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="privacy.html" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Privacy Policy</a>
+            <a href="terms.html" style="font-size:13px;font-weight:500;color:#3dbd7a;text-decoration:none;">Terms of Service</a>
+            <a href="mailto:support@kreddlo.com" id="support-mailto-link" style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">Support</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;">
+      <p style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.28);margin:0;">2026 Kreddlo. All rights reserved.</p>
+      <p style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.20);margin:0;">Built for global freelancers.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+function openMobileMenu(){
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMobileMenu(){
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// Smooth scroll TOC (offset for sticky nav)
+document.querySelectorAll('a[href^="#t"]').forEach(function(a){
+  a.addEventListener('click',function(e){
+    e.preventDefault();
+    var t=document.querySelector(this.getAttribute('href'));
+    if(t){
+      var offset=72;
+      var top=t.getBoundingClientRect().top+window.pageYOffset-offset;
+      window.scrollTo({top:top,behavior:'smooth'});
+    }
+  });
+});
+
+// Mobile TOC accordion
+function toggleToc(){
+  var links=document.getElementById('toc-links-mobile');
+  var btn=document.getElementById('toc-toggle');
+  var open=!links.classList.contains('hidden');
+  if(open){links.classList.add('hidden');btn.classList.remove('open');}
+  else{links.classList.remove('hidden');btn.classList.add('open');}
+}
+function closeToc(){
+  document.getElementById('toc-links-mobile').classList.add('hidden');
+  document.getElementById('toc-toggle').classList.remove('open');
+}
+
+// Desktop: sidebar layout + hide mobile TOC
+function applyDesktopLayout(){
+  var grid=document.getElementById('content-grid');
+  var toc=document.getElementById('toc-box');
+  var tocMobile=document.getElementById('toc-mobile-wrap');
+  if(window.innerWidth>=900){
+    grid.style.maxWidth='980px';
+    grid.style.gridTemplateColumns='220px 1fr';
+    toc.style.display='block';
+    toc.style.position='sticky';
+    toc.style.top='80px';
+    toc.style.alignSelf='start';
+    if(tocMobile) tocMobile.style.display='none';
+  } else {
+    grid.style.maxWidth='720px';
+    grid.style.gridTemplateColumns='1fr';
+    toc.style.display='none';
+    if(tocMobile) tocMobile.style.display='block';
+  }
+}
+applyDesktopLayout();
+window.addEventListener('resize',applyDesktopLayout);
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+  <script type="module">
+    // Load social links + contact emails from Firestore config
+    (async () => {
+      try {
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+        const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+        // Reuse existing app/db if another script on this page already initialized Firebase;
+        // otherwise do a minimal read-only init just for this config lookup.
+        let db = window.db;
+        if (!db) {
+          const firebaseConfig = {
+            apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+            authDomain:        "kreddlo.firebaseapp.com",
+            projectId:         "kreddlo",
+            storageBucket:     "kreddlo.firebasestorage.app",
+            messagingSenderId: "764500458567",
+            appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+          };
+          const app = initializeApp(firebaseConfig);
+          db = getFirestore(app);
+          window.db = db;
+        }
+
+        const snap = await getDoc(doc(db, 'config', 'platform'));
+        const s = snap.exists() ? snap.data() : {};
+
+        const links = { twitter: s.twitterUrl || '', linkedin: s.linkedinUrl || '', instagram: s.instagramUrl || '' };
+        ['twitter', 'linkedin', 'instagram'].forEach(name => {
+          const el = document.getElementById('social-' + name);
+          if (!el) return;
+          if (links[name]) { el.href = links[name]; el.style.display = 'flex'; }
+          else { el.style.display = 'none'; }
+        });
+
+        if (s.legalEmail) {
+          const l = document.getElementById('legal-mailto-link');
+          if (l) l.href = 'mailto:' + s.legalEmail;
+          const ltext = document.getElementById('legal-mailto-text');
+          if (ltext) ltext.textContent = s.legalEmail;
+        }
+        if (s.supportEmail) {
+          const sup = document.getElementById('support-mailto-link');
+          if (sup) sup.href = 'mailto:' + s.supportEmail;
+        }
+      } catch (e) { /* silent fail — static fallback emails/links stay in place */ }
+    })();
+  </script>
+</body>
+</html>

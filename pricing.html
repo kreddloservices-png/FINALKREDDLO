@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Pricing and Fees — Kreddlo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── Base ── */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ════════════════════════════════════════
+       PREMIUM GLASSMORPHISM
+       Multi-layer approach for depth & realism
+    ════════════════════════════════════════ */
+    .glass {
+      /* Layered background: subtle noise texture + translucent white */
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.72) 0%,
+          rgba(255,255,255,0.48) 100%
+        );
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      /* Top highlight edge + subtle inner glow */
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color:  rgba(255,255,255,0.25);
+      border-radius: 20px;
+      /* Layered shadows: outer depth + inner light rim */
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,   /* top inner highlight */
+        0 -1px 0  0   rgba(255,255,255,0.20) inset,   /* bottom inner edge */
+        0 8px 32px    rgba(13,33,69,0.10),             /* soft outer shadow */
+        0 1px 2px     rgba(13,33,69,0.06);             /* tight base shadow */
+      position: relative;
+    }
+    /* Subtle frosted sheen overlay */
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        160deg,
+        rgba(255,255,255,0.30) 0%,
+        rgba(255,255,255,0.00) 50%,
+        rgba(255,255,255,0.08) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* Ensure children sit above the sheen */
+    .glass > * { position: relative; z-index: 1; }
+
+    /* Pro card: green-tinted glass */
+    .glass-pro {
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.78) 0%,
+          rgba(220,248,235,0.55) 100%
+        );
+      backdrop-filter: blur(20px) saturate(200%);
+      -webkit-backdrop-filter: blur(20px) saturate(200%);
+      border: 1.5px solid rgba(61,189,122,0.50);
+      border-bottom-color: rgba(61,189,122,0.20);
+      border-right-color:  rgba(61,189,122,0.20);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0   0   rgba(255,255,255,0.80) inset,
+        0 8px 40px    rgba(45,138,94,0.14),
+        0 1px 2px     rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass-pro::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        160deg,
+        rgba(255,255,255,0.35) 0%,
+        rgba(255,255,255,0.00) 50%,
+        rgba(61,189,122,0.05) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glass-pro > * { position: relative; z-index: 1; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px;
+      padding: 12px 28px; font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    /* ── Blobs ── */
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+    }
+
+    /* ── Toggle ── */
+    .tab-toggle-wrap { width: 100%; max-width: 420px; box-sizing: border-box; }
+    .tab-btn {
+      padding: 9px 8px; border-radius: 50px; font-weight: 600;
+      font-size: 12px; line-height: 1.25; cursor: pointer; transition: all .2s;
+      border: none; outline: none;
+      flex: 1 1 0; min-width: 0; white-space: normal; text-align: center;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tab-btn.active   { background: #0d2145; color: #fff; }
+    .tab-btn.inactive { background: transparent; color: #0d2145; }
+
+    @media (min-width: 640px) {
+      .tab-toggle-wrap { width: auto; max-width: none; }
+      .tab-btn { flex: 0 0 auto; padding: 10px 28px; font-size: 14px; white-space: nowrap; }
+    }
+
+    /* ── Check icon ── */
+    .check { color: #2d8a5e; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .cross { color: #cbd5e1; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── FAQ ── */
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease; }
+    .faq-answer.open { max-height: 200px; }
+    .faq-icon { transition: transform .3s ease; }
+    .faq-icon.open { transform: rotate(45deg); }
+
+    /* ── Section hidden ── */
+    .pricing-section { display: none; }
+    .pricing-section.active { display: block; }
+
+    /* ── Fade up ── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .65s ease both; }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .2s; }
+
+    /* ── Fee skeleton placeholders ── */
+    @keyframes feeShimmer {
+      0%   { background-position: -120px 0; }
+      100% { background-position: 120px 0; }
+    }
+    .fee-skel {
+      display: inline-block;
+      vertical-align: middle;
+      border-radius: 6px;
+      background: linear-gradient(90deg, rgba(13,33,69,0.08) 25%, rgba(13,33,69,0.15) 37%, rgba(13,33,69,0.08) 63%);
+      background-size: 240px 100%;
+      animation: feeShimmer 1.4s ease-in-out infinite;
+      color: transparent;
+    }
+    .fee-skel-lg { width: 84px; height: 38px; border-radius: 8px; }
+    .fee-skel-sm { width: 46px; height: 14px; }
+
+    /* ── Mobile fee card list ── */
+    .fee-card {
+      padding: 16px 20px;
+    }
+    .fee-card-name { color: #0d2145; font-weight: 700; font-size: 14px; }
+    .fee-card-row  { display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; }
+    .fee-card-meta { color: rgba(13,33,69,0.55); font-size: 13px; }
+    .fee-card-amount { color: #0d2145; font-weight: 600; font-size: 13px; }
+    .fee-card-list { display: flex; flex-direction: column; gap: 10px; }
+  </style>
+
+  <script type="module">
+    import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getStorage }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+    const firebaseConfig = {
+      apiKey:"AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk", authDomain:"kreddlo.firebaseapp.com",
+      projectId:"kreddlo", storageBucket:"kreddlo.firebasestorage.app",
+      messagingSenderId:"764500458567", appId:"1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app); window.storage = getStorage(app);
+    // Force LOCAL persistence so the Firebase session survives the cross-origin
+    // redirect to Stripe checkout and back. Without this, some browsers drop the
+    // session on return and the user appears logged out.
+    const _auth = getAuth(app);
+    setPersistence(_auth, browserLocalPersistence).then(() => {
+      window.auth = _auth;
+      window._fsPlatformConfig = { doc, getDoc };
+      // Swap page CTA buttons when user is signed in (navbar auth handled by navbar component)
+      onAuthStateChanged(window.auth, async (user) => {
+        if (!user) return;
+        let dashHref = '/dashboard.html';
+        try {
+          const snap = await getDoc(doc(window.db, 'users', user.uid));
+          if (snap.exists() && snap.data().role === 'buyer') dashHref = '/buyer-dashboard.html';
+        } catch(e) {}
+        // Swap static CTA buttons for logged-in users
+        const ctaFreePlan   = document.getElementById('cta-free-plan');
+        const ctaBoost      = document.getElementById('cta-boost');
+        const ctaFreeBottom = document.getElementById('cta-free-bottom');
+        if (ctaFreePlan)   { ctaFreePlan.href = dashHref; ctaFreePlan.textContent = 'Go to Dashboard'; }
+        if (ctaBoost)      { ctaBoost.href = '/dashboard-settings.html?tab=boost'; ctaBoost.textContent = 'Buy a Boost'; }
+        if (ctaFreeBottom) { ctaFreeBottom.href = dashHref; ctaFreeBottom.textContent = 'Go to Dashboard'; }
+      });
+      window.dispatchEvent(new Event('kreddlo-firebase-ready'));
+    }).catch(() => {
+      // Fallback: proceed without explicit persistence (default behaviour)
+      window.auth = _auth;
+      window._fsPlatformConfig = { doc, getDoc };
+      onAuthStateChanged(window.auth, async (user) => {
+        if (!user) return;
+        let dashHref = '/dashboard.html';
+        try {
+          const snap = await getDoc(doc(window.db, 'users', user.uid));
+          if (snap.exists() && snap.data().role === 'buyer') dashHref = '/buyer-dashboard.html';
+        } catch(e) {}
+        // Swap static CTA buttons for logged-in users
+        const ctaFreePlan2   = document.getElementById('cta-free-plan');
+        const ctaBoost2      = document.getElementById('cta-boost');
+        const ctaFreeBottom2 = document.getElementById('cta-free-bottom');
+        if (ctaFreePlan2)   { ctaFreePlan2.href = dashHref; ctaFreePlan2.textContent = 'Go to Dashboard'; }
+        if (ctaBoost2)      { ctaBoost2.href = '/dashboard-settings.html?tab=boost'; ctaBoost2.textContent = 'Buy a Boost'; }
+        if (ctaFreeBottom2) { ctaFreeBottom2.href = dashHref; ctaFreeBottom2.textContent = 'Go to Dashboard'; }
+      });
+      window.dispatchEvent(new Event('kreddlo-firebase-ready'));
+    });
+  </script>
+  <meta name="description" content="Simple transparent pricing — lower fees than Fiverr, Upwork and Selar. No hidden charges like Payoneer or Wise. See exactly what freelancers and buyers pay. A fairer alternative to Flutterwave and Paystack for service payments." />
+  <!-- BUG B FIX: og:title, og:url, og:description, og:image, and twitter tags
+       were empty (content="") and never populated by any JS, so sharing this
+       page on WhatsApp, Twitter, LinkedIn etc. produced a blank preview with
+       no title, no description, and no image. Replaced with static values —
+       pricing.html is a fixed marketing page with no dynamic content in the
+       <head>, so static tags are the correct and complete solution. -->
+  <meta property="og:title"       content="Pricing — Kreddlo | Lower Fees Than Fiverr &amp; Upwork" />
+  <meta property="og:description" content="Simple, transparent pricing. Lower fees than Fiverr, Upwork and Selar. No hidden charges. See exactly what you pay." />
+  <meta property="og:url"         content="https://kreddlo.space/pricing.html" />
+  <meta property="og:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Kreddlo" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Pricing — Kreddlo | Lower Fees Than Fiverr &amp; Upwork" />
+  <meta name="twitter:description" content="Simple, transparent pricing. Lower fees than Fiverr, Upwork and Selar. No hidden charges. See exactly what you pay." />
+  <meta name="twitter:image"       content="https://kreddlo.space/assets/kreddlo-og-banner.png" />
+  <link rel="canonical" href="https://kreddlo.space/pricing.html" />
+  <script src="/assets/shared.js" defer></script>
+
+  <!-- Structured Data: FAQPage -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What currencies can buyers pay in?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Buyers can pay using over 300 cryptocurrencies through NowPayments, including Bitcoin, Ethereum, USDT, USDC, BNB and many others. The exact project amount is displayed in USD and converted at the live rate at the time of payment. No bank account is required on either side."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When do freelancers get paid?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Funds are released from escrow as soon as the buyer marks the project as complete or within 72 hours of delivery if the buyer takes no action. Pro plan freelancers receive an early payout option that skips the waiting period entirely. Once released, withdrawal to a crypto wallet processes automatically at the live exchange rate."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens if there is a dispute?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Either party can open a dispute while funds remain in escrow. Both sides submit evidence through the platform. A Kreddlo admin reviews all submissions and issues a fair ruling that splits or awards the escrow balance accordingly. Buyers who purchased Project Protection receive a senior reviewer and a guaranteed ruling within 48 hours."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my identity information safe?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KYC verification is processed entirely by Didit, a dedicated identity verification provider that operates under strict data protection regulations. Kreddlo does not store your identity documents. Only your verification status (verified or pending) is recorded in your Kreddlo account. All data on the platform is stored in Google Firebase with role-based access controls."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel my Pro Plan anytime?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. You can cancel your Pro Plan at any time from your dashboard settings. Your Pro benefits remain active until the end of the billing period you have already paid for. There are no cancellation fees and no lock-in contracts. After cancellation your account reverts to the Free plan automatically."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I sell digital products without doing custom work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Create a product in your dashboard, set a price and share your product link anywhere including social media, newsletters or your own website. Buyers pay and receive instant automatic delivery. No contract or escrow required for product sales."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Kreddlo take a cut of product sales?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes the same platform fee applies to product sales as to service projects. You always see the exact amount you will receive before publishing your product."
+      }
+    }
+  ]
+}
+  </script>
+</head>
+
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<div id="navbar-placeholder"></div>
+
+
+
+  <!-- ══ PAGE HERO ══ -->
+  <section class="relative py-20 px-5 text-center overflow-hidden">
+    <div class="blob" style="width:500px;height:500px;background:radial-gradient(circle,rgba(13,33,69,0.07) 0%,transparent 70%);top:-150px;right:-100px;"></div>
+    <div class="blob" style="width:420px;height:420px;background:radial-gradient(circle,rgba(45,138,94,0.06) 0%,transparent 70%);bottom:-100px;left:-80px;"></div>
+    <div class="relative z-10 max-w-2xl mx-auto">
+      <div class="fade-up inline-flex items-center gap-2 bg-green/10 border border-green/20 text-green rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
+        Transparent &amp; Fair
+      </div>
+      <h1 class="fade-up delay-1 text-[34px] md:text-[52px] font-extrabold tracking-[-1px] text-navy mb-4 leading-tight">
+        Simple, Transparent Pricing
+      </h1>
+      <p class="fade-up delay-2 text-[16px] md:text-[18px] font-normal text-navy/55 leading-relaxed">
+        No hidden fees, no surprises, ever.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══ TOGGLE ══ -->
+  <div class="flex justify-center mb-12 px-5">
+    <div class="glass tab-toggle-wrap flex p-1.5 rounded-full gap-1">
+      <button id="tab-freelancer" class="tab-btn active" onclick="switchTab('freelancer')">Freelancer Pricing</button>
+      <button id="tab-buyer"      class="tab-btn inactive" onclick="switchTab('buyer')">Buyer Pricing</button>
+    </div>
+  </div>
+
+  <!-- ══ FREELANCER PRICING ══ -->
+  <section id="section-freelancer" class="pricing-section active px-5 pb-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+
+        <!-- Free Plan -->
+        <div class="glass p-8 flex flex-col gap-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/40 mb-2">Free Plan</p>
+            <div class="flex items-baseline gap-1 mb-1">
+              <span class="text-[42px] font-extrabold text-navy tracking-tight leading-none">$0</span>
+              <span class="text-navy/40 font-medium text-sm">/ month</span>
+            </div>
+            <p class="text-navy/50 text-[13px] font-normal">Everything to get started globally.</p>
+          </div>
+
+          <div class="border-t border-border/60 pt-5 flex flex-col gap-3">
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/35 mb-1">Included</p>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Verified freelancer profile</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Auto-generated contracts</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Escrow payment protection</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">300+ crypto coins accepted</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Standard dispute resolution</span></div>
+            <div class="flex gap-3 items-start"><span class="cross">&#10005;</span><span class="text-[14px] text-navy/35 font-normal">Verified badge on profile</span></div>
+            <div class="flex gap-3 items-start"><span class="cross">&#10005;</span><span class="text-[14px] text-navy/35 font-normal">Featured in search results</span></div>
+            <div class="flex gap-3 items-start"><span class="cross">&#10005;</span><span class="text-[14px] text-navy/35 font-normal">Advanced analytics</span></div>
+          </div>
+
+          <div class="border-t border-border/60 pt-5">
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/35 mb-3">Withdrawal Fee</p>
+            <div class="glass rounded-xl px-4 py-3 flex flex-col gap-2">
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Platform cut</span><span class="text-[13px] font-semibold text-navy"><span id="fee-free-withdrawal-cut" class="fee-skel fee-skel-sm">5%</span></span></div>
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Network fee</span><span class="text-[13px] font-semibold text-navy">~$1.20</span></div>
+            </div>
+          </div>
+
+          <a id="cta-free-plan" href="signup.html" class="btn-secondary text-center mt-auto">Get Started Free</a>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="glass-pro p-8 flex flex-col gap-5 relative">
+          <!-- Badge -->
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+            <span class="bg-green text-white text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md">Most Popular</span>
+          </div>
+
+          <div class="pt-2">
+            <p class="text-xs font-bold uppercase tracking-widest text-green/70 mb-2">Pro Plan</p>
+            <div class="flex items-baseline gap-1 mb-0.5">
+              <span class="text-[42px] font-extrabold text-navy tracking-tight leading-none">$19</span>
+              <span class="text-navy/40 font-medium text-sm">/ month</span>
+            </div>
+            <p class="text-green font-semibold text-[13px]">$15/mo billed annually <span class="bg-green/10 rounded-full px-2 py-0.5 text-[11px] ml-1">Save 21%</span></p>
+          </div>
+
+          <div class="border-t border-green/20 pt-5 flex flex-col gap-3">
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/35 mb-1">Everything in Free, plus</p>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Verified badge on profile</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Featured profile in search</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Priority dispute resolution</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Advanced analytics dashboard</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Early payout on escrow release</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Reduced withdrawal fee (<span id="fee-pro-withdrawal-bullet" class="fee-skel fee-skel-sm">3%</span>)</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Pro-only client badge</span></div>
+          </div>
+
+          <div class="border-t border-green/20 pt-5">
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/35 mb-3">Withdrawal Fee</p>
+            <div class="glass rounded-xl px-4 py-3 flex flex-col gap-2">
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Platform cut</span><span class="text-[13px] font-semibold text-green"><span id="fee-pro-withdrawal-cut" class="fee-skel fee-skel-sm">3%</span></span></div>
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Network fee</span><span class="text-[13px] font-semibold text-navy">~$1.20</span></div>
+            </div>
+          </div>
+
+          <button onclick="handleProUpgrade('monthly')" class="btn-green text-center mt-auto" style="width:100%;border:none;cursor:pointer;font-family:inherit;">Start Pro Plan</button>
+        </div>
+
+        <!-- Boost Add-On -->
+        <div id="boost" class="glass p-8 flex flex-col gap-5" style="scroll-margin-top:90px;">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/40 mb-2">Boost Add-On</p>
+            <p class="text-[16px] font-semibold text-navy mb-1 tracking-tight">Profile Boost</p>
+            <p class="text-navy/50 text-[13px] font-normal">One-time purchase. Appear at the top of search results for your chosen duration.</p>
+          </div>
+
+          <div class="border-t border-border/60 pt-5 flex flex-col gap-3">
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/35 mb-1">Boost Options</p>
+
+            <div class="glass rounded-xl px-4 py-3.5 flex items-center justify-between cursor-pointer hover:border-green/30 transition-colors">
+              <div>
+                <p class="text-[14px] font-semibold text-navy">24-Hour Boost</p>
+                <p class="text-[12px] text-navy/45 font-normal">24 hours at the top</p>
+              </div>
+              <span id="boost-price-24h" class="text-[15px] font-bold text-navy fee-skel fee-skel-sm">$5</span>
+            </div>
+
+            <div class="glass rounded-xl px-4 py-3.5 flex items-center justify-between cursor-pointer border border-green/30 hover:border-green/50 transition-colors">
+              <div>
+                <p class="text-[14px] font-semibold text-navy">3-Day Boost</p>
+                <p class="text-[12px] text-navy/45 font-normal">72 hours at the top</p>
+              </div>
+              <span id="boost-price-3d" class="text-[15px] font-bold text-navy fee-skel fee-skel-sm">$12</span>
+            </div>
+
+            <div class="glass rounded-xl px-4 py-3.5 flex items-center justify-between cursor-pointer hover:border-green/30 transition-colors">
+              <div>
+                <p class="text-[14px] font-semibold text-navy">7-Day Boost</p>
+                <p class="text-[12px] text-navy/45 font-normal">One week at the top</p>
+              </div>
+              <span id="boost-price-7d" class="text-[15px] font-bold text-navy fee-skel fee-skel-sm">$25</span>
+            </div>
+          </div>
+
+          <div class="glass rounded-xl px-4 py-3 flex items-start gap-2.5 bg-navy/2">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+            <p class="text-[12px] text-navy/55 font-normal leading-relaxed">One-time purchase. No subscription. Buy a boost anytime from your dashboard.</p>
+          </div>
+
+          <a id="cta-boost" href="signup.html" class="btn-primary text-center mt-auto">Buy a Boost</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ BUYER PRICING ══ -->
+  <section id="section-buyer" class="pricing-section px-5 pb-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Platform Fee -->
+        <div class="glass p-8 flex flex-col gap-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/40 mb-2">Standard</p>
+            <p class="text-[20px] font-bold text-navy mb-1 tracking-tight">Platform Fee</p>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span id="fee-platform-range" class="text-[42px] font-extrabold text-navy tracking-tight leading-none fee-skel fee-skel-lg">8–10%</span>
+            </div>
+            <p class="text-navy/50 text-[14px] font-normal leading-relaxed">
+              Added to the project total at checkout. The exact rate is shown before you confirm any payment, with no last-minute additions.
+            </p>
+          </div>
+          <div class="border-t border-border/60 pt-5">
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/35 mb-3">Worked Example</p>
+            <div class="glass rounded-xl px-5 py-4 flex flex-col gap-2.5">
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Project price</span><span class="text-[13px] font-semibold text-navy">$500.00</span></div>
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Platform fee (<span id="fee-platform-example" class="fee-skel fee-skel-sm">9%</span>)</span><span class="text-[13px] font-semibold text-navy">$45.00</span></div>
+              <div class="border-t border-border/60 pt-2 flex justify-between"><span class="text-[13px] font-bold text-navy">Total charged</span><span class="text-[13px] font-bold text-green">$545.00</span></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Escrow protection included</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Full refund if work not delivered</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">No additional subscription needed</span></div>
+          </div>
+        </div>
+
+        <!-- Project Protection -->
+        <div class="glass p-8 flex flex-col gap-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/40 mb-2">Optional Add-On</p>
+            <p class="text-[20px] font-bold text-navy mb-1 tracking-tight">Project Protection</p>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span id="fee-protection-range" class="text-[42px] font-extrabold text-navy tracking-tight leading-none fee-skel fee-skel-lg">2–3%</span>
+            </div>
+            <p class="text-navy/50 text-[14px] font-normal leading-relaxed">
+              An optional add-on that escalates your dispute to a senior admin reviewer and guarantees a ruling within 48 hours.
+            </p>
+          </div>
+          <div class="border-t border-border/60 pt-5">
+            <p class="text-xs font-bold uppercase tracking-widest text-navy/35 mb-3">Worked Example</p>
+            <div class="glass rounded-xl px-5 py-4 flex flex-col gap-2.5">
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Project price</span><span class="text-[13px] font-semibold text-navy">$500.00</span></div>
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Platform fee (<span id="fee-protection-platform-example" class="fee-skel fee-skel-sm">9%</span>)</span><span class="text-[13px] font-semibold text-navy">$45.00</span></div>
+              <div class="flex justify-between"><span class="text-[13px] text-navy/60">Protection add-on (<span id="fee-protection-example" class="fee-skel fee-skel-sm">2.5%</span>)</span><span class="text-[13px] font-semibold text-navy">$12.50</span></div>
+              <div class="border-t border-border/60 pt-2 flex justify-between"><span class="text-[13px] font-bold text-navy">Total charged</span><span class="text-[13px] font-bold text-green">$557.50</span></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Senior admin dispute review</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Ruling guaranteed within 48 hours</span></div>
+            <div class="flex gap-3 items-start"><span class="check">&#10003;</span><span class="text-[14px] text-navy/70 font-normal">Priority support throughout project</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FEE COMPARISON TABLE ══ -->
+  <section class="py-16 px-5">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-[24px] md:text-[32px] font-extrabold tracking-[-0.6px] text-navy mb-8 text-center">Full Fee Breakdown</h2>
+
+      <!-- Mobile fee card list -->
+      <div class="fee-card-list md:hidden">
+        <div class="glass fee-card">
+          <p class="fee-card-name">Platform Fee</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Buyer</span><span class="fee-card-amount"><span id="fee-card-platform" class="fee-skel fee-skel-sm">8–10%</span> of project total</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Freelancer Withdrawal (Free)</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Freelancer</span><span class="fee-card-amount"><span id="fee-card-withdrawal-free" class="fee-skel fee-skel-sm">5%</span> + ~$1.20 network</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Freelancer Withdrawal (Pro)</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Freelancer</span><span class="fee-card-amount text-green"><span id="fee-card-withdrawal-pro" class="fee-skel fee-skel-sm">3%</span> + ~$1.20 network</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Project Protection</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Buyer (optional)</span><span class="fee-card-amount"><span id="fee-card-protection" class="fee-skel fee-skel-sm">2–3%</span> of project total</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Profile Boost (24 hours)</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Freelancer (optional)</span><span id="fee-card-boost-24h" class="fee-card-amount fee-skel fee-skel-sm">$5 one-time</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Profile Boost (3 days)</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Freelancer (optional)</span><span id="fee-card-boost-3d" class="fee-card-amount fee-skel fee-skel-sm">$12 one-time</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Profile Boost (7 days)</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Freelancer (optional)</span><span id="fee-card-boost-7d" class="fee-card-amount fee-skel fee-skel-sm">$25 one-time</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">KYC Verification</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Freelancer</span><span class="fee-card-amount text-green">Free</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Contract Generation</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Both parties</span><span class="fee-card-amount text-green">Free</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Product Platform Fee</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Buyer</span><span class="fee-card-amount"><span id="fee-card-product-platform" class="fee-skel fee-skel-sm">8–10%</span> of project total</span></div>
+        </div>
+        <div class="glass fee-card">
+          <p class="fee-card-name">Bank Withdrawal Fee</p>
+          <div class="fee-card-row"><span class="fee-card-meta">Freelancer</span><span class="fee-card-amount"><span id="fee-card-bank-withdrawal" class="fee-skel fee-skel-sm">5%</span> + ~$1.20 network</span></div>
+        </div>
+      </div>
+
+      <div class="glass overflow-hidden hidden md:block">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-border/60">
+                <th class="text-left px-6 py-4 text-[12px] font-bold uppercase tracking-widest text-navy/40">Fee Name</th>
+                <th class="text-left px-6 py-4 text-[12px] font-bold uppercase tracking-widest text-navy/40">Who Pays</th>
+                <th class="text-left px-6 py-4 text-[12px] font-bold uppercase tracking-widest text-navy/40">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border/40">
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Platform Fee</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Buyer</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-platform" class="fee-skel fee-skel-sm">8–10%</span> of project total</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Freelancer Withdrawal (Free)</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Freelancer</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-withdrawal-free" class="fee-skel fee-skel-sm">5%</span> + ~$1.20 network</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Freelancer Withdrawal (Pro)</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Freelancer</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-green"><span id="fee-table-withdrawal-pro" class="fee-skel fee-skel-sm">3%</span> + ~$1.20 network</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Project Protection</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Buyer (optional)</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-protection" class="fee-skel fee-skel-sm">2–3%</span> of project total</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Profile Boost (24 hours)</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Freelancer (optional)</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-boost-24h" class="fee-skel fee-skel-sm">$5</span> one-time</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Profile Boost (3 days)</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Freelancer (optional)</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-boost-3d" class="fee-skel fee-skel-sm">$12</span> one-time</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Profile Boost (7 days)</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Freelancer (optional)</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-boost-7d" class="fee-skel fee-skel-sm">$25</span> one-time</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">KYC Verification</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Freelancer</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-green">Free</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Contract Generation</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Both parties</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-green">Free</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Product Platform Fee</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Buyer</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-product-platform" class="fee-skel fee-skel-sm">8–10%</span> of project total</td>
+              </tr>
+              <tr class="hover:bg-white/40 transition-colors">
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy">Bank Withdrawal Fee</td>
+                <td class="px-6 py-4 text-[14px] text-navy/60 font-normal">Freelancer</td>
+                <td class="px-6 py-4 text-[14px] font-semibold text-navy"><span id="fee-table-bank-withdrawal" class="fee-skel fee-skel-sm">5%</span> + ~$1.20 network</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FAQ ══ -->
+  <section class="py-4 pb-20 px-5">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-[24px] md:text-[32px] font-extrabold tracking-[-0.6px] text-navy mb-8 text-center">Common Questions</h2>
+
+      <div class="flex flex-col gap-3">
+
+        <!-- Q1 -->
+        <div class="glass overflow-hidden">
+          <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-[15px] font-semibold text-navy">What currencies can buyers pay in?</span>
+            <span class="faq-icon text-green text-xl font-300 ml-4 flex-shrink-0">+</span>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="text-[14px] text-navy/60 font-normal leading-relaxed pb-5">
+              Buyers can pay using over 300 cryptocurrencies through NowPayments, including Bitcoin, Ethereum, USDT, USDC, BNB and many others. The exact project amount is displayed in USD and converted at the live rate at the time of payment. No bank account is required on either side.
+            </p>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="glass overflow-hidden">
+          <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-[15px] font-semibold text-navy">When do freelancers get paid?</span>
+            <span class="faq-icon text-green text-xl font-300 ml-4 flex-shrink-0">+</span>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="text-[14px] text-navy/60 font-normal leading-relaxed pb-5">
+              Funds are released from escrow as soon as the buyer marks the project as complete or within 72 hours of delivery if the buyer takes no action. Pro plan freelancers receive an early payout option that skips the waiting period entirely. Once released, withdrawal to a crypto wallet processes automatically at the live exchange rate.
+            </p>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="glass overflow-hidden">
+          <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-[15px] font-semibold text-navy">What happens if there is a dispute?</span>
+            <span class="faq-icon text-green text-xl font-300 ml-4 flex-shrink-0">+</span>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="text-[14px] text-navy/60 font-normal leading-relaxed pb-5">
+              Either party can open a dispute while funds remain in escrow. Both sides submit evidence through the platform. A Kreddlo admin reviews all submissions and issues a fair ruling that splits or awards the escrow balance accordingly. Buyers who purchased Project Protection receive a senior reviewer and a guaranteed ruling within 48 hours.
+            </p>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="glass overflow-hidden">
+          <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-[15px] font-semibold text-navy">Is my identity information safe?</span>
+            <span class="faq-icon text-green text-xl font-300 ml-4 flex-shrink-0">+</span>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="text-[14px] text-navy/60 font-normal leading-relaxed pb-5">
+              KYC verification is processed entirely by Didit, a dedicated identity verification provider that operates under strict data protection regulations. Kreddlo does not store your identity documents. Only your verification status (verified or pending) is recorded in your Kreddlo account. All data on the platform is stored in Google Firebase with role-based access controls.
+            </p>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="glass overflow-hidden">
+          <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-[15px] font-semibold text-navy">Can I cancel my Pro Plan anytime?</span>
+            <span class="faq-icon text-green text-xl font-300 ml-4 flex-shrink-0">+</span>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="text-[14px] text-navy/60 font-normal leading-relaxed pb-5">
+              Yes. You can cancel your Pro Plan at any time from your dashboard settings. Your Pro benefits remain active until the end of the billing period you have already paid for. There are no cancellation fees and no lock-in contracts. After cancellation your account reverts to the Free plan automatically.
+            </p>
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="glass overflow-hidden">
+          <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-[15px] font-semibold text-navy">Can I sell digital products without doing custom work?</span>
+            <span class="faq-icon text-green text-xl font-300 ml-4 flex-shrink-0">+</span>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="text-[14px] text-navy/60 font-normal leading-relaxed pb-5">
+              Yes. Create a product in your dashboard, set a price and share your product link anywhere including social media, newsletters or your own website. Buyers pay and receive instant automatic delivery. No contract or escrow required for product sales.
+            </p>
+          </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="glass overflow-hidden">
+          <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-[15px] font-semibold text-navy">Does Kreddlo take a cut of product sales?</span>
+            <span class="faq-icon text-green text-xl font-300 ml-4 flex-shrink-0">+</span>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="text-[14px] text-navy/60 font-normal leading-relaxed pb-5">
+              Yes the same platform fee applies to product sales as to service projects. You always see the exact amount you will receive before publishing your product.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CTA ══ -->
+  <section class="py-16 px-5">
+    <div class="max-w-3xl mx-auto">
+      <div class="glass relative overflow-hidden px-8 py-16 text-center">
+        <div class="blob" style="width:260px;height:260px;background:radial-gradient(circle,rgba(13,33,69,0.07) 0%,transparent 70%);top:-60px;right:-60px;"></div>
+        <div class="blob" style="width:220px;height:220px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-40px;left:-40px;"></div>
+        <div class="relative z-10">
+          <h2 class="text-[26px] md:text-[36px] font-extrabold tracking-[-0.7px] text-navy mb-3 leading-tight">Ready to Work Without Borders?</h2>
+          <p class="text-navy/50 font-normal text-[15px] mb-8 max-w-sm mx-auto">Start free. Upgrade when you are ready. No card required.</p>
+          <a id="cta-free-bottom" href="signup.html" class="btn-green" style="padding:14px 36px;font-size:16px;">Get Started Free</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <script>
+    // Pricing tab toggle
+    function switchTab(tab) {
+      const tabs     = ['freelancer', 'buyer'];
+      const tabBtns  = { freelancer: document.getElementById('tab-freelancer'), buyer: document.getElementById('tab-buyer') };
+      const sections = { freelancer: document.getElementById('section-freelancer'), buyer: document.getElementById('section-buyer') };
+      tabs.forEach(t => {
+        tabBtns[t].className  = 'tab-btn ' + (t === tab ? 'active' : 'inactive');
+        sections[t].className = 'pricing-section px-5 pb-6 ' + (t === tab ? 'active' : '');
+      });
+    }
+
+    // FAQ accordion
+    function toggleFaq(btn) {
+      const answer = btn.nextElementSibling;
+      const icon   = btn.querySelector('.faq-icon');
+      const isOpen = answer.classList.contains('open');
+      // Close all
+      document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+      document.querySelectorAll('.faq-icon').forEach(i => i.classList.remove('open'));
+      // Open clicked if it was closed
+      if (!isOpen) { answer.classList.add('open'); icon.classList.add('open'); }
+    }
+  </script>
+
+  <!-- Live fee percentages from config/platform (Firestore) -->
+  <script>
+    (function () {
+      // Fallback values match the figures currently shown in the markup,
+      // so nothing changes visually if Firestore is unreachable.
+      var FEE_DEFAULTS = {
+        platformFeeMin: 8, platformFeeMax: 10, platformFeeExample: 9,
+        protectionFeeMin: 2, protectionFeeMax: 3, protectionFeeExample: 2.5,
+        withdrawalFeeFree: 5, withdrawalFeePro: 3,
+        boostPrice24h: 5, boostPrice3d: 12, boostPrice7d: 25
+      };
+
+      function fmtPct(n) {
+        var num = Number(n);
+        if (!isFinite(num)) return n + '%';
+        var str = (Math.round(num * 100) / 100).toString();
+        return str + '%';
+      }
+      function fmtRange(min, max) {
+        return fmtPct(min).replace('%', '') + '\u2013' + fmtPct(max);
+      }
+      function fmtMoney(n) {
+        var num = Number(n);
+        if (!isFinite(num)) return '$' + n;
+        var str = (Math.round(num * 100) / 100).toString();
+        return '$' + str;
+      }
+      function setFee(id, text) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.classList.remove('fee-skel', 'fee-skel-lg', 'fee-skel-sm');
+      }
+
+      function renderFees(fees) {
+        var platformRange   = fmtRange(fees.platformFeeMin, fees.platformFeeMax);
+        var protectionRange = fmtRange(fees.protectionFeeMin, fees.protectionFeeMax);
+        var withdrawalFree  = fmtPct(fees.withdrawalFeeFree);
+        var withdrawalPro   = fmtPct(fees.withdrawalFeePro);
+        var boost24h        = fmtMoney(fees.boostPrice24h);
+        var boost3d         = fmtMoney(fees.boostPrice3d);
+        var boost7d         = fmtMoney(fees.boostPrice7d);
+
+        // Freelancer plan cards
+        setFee('fee-free-withdrawal-cut', withdrawalFree);
+        setFee('fee-pro-withdrawal-cut', withdrawalPro);
+        setFee('fee-pro-withdrawal-bullet', withdrawalPro);
+
+        // Buyer pricing cards
+        setFee('fee-platform-range', platformRange);
+        setFee('fee-platform-example', fmtPct(fees.platformFeeExample));
+        setFee('fee-protection-range', protectionRange);
+        setFee('fee-protection-platform-example', fmtPct(fees.platformFeeExample));
+        setFee('fee-protection-example', fmtPct(fees.protectionFeeExample));
+
+        // Boost Add-On card
+        setFee('boost-price-24h', boost24h);
+        setFee('boost-price-3d', boost3d);
+        setFee('boost-price-7d', boost7d);
+
+        // Fee table (desktop)
+        setFee('fee-table-platform', platformRange);
+        setFee('fee-table-withdrawal-free', withdrawalFree);
+        setFee('fee-table-withdrawal-pro', withdrawalPro);
+        setFee('fee-table-protection', protectionRange);
+        setFee('fee-table-product-platform', platformRange);   // same as Service Platform Fee
+        setFee('fee-table-bank-withdrawal', withdrawalFree);    // same as Crypto Withdrawal Fee
+        setFee('fee-table-boost-24h', boost24h);
+        setFee('fee-table-boost-3d', boost3d);
+        setFee('fee-table-boost-7d', boost7d);
+
+        // Mobile fee card list
+        setFee('fee-card-platform', platformRange);
+        setFee('fee-card-withdrawal-free', withdrawalFree);
+        setFee('fee-card-withdrawal-pro', withdrawalPro);
+        setFee('fee-card-protection', protectionRange);
+        setFee('fee-card-product-platform', platformRange);    // same as Service Platform Fee
+        setFee('fee-card-bank-withdrawal', withdrawalFree);     // same as Crypto Withdrawal Fee
+        setFee('fee-card-boost-24h', boost24h + ' one-time');
+        setFee('fee-card-boost-3d', boost3d + ' one-time');
+        setFee('fee-card-boost-7d', boost7d + ' one-time');
+      }
+
+      function loadPlatformFees() {
+        var fees = Object.assign({}, FEE_DEFAULTS);
+
+        if (!window.db || !window._fsPlatformConfig) {
+          renderFees(fees);
+          return;
+        }
+
+        var doc    = window._fsPlatformConfig.doc;
+        var getDoc = window._fsPlatformConfig.getDoc;
+
+        getDoc(doc(window.db, 'config', 'platform')).then(function (snap) {
+          if (snap.exists()) {
+            var d = snap.data();
+            // Admin saves a single platformFeePercent — use it as both min and max
+            if (typeof d.platformFeePercent === 'number') {
+              fees.platformFeeMin     = d.platformFeePercent;
+              fees.platformFeeMax     = d.platformFeePercent;
+              fees.platformFeeExample = d.platformFeePercent;
+            }
+            if (typeof d.projectProtectionPercent === 'number') {
+              fees.protectionFeeMin     = d.projectProtectionPercent;
+              fees.protectionFeeMax     = d.projectProtectionPercent;
+              fees.protectionFeeExample = d.projectProtectionPercent;
+            }
+            if (typeof d.withdrawalFeePercent === 'number') {
+              fees.withdrawalFeeFree = d.withdrawalFeePercent;
+            }
+            if (typeof d.earlyPayoutFeePercent === 'number') {
+              fees.withdrawalFeePro = d.earlyPayoutFeePercent;
+            }
+            if (typeof d.boostPrice24h === 'number') fees.boostPrice24h = d.boostPrice24h;
+            if (typeof d.boostPrice3d  === 'number') fees.boostPrice3d  = d.boostPrice3d;
+            if (typeof d.boostPrice7d  === 'number') fees.boostPrice7d  = d.boostPrice7d;
+
+            // Store gateway flags for submitProUpgrade to use
+            window._proGatewaySettings = {
+              stripeEnabled:      !!d.stripeEnabled,
+              flutterwaveEnabled: !!d.flutterwaveEnabled,
+              cryptoEnabled:      !!d.cryptoEnabled,
+            };
+            _applyGatewayVisibility(window._proGatewaySettings);
+          }
+          renderFees(fees);
+        }).catch(function (err) {
+          console.warn('Platform fee config unavailable, using defaults:', err);
+          renderFees(fees);
+        });
+      }
+
+      function start() {
+        if (window.db && window._fsPlatformConfig) {
+          loadPlatformFees();
+          return;
+        }
+        var started = false;
+        window.addEventListener('kreddlo-firebase-ready', function () {
+          started = true;
+          loadPlatformFees();
+        }, { once: true });
+        // Safety net in case Firebase init never fires (e.g. blocked script)
+        setTimeout(function () { if (!started) loadPlatformFees(); }, 3000);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+      } else {
+        start();
+      }
+    })();
+  </script>
+
+<div id="footer-placeholder"></div>
+
+<!-- ── Pro Upgrade Modal ── -->
+<div id="pro-upgrade-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(9,24,48,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(9,24,48,0.22);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <p style="font-size:18px;font-weight:800;color:#0d2145;margin:0;">Upgrade to Pro</p>
+        <p id="pro-modal-period-label" style="font-size:13px;color:rgba(13,33,69,0.5);margin:2px 0 0;"></p>
+      </div>
+      <button onclick="closeProModal()" style="width:32px;height:32px;border-radius:8px;background:rgba(13,33,69,0.06);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="14" height="14" fill="none" stroke="#0d2145" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Billing period toggle -->
+    <div style="display:flex;background:rgba(13,33,69,0.05);border-radius:12px;padding:4px;margin-bottom:20px;">
+      <button id="pro-period-monthly" onclick="setProPeriod('monthly')"
+        style="flex:1;padding:9px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.18s;background:#2d8a5e;color:#fff;">
+        Monthly
+      </button>
+      <button id="pro-period-annual" onclick="setProPeriod('annual')"
+        style="flex:1;padding:9px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.18s;background:transparent;color:rgba(13,33,69,0.55);">
+        Annual <span style="font-size:11px;color:#2d8a5e;font-weight:700;">Save 17%</span>
+      </button>
+    </div>
+
+    <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.55);margin:0 0 16px;">Choose your payment method:</p>
+
+    <!-- Gateway options — visibility controlled by admin settings -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      <!-- Card / Bank Transfer: shown only when stripe OR flutterwave is enabled; auto-routes to the right processor -->
+      <button id="pro-btn-card" onclick="submitProUpgrade('card')" class="pro-gateway-btn" style="display:none;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid #e2e8f0;border-radius:12px;background:#fff;cursor:pointer;width:100%;text-align:left;transition:border-color 0.18s;" onmouseover="this.style.borderColor='#2d8a5e'" onmouseout="this.style.borderColor='#e2e8f0'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <div><p style="margin:0;font-size:14px;font-weight:600;color:#0d2145;">Card / Bank Transfer</p><p id="pro-card-sub" style="margin:0;font-size:12px;color:rgba(13,33,69,0.5);">Visa, Mastercard &amp; more</p></div>
+      </button>
+      <!-- Crypto: shown only when crypto is enabled -->
+      <button id="pro-btn-crypto" onclick="submitProUpgrade('crypto')" class="pro-gateway-btn" style="display:none;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid #e2e8f0;border-radius:12px;background:#fff;cursor:pointer;width:100%;text-align:left;transition:border-color 0.18s;" onmouseover="this.style.borderColor='#2d8a5e'" onmouseout="this.style.borderColor='#e2e8f0'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f7931a" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 9h4a2 2 0 010 4H9v-4zm0 4h4.5a2 2 0 010 4H9v-4z"/></svg>
+        <div><p style="margin:0;font-size:14px;font-weight:600;color:#0d2145;">Crypto</p><p style="margin:0;font-size:12px;color:rgba(13,33,69,0.5);">BTC, ETH, USDT, 300+ coins</p></div>
+      </button>
+    </div>
+
+    <div id="pro-modal-error" style="display:none;font-size:13px;color:#c81e1e;background:#fde8e8;border-radius:10px;padding:10px 14px;margin-bottom:12px;"></div>
+    <div id="pro-modal-loading" style="display:none;text-align:center;padding:8px 0;font-size:13px;color:rgba(13,33,69,0.55);">Preparing checkout…</div>
+  </div>
+</div>
+
+<script>
+// ── Pro Upgrade flow ──
+var _proUpgradePeriod = 'monthly';
+
+// African country codes — Flutterwave serves these natively
+var _AFRICAN_TIMEZONES = ['Africa/Lagos','Africa/Accra','Africa/Nairobi','Africa/Johannesburg',
+  'Africa/Cairo','Africa/Casablanca','Africa/Tunis','Africa/Abidjan','Africa/Dakar',
+  'Africa/Addis_Ababa','Africa/Kampala','Africa/Dar_es_Salaam','Africa/Kigali','Africa/Luanda'];
+
+function _isAfricanUser() {
+  try {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return _AFRICAN_TIMEZONES.indexOf(tz) !== -1;
+  } catch(e) { return false; }
+}
+
+// Show/hide the two gateway buttons based on admin panel settings
+function _applyGatewayVisibility(settings) {
+  var cardBtn   = document.getElementById('pro-btn-card');
+  var cryptoBtn = document.getElementById('pro-btn-crypto');
+  var cardSub   = document.getElementById('pro-card-sub');
+
+  if (!cardBtn || !cryptoBtn) return;
+
+  var hasCard = settings.stripeEnabled || settings.flutterwaveEnabled;
+
+  // Show card button only if at least one card processor is enabled
+  cardBtn.style.display = hasCard ? 'flex' : 'none';
+
+  // Update subtitle to reflect what's available without naming the processor
+  if (hasCard && cardSub) {
+    if (settings.stripeEnabled && settings.flutterwaveEnabled) {
+      cardSub.textContent = 'Visa, Mastercard, bank transfer & more';
+    } else if (settings.flutterwaveEnabled) {
+      cardSub.textContent = 'Card, bank transfer & more';
+    } else {
+      cardSub.textContent = 'Visa, Mastercard, Amex';
+    }
+  }
+
+  // Show crypto button only if crypto is enabled
+  cryptoBtn.style.display = settings.cryptoEnabled ? 'flex' : 'none';
+}
+
+// Resolve which actual gateway to use for a "card" payment
+function _resolveCardGateway(settings) {
+  var african = _isAfricanUser();
+  // International (non-African) users → Stripe first, Flutterwave fallback
+  if (!african) {
+    if (settings.stripeEnabled)      return 'stripe';
+    if (settings.flutterwaveEnabled) return 'flutterwave';
+  }
+  // African users → Flutterwave first, Stripe fallback
+  if (settings.flutterwaveEnabled) return 'flutterwave';
+  if (settings.stripeEnabled)      return 'stripe';
+  return null; // neither enabled (button should be hidden but guard anyway)
+}
+
+// ── Handle return from Stripe and auto-open upgrade modal ──
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var openUpgrade  = params.get('openUpgrade') === '1';
+  var subSuccess   = params.get('sub') === 'success';
+
+  if (!openUpgrade && !subSuccess) return;
+
+  // Wait for Firebase auth to fully initialise (including setPersistence async)
+  // then wait for onAuthStateChanged to confirm the user before acting.
+  var _authWait = setInterval(function() {
+    if (!window.auth) return; // Firebase module not ready yet
+    clearInterval(_authWait);
+
+    // Use onAuthStateChanged for a reliable first-resolve, not currentUser poll
+    var { onAuthStateChanged: _oac } = window._authFns || {};
+    // Fallback: poll currentUser if _authFns not available
+    var _userWait = setInterval(function() {
+      if (window.auth.currentUser) {
+        clearInterval(_userWait);
+        if (openUpgrade) {
+          handleProUpgrade('monthly');
+        }
+        if (subSuccess) {
+          // Clean URL then show success toast and redirect to dashboard
+          history.replaceState(null, '', window.location.pathname);
+          _showUpgradeToast('🎉 Pro plan activated! Welcome to Kreddlo Pro.');
+          setTimeout(function() {
+            window.location.href = '/dashboard-settings.html?upgraded=1';
+          }, 2000);
+        }
+      }
+    }, 150);
+    // Give up after 8 seconds — longer window since setPersistence is async
+    setTimeout(function() { clearInterval(_userWait); }, 8000);
+  }, 50);
+  setTimeout(function() { clearInterval(_authWait); }, 8000);
+})();
+
+function _showUpgradeToast(msg) {
+  var t = document.getElementById('_upgrade-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '_upgrade-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#0d2145;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:9999;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap;max-width:calc(100vw - 40px);text-align:center;font-family:inherit;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  requestAnimationFrame(function() {
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    t.style.opacity   = '1';
+  });
+  setTimeout(function() {
+    t.style.transform = 'translateX(-50%) translateY(60px)';
+    t.style.opacity   = '0';
+  }, 2800);
+}
+
+function handleProUpgrade(defaultPeriod) {
+  function _openProModal() {
+    _proUpgradePeriod = defaultPeriod || 'monthly';
+    setProPeriod(_proUpgradePeriod);
+    var modal = document.getElementById('pro-upgrade-modal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function _redirectToSignup() {
+    _showUpgradeToast('Create an account to upgrade to Pro');
+    setTimeout(function() { window.location.href = '/signup.html?next=upgrade'; }, 900);
+  }
+  // If Firebase auth hasn't loaded at all yet, redirect
+  if (!window.auth) { _redirectToSignup(); return; }
+  // If currentUser already resolved (the common case), open modal immediately
+  if (window.auth.currentUser) { _openProModal(); return; }
+  // Auth initialised but currentUser not yet set — wait for the first state change
+  var _unsub = window.auth.onAuthStateChanged(function(user) {
+    _unsub();
+    if (user) { _openProModal(); } else { _redirectToSignup(); }
+  });
+}
+
+function closeProModal() {
+  document.getElementById('pro-upgrade-modal').style.display = 'none';
+  document.getElementById('pro-modal-error').style.display = 'none';
+  document.getElementById('pro-modal-loading').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function setProPeriod(period) {
+  _proUpgradePeriod = period;
+  var mBtn = document.getElementById('pro-period-monthly');
+  var aBtn = document.getElementById('pro-period-annual');
+  var label = document.getElementById('pro-modal-period-label');
+  if (period === 'annual') {
+    aBtn.style.background = '#2d8a5e'; aBtn.style.color = '#fff';
+    mBtn.style.background = 'transparent'; mBtn.style.color = 'rgba(13,33,69,0.55)';
+    if (label) label.textContent = 'Annual plan — billed once per year';
+  } else {
+    mBtn.style.background = '#2d8a5e'; mBtn.style.color = '#fff';
+    aBtn.style.background = 'transparent'; aBtn.style.color = 'rgba(13,33,69,0.55)';
+    if (label) label.textContent = 'Monthly plan — cancel anytime';
+  }
+}
+
+async function submitProUpgrade(gateway) {
+  var user = window.auth && window.auth.currentUser;
+  if (!user) { window.location.href = '/signup.html?next=upgrade'; return; }
+
+  // Resolve 'card' to the correct processor based on admin settings + user location
+  if (gateway === 'card') {
+    var settings = window._proGatewaySettings || {};
+    gateway = _resolveCardGateway(settings);
+    if (!gateway) {
+      var errorEl2 = document.getElementById('pro-modal-error');
+      errorEl2.textContent = 'Card payment is currently unavailable. Please try crypto or contact support.';
+      errorEl2.style.display = 'block';
+      return;
+    }
+  }
+
+  var errorEl   = document.getElementById('pro-modal-error');
+  var loadingEl = document.getElementById('pro-modal-loading');
+  errorEl.style.display = 'none';
+  loadingEl.style.display = 'block';
+
+  // Disable all gateway buttons during request
+  document.querySelectorAll('.pro-gateway-btn').forEach(function(b) { b.disabled = true; b.style.opacity = '0.6'; });
+
+  try {
+    var idToken = '';
+    try { idToken = await user.getIdToken(); } catch (_) { /* non-fatal — server will reject if missing */ }
+    var res = await fetch('/.netlify/functions/create-subscription', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body:    JSON.stringify({
+        uid:           user.uid,
+        gateway:       gateway,
+        billingPeriod: _proUpgradePeriod,
+        userEmail:     user.email || '',
+      }),
+    });
+    var data = await res.json();
+    if (!res.ok || !data.checkoutUrl) {
+      throw new Error(data.error || 'Could not start checkout. Please try again.');
+    }
+    // Force-refresh the ID token to ensure Firebase has written the credential
+    // to localStorage before we navigate away to Stripe. Without this the
+    // session can appear lost when Stripe redirects back to pricing.html.
+    try { await user.getIdToken(true); } catch (_) { /* non-fatal */ }
+    window.location.href = data.checkoutUrl;
+  } catch (err) {
+    loadingEl.style.display = 'none';
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+    document.querySelectorAll('.pro-gateway-btn').forEach(function(b) { b.disabled = false; b.style.opacity = '1'; });
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById('pro-upgrade-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeProModal();
+});
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+<!-- Hash-based deep-link: activate the right tab then scroll to the anchor -->
+<script>
+(function () {
+  function handleHash() {
+    var hash = window.location.hash; // e.g. "#boost"
+    if (!hash) return;
+    var target = document.querySelector(hash);
+    if (!target) return;
+
+    // Determine which pricing section contains this element and show it
+    var section = target.closest('.pricing-section');
+    if (section) {
+      var sectionId = section.id; // e.g. "section-freelancer"
+      var tab = sectionId.replace('section-', ''); // e.g. "freelancer"
+      switchTab(tab);
+    }
+
+    // Small delay lets the browser re-paint after display:block before scrolling
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
+  // Run on DOMContentLoaded so switchTab() is defined and sections exist
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', handleHash);
+  } else {
+    handleHash();
+  }
+
+  // Also handle hash changes while on the page (e.g. back/forward nav)
+  window.addEventListener('hashchange', handleHash);
+})();
+</script>
+
+</body>
+</html>

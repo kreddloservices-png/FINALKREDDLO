@@ -1,0 +1,36 @@
+{
+  "name": "Kreddlo",
+  "short_name": "Kreddlo",
+  "description": "The complete freelance operating system for verified professionals worldwide.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fb",
+  "theme_color": "#0d2145",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/kreddlo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/kreddlo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/kreddlo-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/kreddlo-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

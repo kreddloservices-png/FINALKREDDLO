@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Verify Your Identity — Kreddlo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Page layout ── */
+    .page-bg {
+      min-height: 100vh;
+      width: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 56px;
+      overflow: hidden;
+    }
+
+    /* ── Blobs ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Glass card ── */
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.60) 100%);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.60);
+      border-bottom-color: rgba(255,255,255,0.30);
+      border-right-color:  rgba(255,255,255,0.30);
+      border-radius: 24px;
+      box-shadow:
+        0 2px 0 0 rgba(255,255,255,0.90) inset,
+        0 -1px 0 0 rgba(255,255,255,0.25) inset,
+        0 12px 48px rgba(13,33,69,0.11),
+        0 2px 4px rgba(13,33,69,0.06);
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+    }
+    .glass::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.10) 100%);
+      pointer-events: none; z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    /* ── Progress steps ── */
+    .step-track {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      width: 100%;
+    }
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      position: relative;
+    }
+    .step-circle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      border: 2px solid #e2e8f0;
+      background: #fff;
+      color: rgba(13,33,69,0.35);
+      transition: all .25s ease;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+    .step-circle.active {
+      border-color: #2d8a5e;
+      background: #2d8a5e;
+      color: #fff;
+      box-shadow: 0 0 0 4px rgba(45,138,94,0.15);
+    }
+    .step-circle.done {
+      border-color: #2d8a5e;
+      background: rgba(45,138,94,0.10);
+      color: #2d8a5e;
+    }
+    .step-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(13,33,69,0.35);
+      text-align: center;
+      white-space: nowrap;
+      transition: color .25s;
+    }
+    .step-item.active .step-label { color: #2d8a5e; }
+    .step-item.done   .step-label { color: rgba(13,33,69,0.55); }
+    .step-connector {
+      height: 2px;
+      flex: 1;
+      background: #e2e8f0;
+      margin-bottom: 20px;
+      transition: background .25s;
+      max-width: 48px;
+    }
+    .step-connector.done { background: #2d8a5e; }
+
+    /* ── Upload box ── */
+    .upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 160px;
+      border: 2px dashed #e2e8f0;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.55);
+      cursor: pointer;
+      transition: border-color .18s, background .18s;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      gap: 10px;
+      padding: 28px 16px;
+      /* Large tap target on mobile */
+      -webkit-tap-highlight-color: rgba(45,138,94,0.1);
+    }
+    .upload-label:hover,
+    .upload-label:focus-within {
+      border-color: #2d8a5e;
+      background: rgba(45,138,94,0.04);
+    }
+    .upload-label.has-file {
+      border-color: #2d8a5e;
+      border-style: solid;
+      background: rgba(45,138,94,0.04);
+      padding: 0;
+    }
+    .upload-label.error {
+      border-color: #e53e3e;
+      background: rgba(229,62,62,0.04);
+    }
+
+    /* Visually-hidden native input */
+    .upload-label input[type="file"] {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0; pointer-events: none;
+    }
+
+    /* Thumbnail */
+    .upload-preview {
+      width: 100%; height: 100%;
+      min-height: 158px;
+      object-fit: cover;
+      border-radius: 14px;
+      display: none;
+    }
+    .upload-label.has-file .upload-preview   { display: block; }
+    .upload-label.has-file .upload-placeholder { display: none; }
+
+    /* Re-upload overlay on hover */
+    .reupload-overlay {
+      position: absolute; inset: 0;
+      background: rgba(13,33,69,0.45);
+      border-radius: 14px;
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 3;
+      color: #fff;
+      font-size: 13px; font-weight: 600;
+      gap: 6px; flex-direction: column;
+      pointer-events: none;
+    }
+    .upload-label.has-file:hover .reupload-overlay { display: flex; }
+
+    /* ── Upload icon bg ── */
+    .upload-icon-bg {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: rgba(45,138,94,0.10);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Buttons ── */
+    .btn-green {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%;
+      background: #2d8a5e; color: #fff;
+      border-radius: 50px; padding: 15px 28px;
+      font-weight: 600; font-size: 15px;
+      border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s;
+      letter-spacing: -0.1px;
+      /* Comfortable tap target */
+      min-height: 52px;
+    }
+    .btn-green:hover     { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+    .btn-green:active    { transform: translateY(0); }
+    .btn-green:disabled  { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    .btn-outline {
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145;
+      border-radius: 50px; padding: 15px 28px;
+      font-weight: 600; font-size: 15px;
+      border: 1.5px solid #e2e8f0; cursor: pointer;
+      transition: background .2s, border-color .2s, transform .15s;
+      letter-spacing: -0.1px;
+      min-height: 52px;
+    }
+    .btn-outline:hover    { background: rgba(13,33,69,0.05); border-color: #c8d3e0; transform: translateY(-1px); }
+    .btn-outline:active   { transform: translateY(0); }
+    .btn-outline:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    /* ── Notice boxes ── */
+    .notice-info {
+      background: rgba(13,33,69,0.05);
+      border: 1px solid rgba(13,33,69,0.10);
+      border-radius: 12px; padding: 12px 14px;
+      font-size: 13px; font-weight: 400; color: rgba(13,33,69,0.65);
+      line-height: 1.55;
+    }
+    .notice-error {
+      background: rgba(229,62,62,0.08);
+      border: 1px solid rgba(229,62,62,0.22);
+      border-radius: 12px; padding: 12px 14px;
+      font-size: 13px; font-weight: 500; color: #c53030;
+      display: none;
+    }
+    .notice-error.visible  { display: block; }
+    .notice-review {
+      background: rgba(214,158,46,0.08);
+      border: 1px solid rgba(214,158,46,0.25);
+      border-radius: 14px; padding: 20px;
+      font-size: 14px; color: rgba(13,33,69,0.75);
+      line-height: 1.6; display: none;
+    }
+    .notice-review.visible  { display: block; }
+    .notice-success {
+      background: rgba(45,138,94,0.08);
+      border: 1px solid rgba(45,138,94,0.22);
+      border-radius: 14px; padding: 20px;
+      font-size: 14px; color: #2d8a5e;
+      line-height: 1.6; display: none;
+    }
+    .notice-success.visible { display: block; }
+
+    /* ── Upload progress bar ── */
+    .upload-progress-wrap {
+      display: none;
+      width: 100%;
+      background: rgba(13,33,69,0.08);
+      border-radius: 50px;
+      height: 6px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .upload-progress-wrap.visible { display: block; }
+    .upload-progress-bar {
+      height: 6px;
+      border-radius: 50px;
+      background: #2d8a5e;
+      width: 0%;
+      transition: width .3s ease;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+      flex-shrink: 0;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(13,33,69,0.10), transparent);
+    }
+
+    /* ── Step sections ── */
+    .step-section        { display: none; }
+    .step-section.active { display: block; }
+
+    /* ── File hint text ── */
+    .upload-hint {
+      font-size: 11px;
+      color: rgba(13,33,69,0.35);
+      font-weight: 500;
+    }
+
+    /* ── Review thumbnail strip (step 3) ── */
+    .thumb-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .thumb-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(13,33,69,0.05);
+      border: 1px solid #e2e8f0;
+      aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .thumb-item img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .thumb-label {
+      font-size: 11px; font-weight: 600;
+      color: rgba(13,33,69,0.45);
+      text-align: center;
+      margin-top: 5px;
+    }
+
+    /* ── Already-submitted state ── */
+    #submitted-state { display: none; }
+    #submit-form-state { display: block; }
+  </style>
+
+  <!-- Firebase — Auth + Firestore only (no Storage; files go through Netlify function) -->
+  <script type="module">
+    import { initializeApp }                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+      authDomain:        "kreddlo.firebaseapp.com",
+      projectId:         "kreddlo",
+      storageBucket:     "kreddlo.firebasestorage.app",
+      messagingSenderId: "764500458567",
+      appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      window.db   = getFirestore(app);
+      window.auth = getAuth(app);
+      window._fbModules = { doc, getDoc, updateDoc, onSnapshot };
+
+      onAuthStateChanged(window.auth, async user => {
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+        window._currentUid  = user.uid;
+        window._currentUser = user;
+        window._fbReady     = true;
+
+        // ── ROLE GUARD ──────────────────────────────────────────────────────
+        // Buyers never go through KYC — bounce them to their dashboard before
+        // any verification UI (form, banner, already-submitted state) renders.
+        try {
+          const roleSnap = await getDoc(doc(window.db, 'users', user.uid));
+          if (roleSnap.exists() && roleSnap.data().role === 'buyer') {
+            window.location.href = 'buyer-dashboard.html';
+            return;
+          }
+        } catch (e) {
+          // Non-fatal — fall through to normal KYC flow
+        }
+
+        // Check if user already submitted — show correct state
+        try {
+          const snap = await getDoc(doc(window.db, 'users', user.uid));
+          if (snap.exists()) {
+            const status = snap.data().kycStatus;
+            if (status === 'under-review') {
+              showAlreadySubmitted('review');
+            } else if (status === 'verified') {
+              showAlreadySubmitted('verified');
+            }
+            // 'declined' or empty → let them submit / resubmit normally
+          }
+        } catch (e) {
+          // Non-fatal — continue to form
+        }
+      });
+    } catch (e) {
+      console.warn('Firebase not configured:', e.message);
+      window._fbReady = false;
+    }
+
+    function showAlreadySubmitted(state) {
+      document.getElementById('submit-form-state').style.display = 'none';
+      document.getElementById('submitted-state').style.display   = 'block';
+      if (state === 'verified') {
+        document.getElementById('submitted-verified').style.display = 'block';
+        document.getElementById('submitted-review').style.display   = 'none';
+      } else {
+        document.getElementById('submitted-review').style.display   = 'block';
+        document.getElementById('submitted-verified').style.display = 'none';
+      }
+    }
+    window._showAlreadySubmitted = showAlreadySubmitted;
+  </script>
+</head>
+
+<body class="overflow-x-hidden">
+<div class="page-bg">
+
+  <!-- Background blobs -->
+  <div class="blob" style="width:460px;height:460px;background:radial-gradient(circle,rgba(45,138,94,0.09) 0%,transparent 70%);top:-130px;right:-140px;"></div>
+  <div class="blob" style="width:380px;height:380px;background:radial-gradient(circle,rgba(13,33,69,0.06) 0%,transparent 70%);bottom:-80px;left:-100px;"></div>
+  <div class="blob" style="width:260px;height:260px;background:radial-gradient(circle,rgba(61,189,122,0.07) 0%,transparent 70%);top:45%;left:65%;"></div>
+
+  <!-- Logo -->
+  <a href="index.html" class="relative z-10 mb-8 flex-shrink-0 mt-2" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+  <!-- Glass card -->
+  <div class="glass relative z-10 px-6 py-8 sm:px-8 sm:py-10">
+
+    <!-- ══════════════════════════════════
+         ALREADY-SUBMITTED STATE
+         Shown when kycStatus is under-review or verified
+    ══════════════════════════════════ -->
+    <div id="submitted-state">
+
+      <!-- Under review -->
+      <div id="submitted-review">
+        <div class="flex flex-col items-center text-center gap-4 py-4">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(214,158,46,0.12);display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#d69e2e" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v4m0 4h.01"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[20px] font-extrabold text-navy tracking-[-0.5px] mb-1">Submission Under Review</p>
+            <p class="text-[14px] text-navy/50 leading-relaxed max-w-xs mx-auto">Your NIN card photos have been received and are being reviewed by our team. This usually takes 1–2 business days.</p>
+          </div>
+          <a href="dashboard.html" class="btn-green mt-2" style="text-decoration:none;max-width:260px;">
+            Go to Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Verified -->
+      <div id="submitted-verified" style="display:none;">
+        <div class="flex flex-col items-center text-center gap-4 py-4">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(45,138,94,0.12);display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" fill="rgba(45,138,94,0.15)"/>
+              <path d="M7 12.5l3.5 3.5 6-7" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[20px] font-extrabold text-navy tracking-[-0.5px] mb-1">Identity Verified</p>
+            <p class="text-[14px] text-navy/50 leading-relaxed max-w-xs mx-auto">Your identity has already been verified. Your profile is live and visible to clients.</p>
+          </div>
+          <a href="dashboard.html" class="btn-green mt-2" style="text-decoration:none;max-width:260px;">
+            Go to Dashboard
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /submitted-state -->
+
+      <!-- Declined -->
+      <div id="submitted-declined" style="display:none;">
+        <div class="flex flex-col items-center text-center gap-4 py-4">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(200,30,30,0.10);display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#c81e1e" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M15 9l-6 6M9 9l6 6"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[20px] font-extrabold text-navy tracking-[-0.5px] mb-1">Verification Not Approved</p>
+            <div id="declined-reason-box" style="background:#fffbeb;border:1px solid #f6c843;border-radius:10px;padding:12px 16px;margin:8px 0 0;text-align:left;display:none;">
+              <p class="text-[12px] font-semibold text-navy/60 mb-1">Reason from our team:</p>
+              <p id="declined-reason-text" class="text-[13px] text-navy/80 leading-relaxed"></p>
+            </div>
+            <p class="text-[14px] text-navy/50 leading-relaxed max-w-xs mx-auto mt-2">Please review the reason above and resubmit with corrected documents.</p>
+          </div>
+          <button class="btn-primary mt-2" style="max-width:260px;width:100%;" onclick="location.reload()">
+            Try Again
+          </button>
+        </div>
+      </div>
+
+    <!-- ══════════════════════════════════
+         SUBMISSION FORM
+    ══════════════════════════════════ -->
+    <div id="submit-form-state">
+
+      <!-- Heading -->
+      <div class="text-center mb-7">
+        <h1 class="text-[22px] sm:text-[26px] font-extrabold text-navy tracking-[-0.6px] mb-1.5">
+          Verify Your Identity
+        </h1>
+        <p class="text-[14px] text-navy/50 font-normal leading-relaxed max-w-xs mx-auto">
+          Upload photos of your NIN card to unlock payments and your public profile.
+        </p>
+      </div>
+
+      <!-- Progress indicator -->
+      <div class="step-track mb-7" id="step-track">
+
+        <div class="step-item active" id="item-1">
+          <div class="step-circle active" id="circle-1">1</div>
+          <span class="step-label">NIN Card</span>
+        </div>
+
+        <div class="step-connector" id="conn-1"></div>
+
+        <div class="step-item" id="item-2">
+          <div class="step-circle" id="circle-2">2</div>
+          <span class="step-label">Selfie</span>
+        </div>
+
+        <div class="step-connector" id="conn-2"></div>
+
+        <div class="step-item" id="item-3">
+          <div class="step-circle" id="circle-3">3</div>
+          <span class="step-label">Submit</span>
+        </div>
+
+      </div>
+
+      <div class="divider mb-6"></div>
+
+      <!-- Error banner -->
+      <div id="form-error" class="notice-error mb-5" role="alert"></div>
+
+
+      <!-- ════════════════════════════════
+           STEP 1: NIN Card Front + Back
+      ════════════════════════════════ -->
+      <div class="step-section active" id="step-1">
+
+        <div class="mb-5">
+          <p class="text-[15px] font-bold text-navy tracking-[-0.3px] mb-1">NIN Card — Front &amp; Back</p>
+          <p class="text-[13px] text-navy/50 leading-relaxed">
+            Take clear photos of both sides of your National Identity Number (NIN) card. Make sure all text is readable and there is no glare.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+
+          <!-- NIN Front -->
+          <div>
+            <p class="text-[12px] font-bold text-navy/55 uppercase tracking-widest mb-2">Front</p>
+            <label class="upload-label" id="box-front">
+              <!-- capture="environment" opens the rear camera on mobile -->
+              <input type="file" id="input-front" accept="image/jpeg,image/png,image/webp"
+                     capture="environment"
+                     onchange="handleFile(this,'front')" />
+              <img id="preview-front" class="upload-preview" alt="NIN card front" />
+              <div class="upload-placeholder flex flex-col items-center gap-2">
+                <div class="upload-icon-bg">
+                  <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="3"/>
+                    <circle cx="8" cy="12" r="2.5"/>
+                    <path d="M14 10h4M14 14h3"/>
+                  </svg>
+                </div>
+                <span class="text-[13px] font-semibold text-navy/60">Tap to photograph front</span>
+                <span class="upload-hint">JPG or PNG · max 10 MB</span>
+              </div>
+              <div class="reupload-overlay">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>Replace</span>
+              </div>
+            </label>
+            <p id="name-front" class="text-[11px] text-navy/40 mt-1.5 truncate"></p>
+          </div>
+
+          <!-- NIN Back -->
+          <div>
+            <p class="text-[12px] font-bold text-navy/55 uppercase tracking-widest mb-2">Back</p>
+            <label class="upload-label" id="box-back">
+              <input type="file" id="input-back" accept="image/jpeg,image/png,image/webp"
+                     capture="environment"
+                     onchange="handleFile(this,'back')" />
+              <img id="preview-back" class="upload-preview" alt="NIN card back" />
+              <div class="upload-placeholder flex flex-col items-center gap-2">
+                <div class="upload-icon-bg">
+                  <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="3"/>
+                    <path d="M6 10h12M6 14h8"/>
+                  </svg>
+                </div>
+                <span class="text-[13px] font-semibold text-navy/60">Tap to photograph back</span>
+                <span class="upload-hint">JPG or PNG · max 10 MB</span>
+              </div>
+              <div class="reupload-overlay">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>Replace</span>
+              </div>
+            </label>
+            <p id="name-back" class="text-[11px] text-navy/40 mt-1.5 truncate"></p>
+          </div>
+
+        </div>
+
+        <!-- Tips -->
+        <div class="notice-info mb-6 flex items-start gap-3">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2" class="flex-shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4m0 4h.01"/>
+          </svg>
+          <span>Place your card on a flat dark surface in good light. Avoid glare, shadows and blurred edges. All four corners must be visible.</span>
+        </div>
+
+        <button class="btn-green" onclick="goToStep(2)">
+          Continue to Selfie
+          <svg class="ml-2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+      </div><!-- /step-1 -->
+
+
+      <!-- ════════════════════════════════
+           STEP 2: Selfie
+      ════════════════════════════════ -->
+      <div class="step-section" id="step-2">
+
+        <div class="mb-5">
+          <p class="text-[15px] font-bold text-navy tracking-[-0.3px] mb-1">Take a Selfie</p>
+          <p class="text-[13px] text-navy/50 leading-relaxed">
+            A photo of your face is required to match you to your NIN card. Use the front-facing camera in good light.
+          </p>
+        </div>
+
+        <div class="max-w-[280px] mx-auto mb-4">
+          <label class="upload-label" id="box-selfie" style="min-height:200px;">
+            <!-- user-facing camera for selfie -->
+            <input type="file" id="input-selfie" accept="image/jpeg,image/png,image/webp"
+                   capture="user"
+                   onchange="handleFile(this,'selfie')" />
+            <img id="preview-selfie" class="upload-preview" alt="Selfie preview" style="min-height:198px;" />
+            <div class="upload-placeholder flex flex-col items-center gap-2">
+              <div class="upload-icon-bg" style="width:52px;height:52px;border-radius:16px;">
+                <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+              </div>
+              <span class="text-[13px] font-semibold text-navy/60">Tap to take selfie</span>
+              <span class="upload-hint">JPG or PNG · max 10 MB</span>
+            </div>
+            <div class="reupload-overlay">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span>Replace</span>
+            </div>
+          </label>
+          <p id="name-selfie" class="text-[11px] text-navy/40 mt-1.5 truncate text-center"></p>
+        </div>
+
+        <div class="notice-info mb-6 flex items-start gap-3">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2" class="flex-shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4m0 4h.01"/>
+          </svg>
+          <span>Look straight at the camera with a neutral expression. Remove sunglasses and hats. Make sure your full face is clearly visible.</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button class="btn-outline" onclick="goToStep(1)">
+            <svg class="mr-2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0d2145" stroke-width="2.5">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <button class="btn-green flex-1" onclick="goToStep(3)">
+            Review &amp; Submit
+            <svg class="ml-2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- /step-2 -->
+
+
+      <!-- ════════════════════════════════
+           STEP 3: Review & Submit
+      ════════════════════════════════ -->
+      <div class="step-section" id="step-3">
+
+        <div class="mb-5">
+          <p class="text-[15px] font-bold text-navy tracking-[-0.3px] mb-1.5">Review your photos</p>
+          <p class="text-[13px] text-navy/50 leading-relaxed">
+            Make sure all images are clear and readable before submitting. You cannot change them after submission.
+          </p>
+        </div>
+
+        <!-- Thumbnail strip -->
+        <div class="thumb-strip mb-6">
+          <div>
+            <div class="thumb-item" id="thumb-front">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="rgba(13,33,69,0.25)" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/></svg>
+            </div>
+            <p class="thumb-label">NIN Front</p>
+          </div>
+          <div>
+            <div class="thumb-item" id="thumb-back">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="rgba(13,33,69,0.25)" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/></svg>
+            </div>
+            <p class="thumb-label">NIN Back</p>
+          </div>
+          <div>
+            <div class="thumb-item" id="thumb-selfie">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="rgba(13,33,69,0.25)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <p class="thumb-label">Selfie</p>
+          </div>
+        </div>
+
+        <!-- Upload progress -->
+        <div id="upload-progress-wrap" class="upload-progress-wrap mb-4">
+          <div id="upload-progress-bar" class="upload-progress-bar"></div>
+        </div>
+        <p id="upload-status-text" class="text-[12px] text-navy/45 text-center mb-4" style="display:none;"></p>
+
+        <!-- Result notices (shown after submit) -->
+        <div id="notice-review" class="notice-review mb-5">
+          <div class="flex items-start gap-3">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#b7791f" stroke-width="2" class="flex-shrink-0 mt-0.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v4m0 4h.01"/>
+            </svg>
+            <div>
+              <p class="font-bold text-[14px] text-navy mb-1">Submission Received</p>
+              <p class="text-[13px] text-navy/60">Your NIN card photos and selfie have been uploaded. Our team will review them and notify you by email within 1–2 business days.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="notice-success" class="notice-success mb-5">
+          <div class="flex items-start gap-3">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" class="flex-shrink-0 mt-0.5">
+              <circle cx="12" cy="12" r="10" fill="rgba(45,138,94,0.15)"/>
+              <path d="M7 12.5l3.5 3.5 6-7" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+              <p class="font-bold text-[14px] text-green mb-1">Verification Approved</p>
+              <p class="text-[13px] text-navy/60">Your identity has been verified. Redirecting you to your dashboard now.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terms note -->
+        <div class="notice-info mb-5 flex items-start gap-3 text-[12px]">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(13,33,69,0.45)" stroke-width="2" class="flex-shrink-0 mt-0.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>By submitting, you confirm these documents belong to you and the information is accurate. Submitting fraudulent documents results in permanent account suspension.</span>
+        </div>
+
+        <!-- Step-3 error notice (submit errors shown here) -->
+        <div id="form-error-step3" class="notice-error mb-5" role="alert"></div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button id="back-btn" class="btn-outline" onclick="goToStep(2)">
+            <svg class="mr-2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0d2145" stroke-width="2.5">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <button id="submit-btn" class="btn-green flex-1" onclick="submitVerification()">
+            <span id="submit-label">Submit for Review</span>
+          </button>
+        </div>
+
+      </div><!-- /step-3 -->
+
+    </div><!-- /submit-form-state -->
+
+  </div><!-- /glass card -->
+
+  <div class="h-12 relative z-10"></div>
+
+</div><!-- /page-bg -->
+
+
+<script>
+  /* ══════════════════════════════════════
+     STATE
+  ══════════════════════════════════════ */
+  const files = { front: null, back: null, selfie: null };
+  let currentStep = 1;
+
+
+  /* ══════════════════════════════════════
+     FILE HANDLING
+  ══════════════════════════════════════ */
+  function handleFile(input, slot) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const MAX_MB = 10;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      showError('File is too large. Maximum size is ' + MAX_MB + ' MB.');
+      input.value = '';
+      return;
+    }
+
+    // Only accept images
+    if (!file.type.startsWith('image/')) {
+      showError('Only image files (JPG, PNG, WEBP) are accepted.');
+      input.value = '';
+      return;
+    }
+
+    files[slot] = file;
+
+    const box     = document.getElementById('box-' + slot);
+    const preview = document.getElementById('preview-' + slot);
+    const nameEl  = document.getElementById('name-' + slot);
+
+    box.classList.remove('error');
+    if (nameEl) nameEl.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      box.classList.add('has-file');
+    };
+    reader.readAsDataURL(file);
+  }
+
+
+  /* ══════════════════════════════════════
+     STEP NAVIGATION
+  ══════════════════════════════════════ */
+  function goToStep(n) {
+    clearError();
+
+    if (n === 2 && currentStep === 1) {
+      if (!files.front || !files.back) {
+        if (!files.front) document.getElementById('box-front').classList.add('error');
+        if (!files.back)  document.getElementById('box-back').classList.add('error');
+        showError('Please upload both the front and back of your NIN card before continuing.');
+        return;
+      }
+    }
+
+    if (n === 3 && currentStep === 2) {
+      if (!files.selfie) {
+        document.getElementById('box-selfie').classList.add('error');
+        showError('Please upload your selfie before continuing.');
+        return;
+      }
+      buildReviewThumbs();
+    }
+
+    document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+
+    updateProgress(n);
+    currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress(active) {
+    for (let i = 1; i <= 3; i++) {
+      const circle = document.getElementById('circle-' + i);
+      const item   = document.getElementById('item-' + i);
+
+      circle.classList.remove('active', 'done');
+      item.classList.remove('active', 'done');
+
+      if (i < active) {
+        circle.classList.add('done');
+        item.classList.add('done');
+        circle.innerHTML = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+          <path d="M5 13l4 4L19 7" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+      } else if (i === active) {
+        circle.classList.add('active');
+        item.classList.add('active');
+        circle.textContent = i;
+      } else {
+        circle.textContent = i;
+      }
+    }
+    for (let c = 1; c <= 2; c++) {
+      document.getElementById('conn-' + c).classList.toggle('done', active > c);
+    }
+  }
+
+  function buildReviewThumbs() {
+    ['front', 'back', 'selfie'].forEach(key => {
+      const container = document.getElementById('thumb-' + key);
+      const file = files[key];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        container.innerHTML = `<img src="${e.target.result}" alt="${key}" />`;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+
+  /* ══════════════════════════════════════
+     ERROR HELPERS
+  ══════════════════════════════════════ */
+  function showError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.classList.add('visible');
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Also show in step-3 error div if we're on step 3
+    const el3 = document.getElementById('form-error-step3');
+    if (el3) {
+      el3.textContent = msg;
+      el3.classList.add('visible');
+      el3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+  function clearError() {
+    const el = document.getElementById('form-error');
+    el.textContent = '';
+    el.classList.remove('visible');
+    const el3 = document.getElementById('form-error-step3');
+    if (el3) { el3.textContent = ''; el3.classList.remove('visible'); }
+  }
+
+  function setLoading(loading, progressPct) {
+    const btn   = document.getElementById('submit-btn');
+    const label = document.getElementById('submit-label');
+    const back  = document.getElementById('back-btn');
+    const wrap  = document.getElementById('upload-progress-wrap');
+    const bar   = document.getElementById('upload-progress-bar');
+    const txt   = document.getElementById('upload-status-text');
+
+    btn.disabled  = loading;
+    back.disabled = loading;
+
+    if (loading) {
+      label.innerHTML = '<span class="spinner"></span> Uploading…';
+      wrap.classList.add('visible');
+      txt.style.display = 'block';
+      if (progressPct !== undefined) {
+        bar.style.width = progressPct + '%';
+        txt.textContent = 'Uploading… ' + progressPct + '%';
+      }
+    } else {
+      label.innerHTML = 'Submit for Review';
+      wrap.classList.remove('visible');
+      txt.style.display = 'none';
+      bar.style.width = '0%';
+    }
+  }
+
+  function setProgressPct(pct, msg) {
+    document.getElementById('upload-progress-bar').style.width = pct + '%';
+    const txt = document.getElementById('upload-status-text');
+    if (msg) txt.textContent = msg;
+  }
+
+
+  /* ══════════════════════════════════════
+     FIREBASE READY WAIT
+  ══════════════════════════════════════ */
+  async function waitForFirebase(timeoutMs = 10000) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (window._fbReady && window._currentUid) return true;
+      await new Promise(r => setTimeout(r, 80));
+    }
+    return false;
+  }
+
+
+  /* ══════════════════════════════════════
+     FILE → BASE64 HELPER
+  ══════════════════════════════════════ */
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const MAX = 1200;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else       { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        resolve(dataUrl.split(',')[1]);
+      };
+      img.onerror = () => reject(new Error('Failed to read file'));
+      img.src = url;
+    });
+  }
+
+
+  /* ══════════════════════════════════════
+     SUBMIT
+     Encodes each image as base64 and POSTs to the Netlify
+     function kyc-submit.js, which uploads to Firebase Storage
+     and writes kycStatus:'under-review' to Firestore.
+  ══════════════════════════════════════ */
+  async function submitVerification() {
+    clearError();
+
+    // Show errors in step-3's own error div
+    function showSubmitError(msg) {
+      const el3 = document.getElementById('form-error-step3');
+      if (el3) {
+        el3.textContent = msg;
+        el3.classList.add('visible');
+        el3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    const ready = await waitForFirebase();
+    if (!ready) {
+      showSubmitError('Authentication error. Please refresh the page and try again.');
+      return;
+    }
+
+    setLoading(true);
+    setProgressPct(5, 'Preparing images…');
+
+    try {
+      // Encode all three images concurrently
+      setProgressPct(15, 'Encoding images…');
+      const [frontB64, backB64, selfieB64] = await Promise.all([
+        fileToBase64(files.front),
+        fileToBase64(files.back),
+        fileToBase64(files.selfie),
+      ]);
+
+      setProgressPct(40, 'Uploading to server…');
+
+      const _kycToken = window.auth && window.auth.currentUser ? await window.auth.currentUser.getIdToken() : '';
+      const response = await fetch('/.netlify/functions/kyc-submit', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _kycToken },
+        body: JSON.stringify({
+          uid:        window._currentUid,
+          frontImage: frontB64,
+          backImage:  backB64,
+          selfieImage: selfieB64,
+        }),
+      });
+
+      setProgressPct(85, 'Saving submission…');
+
+      let result;
+      const rawText = await response.text();
+      try {
+        result = JSON.parse(rawText);
+      } catch (_) {
+        throw new Error('Server error (' + response.status + '): ' + rawText.slice(0, 200));
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Server returned ' + response.status);
+      }
+
+      setProgressPct(100, 'Done!');
+
+      // Hide buttons, show success notice
+      document.getElementById('submit-btn').style.display = 'none';
+      document.getElementById('back-btn').style.display   = 'none';
+      document.getElementById('notice-review').classList.add('visible');
+      setLoading(false);
+
+      // Real-time listener: react to admin approve/decline without page refresh
+      startKycListener(window._currentUid);
+
+    } catch (err) {
+      setLoading(false);
+      showSubmitError(err.message || 'Upload failed. Please check your connection and try again.');
+      console.error('KYC submit error:', err);
+    }
+  }
+
+  /* ══════════════════════════════════════
+     REAL-TIME KYC STATUS LISTENER
+     Fires after submission — watches for admin approve/decline
+  ══════════════════════════════════════ */
+  var kycListener = null;
+
+  function startKycListener(uid) {
+    if (!window.db || !window._fbModules || !window._fbModules.onSnapshot) return;
+    var _doc        = window._fbModules.doc;
+    var _onSnapshot = window._fbModules.onSnapshot;
+
+    if (kycListener) { kycListener(); kycListener = null; }
+
+    kycListener = _onSnapshot(
+      _doc(window.db, 'users', uid),
+      function(snap) {
+        if (!snap.exists()) return;
+        var status = snap.data().kycStatus;
+
+        if (status === 'verified') {
+          if (kycListener) { kycListener(); kycListener = null; }
+          showVerifiedState();
+        } else if (status === 'declined') {
+          if (kycListener) { kycListener(); kycListener = null; }
+          showDeclinedState(snap.data().kycRejectionReason || '');
+        }
+      },
+      function(err) {
+        console.warn('KYC listener error:', err);
+      }
+    );
+  }
+
+  function showVerifiedState() {
+    document.getElementById('submit-form-state').style.display  = 'none';
+    document.getElementById('submitted-state').style.display    = 'block';
+    document.getElementById('submitted-review').style.display   = 'none';
+    document.getElementById('submitted-declined').style.display = 'none';
+    document.getElementById('submitted-verified').style.display = 'block';
+    // Auto-redirect after 3 seconds, based on role; clean up listener first
+    setTimeout(async function() {
+      if (kycListener) { kycListener(); kycListener = null; }
+      var target = 'dashboard.html';
+      try {
+        var { doc, getDoc } = window._fbModules;
+        var snap = await getDoc(doc(window.db, 'users', window._currentUid));
+        if (snap.exists()) {
+          var role = snap.data().role;
+          if (role === 'admin') target = 'admin.html';
+          else if (role === 'buyer') target = 'buyer-dashboard.html';
+          else target = 'dashboard.html';
+        }
+      } catch (e) { /* fall back to dashboard.html */ }
+      // Honour ?next=upgrade — send newly-verified freelancers straight to the Pro modal
+      var _nextParam = new URLSearchParams(window.location.search).get('next');
+      if (_nextParam === 'upgrade' && target === 'dashboard.html') {
+        target = 'pricing.html?openUpgrade=1';
+      }
+      window.location.href = target;
+    }, 3000);
+  }
+
+  function showDeclinedState(reason) {
+    document.getElementById('submit-form-state').style.display  = 'none';
+    document.getElementById('submitted-state').style.display    = 'block';
+    document.getElementById('submitted-review').style.display   = 'none';
+    document.getElementById('submitted-verified').style.display = 'none';
+    document.getElementById('submitted-declined').style.display = 'block';
+    if (reason) {
+      var box  = document.getElementById('declined-reason-box');
+      var text = document.getElementById('declined-reason-text');
+      if (box && text) {
+        text.textContent = reason;
+        box.style.display = 'block';
+      }
+    }
+  }
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('SW registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

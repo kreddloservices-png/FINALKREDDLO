@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d2145" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kreddlo" />
+  <link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Set Up Your Profile — Kreddlo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:          '#0d2145',
+            'navy-deep':   '#091830',
+            'navy-mid':    '#162f5e',
+            green:         '#2d8a5e',
+            'green-light': '#3dbd7a',
+            'green-pale':  '#e8f5ef',
+            cream:         '#f8f9fb',
+            border:        '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Page background ── */
+    .page-bg {
+      min-height: 100vh;
+      width: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 56px;
+      overflow: hidden;
+    }
+
+    /* Background blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Glass card ── */
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.62) 100%);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.60);
+      border-bottom-color: rgba(255,255,255,0.30);
+      border-right-color:  rgba(255,255,255,0.30);
+      border-radius: 24px;
+      box-shadow:
+        0 2px 0 0 rgba(255,255,255,0.90) inset,
+        0 -1px 0 0 rgba(255,255,255,0.25) inset,
+        0 12px 48px rgba(13,33,69,0.11),
+        0 2px 4px rgba(13,33,69,0.06);
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+    }
+    .glass::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.10) 100%);
+      pointer-events: none; z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    /* ── Step progress dots ── */
+    .step-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(13,33,69,0.15);
+      transition: background .3s, width .3s;
+    }
+    .step-dot.active {
+      width: 24px;
+      border-radius: 4px;
+      background: #2d8a5e;
+    }
+    .step-dot.done {
+      background: #3dbd7a;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(13,33,69,0.40);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+
+    /* ── Field groups ── */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .field-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0d2145;
+      letter-spacing: -0.1px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .field-label .req {
+      color: #e53e3e;
+      font-size: 12px;
+    }
+    .field-input {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: rgba(255,255,255,0.70);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: #0d2145;
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+      -webkit-appearance: none;
+      appearance: none;
+      /* Ensure full touch target */
+      min-height: 48px;
+    }
+    .field-input::placeholder { color: rgba(13,33,69,0.30); }
+    .field-input:focus {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.12);
+    }
+    .field-input.error {
+      border-color: #e53e3e;
+      box-shadow: 0 0 0 3px rgba(229,62,62,0.10);
+    }
+    textarea.field-input {
+      resize: vertical;
+      min-height: 110px;
+      line-height: 1.6;
+    }
+
+    /* ── Character counter ── */
+    .char-counter {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(13,33,69,0.35);
+      text-align: right;
+    }
+    .char-counter.warn { color: #e53e3e; }
+
+    /* ── Field hint (validation error) ── */
+    .field-hint {
+      font-size: 12px;
+      color: #e53e3e;
+      font-weight: 500;
+      display: none;
+    }
+    .field-hint.visible { display: block; }
+
+    /* ── Field hint (helper) ── */
+    .field-help {
+      font-size: 12px;
+      color: rgba(13,33,69,0.45);
+      line-height: 1.5;
+    }
+
+    /* ── Skills tags UI ── */
+    .skills-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 36px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: rgba(255,255,255,0.70);
+      cursor: text;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .skills-tags:focus-within {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.12);
+    }
+    .skills-tags.error {
+      border-color: #e53e3e;
+      box-shadow: 0 0 0 3px rgba(229,62,62,0.10);
+    }
+    .skill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #e8f5ef;
+      color: #2d8a5e;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .skill-tag-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      color: #2d8a5e;
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .skill-tag-remove:hover { color: #c53030; }
+    .skills-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      color: #0d2145;
+      flex: 1;
+      min-width: 120px;
+    }
+    .skills-input::placeholder { color: rgba(13,33,69,0.30); }
+
+    /* ── Price input wrapper ── */
+    .price-wrapper {
+      position: relative;
+    }
+    .price-prefix {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(13,33,69,0.45);
+      pointer-events: none;
+    }
+    .price-wrapper .field-input {
+      padding-left: 28px;
+    }
+
+    /* ── Availability toggle ── */
+    .avail-toggle {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(45,138,94,0.05);
+      border: 1.5px solid rgba(45,138,94,0.15);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .2s, border-color .2s;
+    }
+    .avail-toggle:hover { background: rgba(45,138,94,0.08); }
+    .avail-toggle-text {
+      flex: 1;
+    }
+    .avail-toggle-text strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0d2145;
+      margin-bottom: 2px;
+    }
+    .avail-toggle-text span {
+      font-size: 12px;
+      color: rgba(13,33,69,0.50);
+    }
+    /* Custom switch */
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .switch-track {
+      position: absolute;
+      inset: 0;
+      background: rgba(13,33,69,0.15);
+      border-radius: 13px;
+      transition: background .2s;
+    }
+    .switch input:checked + .switch-track { background: #2d8a5e; }
+    .switch-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.20);
+      transition: left .2s;
+    }
+    .switch input:checked ~ .switch-thumb { left: 21px; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      background: #0d2145; color: #fff;
+      border-radius: 50px;
+      padding: 14px 28px;
+      font-size: 15px; font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: 2px solid #0d2145;
+      cursor: pointer;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 52px;
+    }
+    .btn-primary:hover  { background: #162f5e; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,33,69,0.20); }
+    .btn-primary:active { transform: translateY(0); box-shadow: none; }
+    .btn-primary:disabled { opacity: 0.65; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Error banner ── */
+    .form-error {
+      background: rgba(229,62,62,0.08);
+      border: 1px solid rgba(229,62,62,0.22);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #c53030;
+      display: none;
+      margin-bottom: 20px;
+    }
+    .form-error.visible { display: block; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(13,33,69,0.10), transparent);
+      margin: 20px 0;
+    }
+
+    /* ── Loading screen ── */
+    #loading-screen {
+      position: fixed; inset: 0;
+      background: #f8f9fb;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200;
+      gap: 16px;
+    }
+    .loading-ring {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(13,33,69,0.12);
+      border-top-color: #2d8a5e;
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+
+    /* ── Success state ── */
+    #success-screen {
+      position: fixed; inset: 0;
+      background: #f8f9fb;
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200;
+      padding: 24px;
+      text-align: center;
+    }
+    #success-screen.visible { display: flex; }
+    .success-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2d8a5e, #3dbd7a);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 32px rgba(45,138,94,0.35);
+      margin-bottom: 24px;
+      animation: popIn .5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+  </style>
+
+  <!-- Firebase CDN -->
+  <script type="module">
+    import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged }                           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+      authDomain:        "kreddlo.firebaseapp.com",
+      projectId:         "kreddlo",
+      storageBucket:     "kreddlo.firebasestorage.app",
+      messagingSenderId: "764500458567",
+      appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    window.db   = getFirestore(app);
+    window.auth = getAuth(app);
+    window._fbReady = { doc, getDoc, updateDoc, setDoc, serverTimestamp };
+
+    /* ── Auth guard ── */
+    onAuthStateChanged(window.auth, async function(user) {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      window._currentUid = user.uid;
+
+      try {
+        const snap = await getDoc(doc(window.db, 'users', user.uid));
+        const data = snap.exists() ? snap.data() : {};
+
+        /* Only KYC-verified freelancers should be here */
+        if (data.kycStatus !== 'verified') {
+          window.location.href = 'dashboard.html';
+          return;
+        }
+
+        /* If already complete, send straight to dashboard */
+        if (data.profileComplete) {
+          window.location.href = 'dashboard.html';
+          return;
+        }
+
+        /* Pre-fill name if available */
+        const nameEl = document.getElementById('display-name');
+        if (nameEl && (data.name || data.displayName)) {
+          nameEl.value = data.name || data.displayName;
+        }
+
+      } catch (err) {
+        console.error('Auth check error:', err);
+      }
+
+      /* Hide loading screen */
+      const ls = document.getElementById('loading-screen');
+      if (ls) ls.style.display = 'none';
+    });
+  </script>
+</head>
+
+<body class="overflow-x-hidden">
+
+  <!-- Loading screen -->
+  <div id="loading-screen">
+    <div class="loading-ring"></div>
+    <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);">Loading your profile…</p>
+  </div>
+
+  <!-- Success screen -->
+  <div id="success-screen">
+    <div class="success-icon">
+      <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <h2 style="font-size:24px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;margin-bottom:10px;">Profile Live!</h2>
+    <p style="font-size:14px;color:rgba(13,33,69,0.55);max-width:300px;line-height:1.6;margin-bottom:28px;">Your profile is set up and visible to buyers. Taking you to your dashboard…</p>
+    <div class="loading-ring" style="border-top-color:#0d2145;border-color:rgba(13,33,69,0.12);"></div>
+  </div>
+
+  <div class="page-bg">
+
+    <!-- Background blobs -->
+    <div class="blob" style="width:500px;height:500px;background:radial-gradient(circle,rgba(45,138,94,0.10) 0%,transparent 70%);top:-160px;right:-160px;"></div>
+    <div class="blob" style="width:420px;height:420px;background:radial-gradient(circle,rgba(13,33,69,0.07) 0%,transparent 70%);bottom:-100px;left:-120px;"></div>
+    <div class="blob" style="width:300px;height:300px;background:radial-gradient(circle,rgba(61,189,122,0.07) 0%,transparent 70%);top:40%;left:60%;"></div>
+
+    <!-- Logo -->
+    <a href="index.html" class="relative z-10 mb-6 flex-shrink-0 mt-2" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+
+    <!-- Card -->
+    <div class="glass relative z-10" style="padding:24px 20px 28px;">
+
+      <!-- Step dots -->
+      <div class="step-dots">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+      </div>
+
+      <!-- Verified badge banner -->
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:rgba(45,138,94,0.07);border:1px solid rgba(45,138,94,0.18);margin-bottom:22px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#2d8a5e;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <div>
+          <p style="font-size:13px;font-weight:700;color:#2d8a5e;margin-bottom:1px;">Identity Verified ✓</p>
+          <p style="font-size:12px;color:rgba(13,33,69,0.50);">Last step — set up your public profile</p>
+        </div>
+      </div>
+
+      <!-- Heading -->
+      <div style="margin-bottom:22px;">
+        <h1 style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;margin-bottom:6px;">Set Up Your Profile</h1>
+        <p style="font-size:14px;color:rgba(13,33,69,0.50);line-height:1.5;">This is what buyers see when they visit your profile. Make it count.</p>
+      </div>
+
+      <!-- Error banner -->
+      <div id="form-error" class="form-error" role="alert"></div>
+
+      <!-- ── SECTION 1: IDENTITY ── -->
+      <p class="section-title">Your Identity</p>
+
+      <!-- Display Name -->
+      <div class="field-group">
+        <label class="field-label" for="display-name">
+          Display Name <span class="req">*</span>
+        </label>
+        <input
+          id="display-name"
+          type="text"
+          class="field-input"
+          placeholder="e.g. Sarah Johnson"
+          autocomplete="name"
+          inputmode="text"
+          maxlength="60"
+        />
+        <span id="hint-name" class="field-hint">Please enter your display name.</span>
+      </div>
+
+      <!-- Professional Title -->
+      <div class="field-group">
+        <label class="field-label" for="prof-title">
+          Professional Title <span class="req">*</span>
+        </label>
+        <input
+          id="prof-title"
+          type="text"
+          class="field-input"
+          placeholder="e.g. Full-Stack Developer & UI Designer"
+          maxlength="80"
+        />
+        <span id="hint-title" class="field-hint">Please add a title so buyers know what you do.</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ── SECTION 2: YOUR STORY ── -->
+      <p class="section-title">Your Story</p>
+
+      <!-- Bio -->
+      <div class="field-group">
+        <label class="field-label" for="bio">
+          Bio <span class="req">*</span>
+        </label>
+        <textarea
+          id="bio"
+          class="field-input"
+          placeholder="Tell buyers about your experience, what you specialise in, and what makes you great to work with…"
+          maxlength="600"
+          rows="5"
+        ></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span id="hint-bio" class="field-hint">Please write a short bio (at least 40 characters).</span>
+          <span id="bio-counter" class="char-counter">0 / 600</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ── SECTION 3: SKILLS & PRICING ── -->
+      <p class="section-title">Skills & Pricing</p>
+
+      <!-- Skills -->
+      <div class="field-group">
+        <label class="field-label" for="skills-input">
+          Skills <span class="req">*</span>
+        </label>
+        <div class="skills-tags" id="skills-tags-box" onclick="document.getElementById('skills-input').focus()">
+          <!-- Tags injected here by JS -->
+          <input
+            id="skills-input"
+            class="skills-input"
+            type="text"
+            placeholder="Type a skill and press Enter or comma…"
+            maxlength="40"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="words"
+            spellcheck="false"
+          />
+        </div>
+        <span id="hint-skills" class="field-hint">Add at least one skill.</span>
+        <p class="field-help">e.g. React, Logo Design, SEO, Copywriting</p>
+      </div>
+
+      <!-- Starting Price -->
+      <div class="field-group">
+        <label class="field-label" for="starting-price">
+          Starting Price (USD) <span class="req">*</span>
+        </label>
+        <div class="price-wrapper">
+          <span class="price-prefix">$</span>
+          <input
+            id="starting-price"
+            type="number"
+            class="field-input"
+            placeholder="50"
+            min="1"
+            max="99999"
+            step="1"
+            inputmode="numeric"
+          />
+        </div>
+        <span id="hint-price" class="field-hint">Please enter a valid starting price (minimum $1).</span>
+        <p class="field-help">The minimum you charge for a project. Buyers see this on your profile.</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ── SECTION 4: AVAILABILITY ── -->
+      <p class="section-title">Availability</p>
+
+      <label class="avail-toggle" for="avail-toggle-input">
+        <div class="avail-toggle-text">
+          <strong>Open for new projects</strong>
+          <span>Buyers will see a green "Available" badge on your profile</span>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="avail-toggle-input" checked />
+          <div class="switch-track"></div>
+          <div class="switch-thumb"></div>
+        </div>
+      </label>
+
+      <div style="margin-top:24px;">
+        <button type="button" id="save-btn" class="btn-primary" onclick="saveProfile()">
+          <span id="btn-label">Save &amp; Go to Dashboard</span>
+        </button>
+      </div>
+
+      <!-- Terms note -->
+      <p style="text-align:center;font-size:12px;color:rgba(13,33,69,0.35);margin-top:16px;line-height:1.6;">
+        By saving your profile you agree to our
+        <a href="/terms.html" target="_blank" rel="noopener" style="color:rgba(13,33,69,0.50);text-decoration:underline;">Terms of Service</a>.
+      </p>
+
+    </div><!-- /glass -->
+
+    <div style="height:32px;position:relative;z-index:10;"></div>
+
+  </div><!-- /page-bg -->
+
+  <script>
+    /* ══════════════════════════════════════════════
+       SKILLS TAG INPUT
+    ══════════════════════════════════════════════ */
+    const _skills = [];
+
+    function renderSkillTags() {
+      const box   = document.getElementById('skills-tags-box');
+      const input = document.getElementById('skills-input');
+      /* Remove all existing tags (keep the input) */
+      Array.from(box.querySelectorAll('.skill-tag')).forEach(el => el.remove());
+      /* Insert tags before the input */
+      _skills.forEach((skill, idx) => {
+        const tag = document.createElement('span');
+        tag.className = 'skill-tag';
+        tag.innerHTML =
+          '<span>' + escHtml(skill) + '</span>' +
+          '<button type="button" class="skill-tag-remove" aria-label="Remove ' + escHtml(skill) + '" onclick="removeSkill(' + idx + ')">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '</button>';
+        box.insertBefore(tag, input);
+      });
+    }
+
+    function addSkill(raw) {
+      const val = raw.trim().replace(/,+$/, '').trim();
+      if (!val) return;
+      if (_skills.length >= 12) { showError('You can add a maximum of 12 skills.'); return; }
+      /* Prevent duplicates (case-insensitive) */
+      if (_skills.some(s => s.toLowerCase() === val.toLowerCase())) return;
+      _skills.push(val);
+      renderSkillTags();
+    }
+
+    function removeSkill(idx) {
+      _skills.splice(idx, 1);
+      renderSkillTags();
+    }
+
+    document.getElementById('skills-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addSkill(this.value);
+        this.value = '';
+      } else if (e.key === 'Backspace' && !this.value && _skills.length > 0) {
+        _skills.pop();
+        renderSkillTags();
+      }
+    });
+
+    document.getElementById('skills-input').addEventListener('blur', function() {
+      if (this.value.trim()) {
+        addSkill(this.value);
+        this.value = '';
+      }
+    });
+
+    /* ── Bio character counter ── */
+    document.getElementById('bio').addEventListener('input', function() {
+      const len = this.value.length;
+      const counter = document.getElementById('bio-counter');
+      counter.textContent = len + ' / 600';
+      counter.classList.toggle('warn', len > 560);
+    });
+
+    /* ══════════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════════ */
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('form-error');
+      el.textContent = msg;
+      el.classList.add('visible');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function clearError() {
+      const el = document.getElementById('form-error');
+      el.textContent = '';
+      el.classList.remove('visible');
+    }
+
+    function showHint(id, show) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible', show);
+    }
+    function markField(id, error) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('error', error);
+    }
+    function markSkillsBox(error) {
+      document.getElementById('skills-tags-box').classList.toggle('error', error);
+    }
+
+    function setLoading(loading) {
+      const btn   = document.getElementById('save-btn');
+      const label = document.getElementById('btn-label');
+      btn.disabled = loading;
+      if (loading) {
+        label.innerHTML = '<span class="spinner"></span> Saving…';
+      } else {
+        label.textContent = 'Save & Go to Dashboard';
+      }
+    }
+
+    /* ══════════════════════════════════════════════
+       SAVE PROFILE
+    ══════════════════════════════════════════════ */
+    async function saveProfile() {
+      clearError();
+
+      /* Reset all field states */
+      ['display-name', 'prof-title', 'bio', 'starting-price'].forEach(id => markField(id, false));
+      ['hint-name', 'hint-title', 'hint-bio', 'hint-skills', 'hint-price'].forEach(id => showHint(id, false));
+      markSkillsBox(false);
+
+      const displayName   = document.getElementById('display-name').value.trim();
+      const title         = document.getElementById('prof-title').value.trim();
+      const bio           = document.getElementById('bio').value.trim();
+      const startingPrice = parseFloat(document.getElementById('starting-price').value);
+      const available     = document.getElementById('avail-toggle-input').checked;
+
+      /* Flush any pending skill input */
+      const skillInput = document.getElementById('skills-input');
+      if (skillInput.value.trim()) {
+        addSkill(skillInput.value);
+        skillInput.value = '';
+      }
+
+      let valid = true;
+
+      if (!displayName) {
+        markField('display-name', true); showHint('hint-name', true); valid = false;
+      }
+      if (!title) {
+        markField('prof-title', true); showHint('hint-title', true); valid = false;
+      }
+      if (!bio || bio.length < 40) {
+        markField('bio', true); showHint('hint-bio', true); valid = false;
+      }
+      if (_skills.length === 0) {
+        markSkillsBox(true); showHint('hint-skills', true); valid = false;
+      }
+      if (!startingPrice || isNaN(startingPrice) || startingPrice < 1) {
+        markField('starting-price', true); showHint('hint-price', true); valid = false;
+      }
+
+      if (!valid) return;
+
+      /* Wait for Firebase to be ready */
+      const maxWait = 8000;
+      const start   = Date.now();
+      while (!window._fbReady && Date.now() - start < maxWait) {
+        await new Promise(r => setTimeout(r, 80));
+      }
+      if (!window._fbReady || !window._currentUid) {
+        showError('Session expired. Please refresh the page and try again.');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const { doc, updateDoc, serverTimestamp } = window._fbReady;
+
+        await updateDoc(doc(window.db, 'users', window._currentUid), {
+          displayName,
+          name:            displayName,  /* keep name field in sync */
+          title,
+          bio,
+          description:     bio,          /* mirror bio → description for profile.html */
+          skills:          _skills,
+          startingPrice:   Math.round(startingPrice),
+          available,
+          profileComplete: true,
+          updatedAt:       serverTimestamp(),
+        });
+
+        /* Mirror public-safe fields to publicProfiles/{uid} so profile.html,
+           browse.html and store.html show the correct data immediately after
+           setup — without waiting for the user to visit dashboard-settings.html. */
+        try {
+          const { setDoc: sd } = window._fbReady;
+          await sd(doc(window.db, 'publicProfiles', window._currentUid), {
+            displayName,
+            name:         displayName,
+            title,
+            description:  bio,
+            bio,
+            skills:       _skills,
+            startingPrice: Math.round(startingPrice),
+            available,
+            role:         'freelancer',
+          }, { merge: true });
+        } catch (pubErr) {
+          console.warn('[profile-setup] publicProfiles mirror failed (non-fatal):', pubErr);
+        }
+
+        /* Show success screen then redirect */
+        document.getElementById('success-screen').classList.add('visible');
+        setTimeout(function() {
+          window.location.href = 'dashboard.html';
+        }, 2200);
+
+      } catch (err) {
+        setLoading(false);
+        console.error('[profile-setup] save error:', err);
+        showError('Could not save your profile. Please check your connection and try again.');
+      }
+    }
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+          console.warn('Service worker registration failed:', err);
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<!-- SEO -->
+<meta name="description" content="Manage your freelance contracts on Kreddlo. View, sign, and track all agreements." />
+<meta name="robots" content="noindex, nofollow" />
+<title>Contracts — Kreddlo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
+/* Glass */
+.glass{background:rgba(255,255,255,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.35);border-radius:20px;box-shadow:0 8px 32px rgba(13,33,69,0.08)}
+
+/* Buttons */
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#0d2145;color:#fff;border:none;border-radius:50px;padding:12px 28px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(13,33,69,0.20);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-primary:hover{background:#162f5e;transform:translateY(-1px);box-shadow:0 6px 20px rgba(13,33,69,0.28)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:focus-visible{outline:2px solid #2d8a5e;outline-offset:3px}
+
+.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:#0d2145;border:2px solid #0d2145;border-radius:50px;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s,background .15s,color .15s}
+.btn-secondary:hover{background:#0d2145;color:#fff;transform:translateY(-1px)}
+.btn-secondary:active{transform:translateY(0)}
+.btn-secondary:focus-visible{outline:2px solid #2d8a5e;outline-offset:3px}
+
+.btn-green{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#2d8a5e;color:#fff;border:none;border-radius:50px;padding:12px 28px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(45,138,94,0.30);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-green:hover{background:#236b49;transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,138,94,0.38)}
+.btn-green:active{transform:translateY(0)}
+.btn-green:focus-visible{outline:2px solid #3dbd7a;outline-offset:3px}
+
+/* Input */
+.input-field{width:100%;padding:12px 16px;background:rgba(255,255,255,0.85);border:1.5px solid #e2e8f0;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:500;color:#0d2145;outline:none;transition:border-color .2s,box-shadow .2s}
+.input-field:focus{border-color:#2d8a5e;box-shadow:0 0 0 3px rgba(45,138,94,0.11)}
+.input-field::placeholder{color:rgba(13,33,69,0.35)}
+
+.lbl{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(13,33,69,0.48)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap;flex-shrink:0}
+.badge-green{background:#e8f5ef;color:#2d8a5e}
+.badge-navy{background:rgba(13,33,69,0.08);color:#0d2145}
+.badge-amber{background:#fff3cd;color:#856404}
+.badge-blue{background:#e8f0fe;color:#1a56db}
+.badge-red{background:#fde8e8;color:#c81e1e}
+.badge-grey{background:rgba(13,33,69,0.07);color:rgba(13,33,69,0.55)}
+.badge-purple{background:#f3e8ff;color:#6b21a8}
+
+/* Skeleton */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Pills / Tabs */
+.pill{display:inline-flex;align-items:center;justify-content:center;padding:9px 20px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s,color .15s,transform .15s}
+.pill-inactive{background:rgba(13,33,69,0.06);color:#0d2145}
+.pill-inactive:hover{background:rgba(13,33,69,0.10);transform:translateY(-1px)}
+.pill-active{background:#0d2145;color:#fff;box-shadow:0 4px 16px rgba(13,33,69,0.20)}
+.pill:focus-visible{outline:2px solid #2d8a5e;outline-offset:2px}
+
+/* Nav */
+.nav-link{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.52);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-link:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.88)}
+.nav-link.active{background:rgba(45,138,94,0.22);color:#fff;border-left:3px solid #3dbd7a;padding-left:10px}
+
+/* Mobile menu */
+.slide-in{transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.slide-in.open{transform:translateX(0)}
+.dim{opacity:0;pointer-events:none;transition:opacity .28s}
+.dim.open{opacity:1;pointer-events:all}
+
+/* Contract card */
+.contract-card{padding:20px;transition:box-shadow .2s;cursor:pointer}
+.contract-card:hover{box-shadow:0 10px 40px rgba(13,33,69,0.13)}
+.contract-title{font-size:15px;font-weight:700;color:#0d2145;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+.meta-item{display:flex;align-items:center;gap:4px;color:rgba(13,33,69,0.50)}
+.meta-item span{font-size:12px;font-weight:500;color:rgba(13,33,69,0.50)}
+
+/* Signature row */
+.sig-row{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.sig-check{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.sig-done{background:#e8f5ef;color:#2d8a5e}
+.sig-pending{background:rgba(13,33,69,0.06);color:rgba(13,33,69,0.35)}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(9,24,48,0.55);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;padding:0}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -8px 40px rgba(13,33,69,0.18);width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:28px 24px 40px}
+.modal-handle{width:40px;height:4px;background:rgba(13,33,69,0.12);border-radius:2px;margin:0 auto 22px}
+
+/* Contract view modal */
+.contract-section{margin-bottom:24px}
+.contract-section-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(13,33,69,0.45);margin-bottom:10px}
+.contract-clause{font-size:14px;font-weight:500;color:#0d2145;line-height:1.65;padding:14px 16px;background:#f8f9fb;border-radius:12px;border-left:3px solid #e2e8f0;margin-bottom:8px}
+.contract-clause.highlight{border-left-color:#2d8a5e;background:#e8f5ef}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Blobs */
+.blob-n{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(13,33,69,0.09) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.blob-g{position:absolute;width:440px;height:440px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-60px;left:-80px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+/* Fade up */
+.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.12s}.fu-3{animation-delay:.19s}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px}
+
+/* Pull-to-refresh */
+.ptr-indicator{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-56px);z-index:190;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e2e8f0;border-radius:50px;padding:8px 18px 8px 12px;box-shadow:0 6px 24px rgba(13,33,69,0.10);font-size:13px;font-weight:600;color:#0d2145;opacity:0;pointer-events:none;transition:transform .28s cubic-bezier(.34,1.4,.64,1),opacity .22s ease;white-space:nowrap}
+.ptr-indicator.ptr-pulling{transform:translateX(-50%) translateY(8px);opacity:1}
+.ptr-indicator.ptr-loading{transform:translateX(-50%) translateY(8px);opacity:1}
+.ptr-spinner{width:18px;height:18px;border:2.5px solid rgba(45,138,94,0.20);border-top-color:#2d8a5e;border-radius:50%;animation:ptr-spin .7s linear infinite;flex-shrink:0}
+@keyframes ptr-spin{to{transform:rotate(360deg)}}
+
+/* Swipe hint */
+.swipe-hint{position:fixed;top:0;left:0;width:4px;height:100%;background:linear-gradient(to right,rgba(45,138,94,0.35),transparent);z-index:350;opacity:0;pointer-events:none;transition:opacity .18s}
+.swipe-hint.active{opacity:1}
+
+/* Stats grid — stacks to 1-col on very small screens */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:380px){.stats-grid{grid-template-columns:1fr!important;gap:8px}}
+
+/* Modal detail grid — 1 col on mobile, 2 col on wider */
+.detail-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:480px){.detail-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){
+  #sidebar{display:flex!important}
+  #hamburger{display:none!important}
+  #main-wrap{margin-left:248px}
+  #contracts-grid{grid-template-columns:1fr 1fr!important}
+  .modal-box{border-radius:24px;margin:auto;padding:36px 40px 40px}
+  .modal{align-items:center;padding:20px}
+}
+@media(min-width:768px){
+  #page-content{padding:32px!important}
+  .search-wrap{width:auto!important;max-width:240px!important}
+  .contract-card{padding:24px!important}
+}
+</style>
+
+<style id="mobile-first-patch">
+/* ═══════════════════════════════════════════════════
+   KREDDLO GLOBAL MOBILE-FIRST PATCH
+   Fixes: overflow, stat cards, hamburger, sidebar,
+   loading overlay, products grid, bottom sheet
+═══════════════════════════════════════════════════ */
+
+/* 1. ROOT OVERFLOW FIX — kills horizontal scroll/blank sides */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+/* 2. MAIN WRAP — never wider than viewport */
+#main-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* 3. PAGE CONTENT — proper mobile padding, no bleed */
+#page-content {
+  padding: 18px 16px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden;
+}
+@media (min-width: 1024px) {
+  #main-wrap { width: calc(100% - 248px); max-width: none; overflow-x: visible; }
+  #page-content { padding: 32px !important; width: 100% !important; max-width: none !important; margin: 0 !important; box-sizing: border-box; }
+}
+
+/* 4. STAT CARDS — mobile font scaling so text fits */
+@media (max-width: 400px) {
+  .stat-val { font-size: 22px !important; letter-spacing: -0.5px !important; }
+  .stat-lbl { font-size: 10px !important; letter-spacing: 1px !important; }
+  .stat-card { padding: 16px 14px !important; }
+  .badge { font-size: 10px !important; padding: 2px 8px !important; }
+}
+@media (min-width: 401px) and (max-width: 767px) {
+  .stat-val { font-size: 26px !important; }
+  .stat-card { padding: 18px 16px !important; }
+}
+
+/* 5. STAT GRID — 2-col always on mobile, min 0 to prevent overflow */
+#section-c > div, #stats-grid > div, #summary-cards > div {
+  min-width: 0;
+}
+.stat-card { min-width: 0; }
+
+/* 6. HAMBURGER — always visible on mobile, proper tap size */
+#hamburger {
+  display: flex !important;
+  width: 44px !important;
+  height: 44px !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: rgba(13,33,69,0.08);
+  border-radius: 10px;
+}
+@media (min-width: 1024px) {
+  #hamburger { display: none !important; }
+}
+
+/* 7. TOPBAR — full width, no overflow */
+header {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 14px !important;
+}
+header h1 {
+  font-size: 16px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+header > div:last-child {
+  flex-shrink: 0;
+  gap: 6px !important;
+}
+
+/* 8. MOBILE MENU — full height with safe area, slides from RIGHT */
+#mobile-menu {
+  right: 0 !important;
+  left: auto !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  transform: translateX(100%) !important;
+  padding-top: max(30px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+#mobile-menu.open {
+  transform: translateX(0) !important;
+}
+
+/* 9. LOADING OVERLAY — full screen properly */
+
+
+/* 10. PRODUCTS GRID — single col mobile */
+#products-grid, #products-grid-sk {
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+}
+@media (min-width: 600px) {
+  #products-grid, #products-grid-sk {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (min-width: 1024px) {
+  #products-grid, #products-grid-sk {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* 11. PRODUCT CARDS — prevent overflow */
+.prod-card { min-width: 0; width: 100%; }
+.prod-title { word-break: break-word; }
+
+/* 12. BOTTOM SHEET (create product modal) — mobile first */
+.cp-overlay {
+  padding: 0 !important;
+  align-items: flex-end !important;
+}
+.cp-sheet {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-radius: 24px 24px 0 0 !important;
+  max-height: 92dvh !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (min-width: 600px) {
+  .cp-overlay { align-items: center !important; padding: 20px !important; }
+  .cp-sheet {
+    max-width: 600px !important;
+    border-radius: 24px !important;
+    max-height: 90dvh !important;
+  }
+}
+
+/* 13. QUICK CARDS — equal width, responsive */
+.qcard {
+  width: calc(33.333% - 8px) !important;
+  min-width: 0 !important;
+  padding: 12px 6px !important;
+}
+.qcard-lbl { font-size: 10px !important; }
+@media (max-width: 360px) {
+  .qcard { width: calc(33.333% - 6px) !important; padding: 10px 4px !important; }
+  .qcard-icon { width: 34px !important; height: 34px !important; }
+}
+
+/* 14. SECTION HEADER WRAP (products page title + button) */
+.fu.fu-1 > div { min-width: 0; }
+#create-product-btn { flex-shrink: 0; white-space: nowrap; }
+@media (max-width: 400px) {
+  /* Stack the title+button on very small screens */
+  .fu.fu-1[style*="justify-content:space-between"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+  #create-product-btn { width: 100% !important; }
+}
+
+/* 15. MODALS — full width on mobile */
+.modal-box {
+  width: calc(100vw - 32px) !important;
+  max-width: 500px !important;
+  max-height: 90dvh !important;
+  overflow-y: auto !important;
+  padding: 22px 18px 32px !important;
+}
+
+/* 16. GLASS CARDS — no overflow */
+.glass { min-width: 0; }
+
+/* 17. PERIOD PILLS (earnings) — wrap and small on mobile */
+.pill { padding: 8px 14px !important; font-size: 12px !important; }
+
+/* 18. EARNINGS SUMMARY CARDS — single col mobile */
+#summary-cards {
+  grid-template-columns: 1fr !important;
+}
+@media (min-width: 768px) {
+  #summary-cards { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+/* 19. PAYOUT TABLE — hide on mobile, show cards */
+@media (max-width: 767px) {
+  .payout-desktop { display: none !important; }
+  .payout-mobile { display: block !important; }
+}
+@media (min-width: 768px) {
+  .payout-desktop { display: table !important; }
+  .payout-mobile { display: none !important; }
+}
+
+/* 20. TOAST — above safe area on mobile */
+.toast {
+  bottom: max(24px, env(safe-area-inset-bottom, 24px)) !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+/* 21. NAV LINKS — prevent text overflow in sidebar */
+.nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+</style>
+</head>
+<body style="visibility:hidden" class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<!-- LOADING OVERLAY -->
+
+<style>
+</style>
+
+<!-- MOBILE BACKDROP -->
+<div id="mobile-dim" class="dim" onclick="closeMobileMenu()" style="position:fixed;inset:0;z-index:400;background:rgba(9,24,48,0.58);"></div>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="slide-in" style="position:fixed;top:0;right:0;width:272px;height:100%;height:100dvh;background:#091830;z-index:500;padding:30px 22px;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;background:rgba(255,255,255,0.08);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:36px;margin-top:2px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <nav id="mobile-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="mb-signout" style="margin-top:20px;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<aside id="sidebar" style="position:fixed;top:0;left:0;width:248px;height:100%;background:#091830;z-index:300;padding:30px 18px;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <a href="/dashboard.html" style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;text-decoration:none;display:block;margin-bottom:44px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <nav id="desktop-nav" style="flex:1;display:flex;flex-direction:column;gap:3px;"></nav>
+  <button id="dt-signout" style="margin-top:auto;width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:11px;padding:11px 15px;color:rgba(255,255,255,0.58);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s,color .2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.58)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </button>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrap" style="min-height:100vh;display:flex;flex-direction:column;">
+
+  <!-- TOPBAR -->
+  <header style="position:sticky;top:0;z-index:200;height:64px;background:rgba(248,249,251,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+    <h1 style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.3px;margin:0;">Contracts</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="window.location.href='/notifications.html'" style="position:relative;width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="bell-dot" style="display:none;position:absolute;top:7px;right:7px;width:8px;height:8px;background:#c81e1e;border-radius:50%;border:2px solid #f8f9fb;"></span>
+      </button>
+      <div id="user-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#2d8a5e,#3dbd7a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;">MR</div>
+      <button id="hamburger" onclick="openMobileMenu()" style="width:38px;height:38px;background:transparent;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(13,33,69,0.06)'" onmouseout="this.style.background='transparent'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main id="page-content" style="flex:1;padding:22px 18px;width:100%;position:relative;">
+    <div class="blob-n"></div>
+    <div class="blob-g"></div>
+    <div style="position:relative;z-index:1;">
+
+      <!-- Tabs + Search -->
+      <div class="fu fu-1" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="pill pill-active" data-tab="all" onclick="selectTab('all')">All</button>
+          <button class="pill pill-inactive" data-tab="pending" onclick="selectTab('pending')">Pending Signature</button>
+          <button class="pill pill-inactive" data-tab="active" onclick="selectTab('active')">Active</button>
+          <button class="pill pill-inactive" data-tab="completed" onclick="selectTab('completed')">Completed</button>
+        </div>
+        <div class="search-wrap" style="position:relative;width:100%;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.40)" stroke-width="2" stroke-linecap="round" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="search-input" class="input-field" placeholder="Search contracts" style="padding-left:38px;" oninput="renderContracts()"/>
+        </div>
+      </div>
+
+      <!-- Summary stats row -->
+      <div id="stats-row" class="fu fu-2 stats-grid" style="margin-bottom:24px;"></div>
+
+      <!-- Contracts grid -->
+      <div id="contracts-grid" class="fu fu-3" style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:26px;"></div>
+
+      <!-- Empty state -->
+      <div id="empty-state" style="display:none;"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- CONTRACT DETAIL MODAL (bottom sheet on mobile, centered on desktop) -->
+<div id="contract-modal" class="modal" onclick="if(event.target===this)closeContractModal()">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div id="modal-content"><!-- injected by JS --></div>
+  </div>
+</div>
+
+<!-- SIGN CONFIRM MODAL -->
+<div id="sign-modal" class="modal" onclick="if(event.target===this)closeSignModal()">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-handle"></div>
+    <h3 style="font-size:18px;font-weight:800;color:#0d2145;margin:0 0 10px;">Sign Contract</h3>
+    <p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.55);margin:0 0 22px;line-height:1.65;">
+      By signing you agree to the terms of this contract. Your digital signature is legally binding.
+    </p>
+    <div style="background:#f8f9fb;border-radius:12px;padding:16px 18px;margin-bottom:20px;">
+      <p class="lbl" style="margin:0 0 6px;">Contract</p>
+      <p id="sign-modal-title" style="font-size:14px;font-weight:700;color:#0d2145;margin:0;"></p>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label class="lbl" for="sign-name-input" style="display:block;margin-bottom:7px;">Type your full legal name to sign</label>
+      <input type="text" id="sign-name-input" class="input-field" style="font-size:16px;" placeholder="e.g. Jane Doe" autocomplete="name" maxlength="120" oninput="document.getElementById('sign-name-error').style.display='none';"/>
+      <p id="sign-name-error" style="display:none;font-size:12px;font-weight:600;color:#c81e1e;margin:6px 0 0;">Please type your full name (at least 2 characters) to sign.</p>
+      <p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.45);margin:8px 0 0;line-height:1.5;">This becomes your digital signature on the contract PDF, recorded with a timestamp and IP address.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-secondary" style="flex:1;" onclick="closeSignModal()">Cancel</button>
+      <button id="sign-confirm-btn" class="btn-green" style="flex:1;" onclick="confirmSign()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Sign Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PULL-TO-REFRESH INDICATOR -->
+<div id="ptr-indicator" class="ptr-indicator" aria-live="polite" aria-label="Refreshing">
+  <div class="ptr-spinner"></div>
+  <span id="ptr-label">Refreshing</span>
+</div>
+
+<!-- SWIPE HINT -->
+<div id="swipe-hint" class="swipe-hint"></div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ============ STATE ============
+var DEMO_USER = { uid: null, name: '', role: 'freelancer' };
+var CONTRACTS = [];
+var currentTab = 'all';
+var activeContractId = null;
+var pendingSignContractId = null;
+
+// ============ NAV ============
+var NAV_FREELANCER = [
+  { label:'Dashboard',     href:'/dashboard.html',          icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Earnings',      href:'/dashboard-earnings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { label:'Projects',      href:'/dashboard-projects.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Invoices',     href:'/dashboard-invoices.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+  { label:'Store',         href:'/store.html',              icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Products',      href:'/dashboard-products.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { label:'Purchases',     href:'/buyer-purchases.html',    icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate',     href:'/dashboard-affiliate.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Contracts',     href:'/dashboard-contracts.html',icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Withdraw',      href:'/dashboard-withdraw.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' },
+  { label:'Browse',        href:'/browse.html',             icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Settings',      href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+];
+var NAV_BUYER = [
+  { label:'Dashboard', href:'/buyer-dashboard.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+  { label:'Projects',  href:'/buyer-projects.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+  { label:'Contracts', href:'/dashboard-contracts.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>' },
+  { label:'Browse',    href:'/browse.html',         icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { label:'Payments',  href:'/buyer-payments.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' },
+  { label:'Purchases', href:'/buyer-purchases.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { label:'Affiliate', href:'/dashboard-affiliate.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { label:'Settings',  href:'/dashboard-settings.html', icon:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' }
+];
+var NAV = NAV_FREELANCER;
+
+function buildNav(uid, affiliateEnabled) {
+  var cur = (window.location.pathname.split('/').pop() || 'dashboard.html');
+  var items = NAV.filter(function(n) {
+    if (n.label === 'Affiliate') return affiliateEnabled === true;
+    return true;
+  });
+  var html = items.map(function(n) {
+    var href = n.href;
+    if (n.label === 'Store'   && uid) href = '/store.html?uid='   + uid;
+    if (n.label === 'Profile' && uid) href = '/profile.html?uid=' + uid;
+    var active = cur === n.href.replace('/','') ? ' active' : '';
+    return '<a href="'+href+'" class="nav-link'+active+'">'+n.icon+n.label+'</a>';
+  }).join('');
+  document.getElementById('mobile-nav').innerHTML = html;
+  document.getElementById('desktop-nav').innerHTML = html;
+}
+
+// ============ BODY SCROLL LOCK (touch-safe, fixes iOS background shift) ============
+// overflow:hidden on <body> does not reliably stop background scroll/bounce on
+// iOS Safari while a modal or menu is open. This fixed-position technique pins
+// the body at its current scroll offset instead, which iOS respects, and
+// restores the exact scroll position on unlock.
+function lockBodyScroll() {
+  if (document.body.classList.contains('body-scroll-locked')) return;
+  window._scrollLockY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + window._scrollLockY + 'px';
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.classList.add('body-scroll-locked');
+}
+function unlockBodyScroll() {
+  if (!document.body.classList.contains('body-scroll-locked')) return;
+  document.body.classList.remove('body-scroll-locked');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  window.scrollTo(0, window._scrollLockY || 0);
+  window._scrollLockY = 0;
+}
+
+// ============ MOBILE MENU ============
+function openMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('open');
+  document.getElementById('mobile-dim').classList.add('open');
+  lockBodyScroll();
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('mobile-dim').classList.remove('open');
+  unlockBodyScroll();
+}
+
+// ============ LOGOUT ============
+function handleLogout() {
+  if (window._auth) {
+    window._auth.signOut().then(function(){ window.location.href = '/login.html'; });
+  } else {
+    window.location.href = '/login.html';
+  }
+}
+document.getElementById('mb-signout').onclick = handleLogout;
+document.getElementById('dt-signout').onclick = handleLogout;
+
+// ============ TOAST ============
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
+// ============ STATUS CONFIG ============
+var STATUS_CONFIG = {
+  awaiting_signatures: { label: 'Pending Signature', cls: 'badge-amber'  },
+  active:              { label: 'Active',             cls: 'badge-blue'   },
+  in_progress:         { label: 'Active',             cls: 'badge-blue'   },
+  pending_payment:     { label: 'Pending Signature',  cls: 'badge-amber'  },
+  completed:           { label: 'Completed',          cls: 'badge-green'  },
+  disputed:            { label: 'Disputed',           cls: 'badge-red'    },
+  cancelled:           { label: 'Cancelled',          cls: 'badge-grey'   }
+};
+
+// ============ TAB SELECTION ============
+function selectTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.pill[data-tab]').forEach(function(btn) {
+    if (btn.dataset.tab === tab) {
+      btn.classList.add('pill-active');
+      btn.classList.remove('pill-inactive');
+    } else {
+      btn.classList.add('pill-inactive');
+      btn.classList.remove('pill-active');
+    }
+  });
+  renderContracts();
+}
+
+// ============ STATS ROW ============
+function renderStats() {
+  var total     = CONTRACTS.length;
+  var pending   = CONTRACTS.filter(function(c){ return c.status === 'awaiting_signatures'; }).length;
+  var active    = CONTRACTS.filter(function(c){ return c.status === 'active'; }).length;
+  var completed = CONTRACTS.filter(function(c){ return c.status === 'completed'; }).length;
+
+  var stats = [
+    { label: 'Total Contracts', value: total,     icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' },
+    { label: 'Active',          value: active,    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+    { label: 'Completed',       value: completed, icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' }
+  ];
+
+  document.getElementById('stats-row').innerHTML = stats.map(function(s) {
+    return '<div class="glass" style="padding:16px;border-radius:16px;">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+      + s.icon
+      + '<span style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(13,33,69,0.45);">'+s.label+'</span>'
+      + '</div>'
+      + '<p style="font-size:26px;font-weight:800;color:#0d2145;margin:0;letter-spacing:-0.8px;">'+s.value+'</p>'
+      + '</div>';
+  }).join('');
+}
+
+// ============ SIGNATURE STATUS HELPER ============
+function sigStatus(signed) {
+  if (signed) {
+    return '<span class="sig-row"><span class="sig-check sig-done"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>Signed</span>';
+  }
+  return '<span class="sig-row"><span class="sig-check sig-pending"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Awaiting</span>';
+}
+
+// ============ ACTION BUTTON HELPER ============
+function buildCardAction(c) {
+  var isFreelancer = DEMO_USER.role === 'freelancer';
+
+  if (c.status === 'awaiting_signatures') {
+    var iSigned = isFreelancer ? c.freelancerSigned : c.buyerSigned;
+    if (!iSigned) {
+      return '<button class="btn-green" style="width:100%;margin-top:14px;" onclick="event.stopPropagation();openSignModal(\''+c.id+'\')">'
+        + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'
+        + 'Sign Contract</button>';
+    }
+    return '<p style="font-size:13px;font-weight:600;color:rgba(13,33,69,0.50);margin-top:14px;text-align:center;">Waiting for other party to sign</p>';
+  }
+
+  if (c.status === 'active') {
+    // Fix 1: this link was hardcoded to the freelancer-only projects page,
+    // which redirects any non-freelancer straight to /login.html. A buyer
+    // clicking this had nowhere to go and no way to find the payment button
+    // that actually lives on /buyer-projects.html.
+    var projectsHref = (DEMO_USER.role === 'freelancer') ? '/dashboard-projects.html' : '/buyer-projects.html';
+    return '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">'
+      + '<button class="btn-secondary" style="flex:1;min-width:120px;" onclick="event.stopPropagation();viewContractPdf(\''+c.id+'\')">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      + 'View PDF</button>'
+      + '<a href="'+projectsHref+'" class="btn-primary" style="flex:1;min-width:120px;text-decoration:none;">'
+      + 'Go to Project</a>'
+      + '</div>';
+  }
+
+  if (c.status === 'completed') {
+    return '<button class="btn-secondary" style="width:100%;margin-top:14px;" onclick="event.stopPropagation();viewContractPdf(\''+c.id+'\')">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+      + 'Download Contract</button>';
+  }
+
+  return '';
+}
+
+// ============ RENDER CONTRACTS ============
+function renderContracts() {
+  var grid  = document.getElementById('contracts-grid');
+  var empty = document.getElementById('empty-state');
+  var searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+
+  var filtered = CONTRACTS.filter(function(c) {
+    if (currentTab === 'pending')   return c.status === 'awaiting_signatures';
+    if (currentTab === 'active')    return c.status === 'active';
+    if (currentTab === 'completed') return c.status === 'completed' || c.status === 'disputed' || c.status === 'cancelled';
+    return true; // 'all'
+  });
+
+  if (searchTerm) {
+    filtered = filtered.filter(function(c) {
+      return (c.title + ' ' + c.counterparty).toLowerCase().indexOf(searchTerm) !== -1;
+    });
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    grid.style.display = 'none';
+    var msgs = {
+      all:       'No contracts yet. Contracts are created when a project starts.',
+      pending:   'No contracts waiting for your signature.',
+      active:    'No active contracts right now.',
+      completed: 'No completed contracts yet.'
+    };
+    empty.innerHTML = '<div class="glass empty-state">'
+      + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.25)" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 16px;display:block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'
+      + '<h3 style="font-size:16px;font-weight:700;color:#0d2145;margin:0 0 6px;">No contracts found</h3>'
+      + '<p style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);margin:0;">' + (msgs[currentTab]||msgs.all) + '</p>'
+      + '</div>';
+    empty.style.display = 'block';
+    return;
+  }
+
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(function(c) {
+    var sc    = STATUS_CONFIG[c.status] || { label: c.status, cls: 'badge-grey' };
+    var isPending = c.status === 'awaiting_signatures';
+
+    return '<div class="glass contract-card" onclick="openContractModal(\''+c.id+'\')" tabindex="0" role="button" aria-label="View contract: '+c.title+'">'
+      // Header row
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px;">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<p class="contract-title">'+c.title+'</p>'
+      + '<p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.45);margin:4px 0 0;">with '+c.counterparty+'</p>'
+      + '</div>'
+      + '<span class="badge '+sc.cls+'">'+sc.label+'</span>'
+      + '</div>'
+      // Meta row
+      + '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 0;border-top:1px solid rgba(13,33,69,0.06);border-bottom:1px solid rgba(13,33,69,0.06);margin-bottom:12px;">'
+      + '<div class="meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>'+c.amount+'</span></div>'
+      + '<div class="meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>'+(c.createdDate||'—')+'</span></div>'
+      + '</div>'
+      // Signature status
+      + (isPending ? '<div style="display:flex;gap:16px;margin-bottom:4px;">'
+        + '<div><p class="lbl" style="margin:0 0 4px;">Freelancer</p>'+sigStatus(c.freelancerSigned)+'</div>'
+        + '<div><p class="lbl" style="margin:0 0 4px;">Buyer</p>'+sigStatus(c.buyerSigned)+'</div>'
+        + '</div>' : '')
+      // Action
+      + buildCardAction(c)
+      + '</div>';
+  }).join('');
+}
+
+// ============ CONTRACT MODAL ============
+function openContractModal(id) {
+  var c = CONTRACTS.find(function(x){ return x.id === id; });
+  if (!c) return;
+  activeContractId = id;
+
+  var sc = STATUS_CONFIG[c.status] || { label: c.status, cls: 'badge-grey' };
+
+  var html = '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:20px;">'
+    + '<div style="flex:1;min-width:0;">'
+    + '<h3 style="font-size:18px;font-weight:800;color:#0d2145;margin:0 0 4px;line-height:1.3;">'+c.title+'</h3>'
+    + '<p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.50);margin:0;">with '+c.counterparty+'</p>'
+    + '</div>'
+    + '<span class="badge '+sc.cls+'">'+sc.label+'</span>'
+    + '</div>';
+
+  // Key details
+  html += '<div class="detail-grid" style="margin-bottom:20px;">'
+    + detailCell('Contract Value', c.amount)
+    + detailCell('Created', c.createdDate || '—')
+    + detailCell('Deadline', c.deadline || '—')
+    + detailCell('Currency', c.currency || 'USD')
+    + '</div>';
+
+  // Signature section
+  html += '<div class="contract-section">'
+    + '<p class="contract-section-title">Signatures</p>'
+    + '<div style="display:flex;gap:16px;">'
+    + '<div style="flex:1;background:#f8f9fb;border-radius:12px;padding:14px;"><p class="lbl" style="margin:0 0 6px;">Freelancer</p>'+sigStatus(c.freelancerSigned)+'</div>'
+    + '<div style="flex:1;background:#f8f9fb;border-radius:12px;padding:14px;"><p class="lbl" style="margin:0 0 6px;">Buyer</p>'+sigStatus(c.buyerSigned)+'</div>'
+    + '</div></div>';
+
+  // Scope of work
+  if (c.scope) {
+    html += '<div class="contract-section">'
+      + '<p class="contract-section-title">Scope of Work</p>'
+      + '<div class="contract-clause highlight">'+c.scope+'</div>'
+      + '</div>';
+  }
+
+  // Milestones
+  if (c.milestones && c.milestones.length) {
+    html += '<div class="contract-section"><p class="contract-section-title">Milestones</p>'
+      + c.milestones.map(function(m) {
+          return '<div class="contract-clause" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">'
+            + '<span>'+m.title+'</span>'
+            + '<span style="font-weight:700;color:#0d2145;white-space:nowrap;">'+m.amount+'</span>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
+
+  // Payment terms
+  if (c.paymentTerms) {
+    html += '<div class="contract-section">'
+      + '<p class="contract-section-title">Payment Terms</p>'
+      + '<div class="contract-clause">'+c.paymentTerms+'</div>'
+      + '</div>';
+  }
+
+  // Revision policy
+  if (c.revisions) {
+    html += '<div class="contract-section">'
+      + '<p class="contract-section-title">Revision Policy</p>'
+      + '<div class="contract-clause">'+c.revisions+'</div>'
+      + '</div>';
+  }
+
+  // Action buttons
+  html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">';
+  if (c.contractPdfUrl) {
+    html += '<a href="'+c.contractPdfUrl+'" target="_blank" rel="noopener" class="btn-secondary" style="flex:1;min-width:120px;text-decoration:none;">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+      + 'Download PDF</a>';
+  }
+  var isFreelancer = DEMO_USER.role === 'freelancer';
+  var iSigned = isFreelancer ? c.freelancerSigned : c.buyerSigned;
+  if (c.status === 'awaiting_signatures' && !iSigned) {
+    html += '<button class="btn-green" style="flex:1;min-width:120px;" onclick="closeContractModal();openSignModal(\''+c.id+'\')">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'
+      + 'Sign Contract</button>';
+  }
+  html += '<button class="btn-secondary" style="flex:1;min-width:120px;" onclick="closeContractModal()">Close</button>';
+  html += '</div>';
+
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('contract-modal').classList.add('open');
+  lockBodyScroll();
+}
+
+function detailCell(label, value) {
+  return '<div style="background:#f8f9fb;border-radius:12px;padding:12px 14px;">'
+    + '<p class="lbl" style="margin:0 0 4px;">'+label+'</p>'
+    + '<p style="font-size:14px;font-weight:700;color:#0d2145;margin:0;">'+value+'</p>'
+    + '</div>';
+}
+
+function closeContractModal() {
+  document.getElementById('contract-modal').classList.remove('open');
+  unlockBodyScroll();
+  activeContractId = null;
+}
+
+// ============ SIGN MODAL ============
+function openSignModal(id) {
+  var c = CONTRACTS.find(function(x){ return x.id === id; });
+  if (!c) return;
+  pendingSignContractId = id;
+  document.getElementById('sign-modal-title').textContent = c.title;
+  // Fix 1: pre-fill with the signer's account name (still editable) instead of
+  // leaving the signature field blank — most people signing legitimately will
+  // just confirm it, but it must be a real typed name, not an empty click.
+  var nameInput = document.getElementById('sign-name-input');
+  nameInput.value = (DEMO_USER && DEMO_USER.name) ? DEMO_USER.name : '';
+  document.getElementById('sign-name-error').style.display = 'none';
+  document.getElementById('sign-modal').classList.add('open');
+  lockBodyScroll();
+}
+function closeSignModal() {
+  document.getElementById('sign-modal').classList.remove('open');
+  unlockBodyScroll();
+  pendingSignContractId = null;
+  document.getElementById('sign-name-input').value = '';
+  document.getElementById('sign-name-error').style.display = 'none';
+}
+
+async function confirmSign() {
+  if (!pendingSignContractId) return;
+
+  // Fix 1: require a real typed name before this counts as a signature.
+  // Previously this button signed the contract with no signature data at all.
+  var nameInput = document.getElementById('sign-name-input');
+  var typedName = nameInput.value.trim();
+  if (typedName.length < 2) {
+    document.getElementById('sign-name-error').style.display = 'block';
+    nameInput.focus();
+    return;
+  }
+
+  var btn = document.getElementById('sign-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:ptr-spin .65s linear infinite;display:inline-block;"></span> Signing...';
+
+  try {
+    var c    = CONTRACTS.find(function(x){ return x.id === pendingSignContractId; });
+    var role = DEMO_USER.role === 'freelancer' ? 'freelancer' : 'buyer';
+
+    var res = await fetch('/.netlify/functions/sign-contract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (auth.currentUser ? await auth.currentUser.getIdToken() : '') },
+      body: JSON.stringify({
+        contractId: pendingSignContractId,
+        role:       role,
+        signature:  typedName,
+        ip:         '',
+      }),
+    });
+
+    var json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Signing failed');
+
+    // Optimistic local update
+    if (c) {
+      if (role === 'freelancer') c.freelancerSigned = true;
+      else                       c.buyerSigned      = true;
+      if (json.bothSigned) {
+        c.status         = 'active';
+        c.contractPdfUrl = json.contractPdfUrl || null;
+      }
+    }
+
+    closeSignModal();
+    renderContracts();
+    renderStats();
+    showToast(json.bothSigned ? 'Both parties signed — contract is now active!' : 'Contract signed successfully');
+  } catch(err) {
+    console.error('[confirmSign]', err);
+    showToast(err.message || 'Could not sign. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Sign Now';
+  }
+}
+
+// ============ VIEW / DOWNLOAD PDF ============
+async function viewContractPdf(id) {
+  var c = CONTRACTS.find(function(x){ return x.id === id; });
+  if (!c) return;
+  if (c.contractPdfUrl) {
+    window.open(c.contractPdfUrl, '_blank');
+    return;
+  }
+  if (!DEMO_USER.uid || !auth.currentUser) { showToast('Not signed in'); return; }
+  // FIX: previously sent the bare uid, which download-contract.js trusted
+  // without verification. Now sends a real Firebase ID token (verified
+  // server-side) since this is a plain window.open() navigation and can't
+  // carry an Authorization header.
+  //
+  // Open the tab synchronously, BEFORE the async getIdToken() call, so the
+  // browser still associates it with this click's user gesture — most
+  // browsers block window.open() called after an await, since the
+  // gesture-trust window doesn't survive the microtask boundary.
+  var pdfTab = window.open('', '_blank');
+  try {
+    var idToken = await auth.currentUser.getIdToken();
+    var url = '/.netlify/functions/download-contract?contractId=' + encodeURIComponent(id)
+            + '&idToken=' + encodeURIComponent(idToken);
+    if (pdfTab) {
+      pdfTab.location.href = url;
+    } else {
+      // Popup was blocked even for the blank tab — fall back to a direct
+      // navigation in the current tab's context isn't appropriate here,
+      // so just inform the user.
+      showToast('Please allow pop-ups to download this contract.');
+    }
+  } catch (err) {
+    if (pdfTab) pdfTab.close();
+    showToast('Could not prepare download. Please try again.');
+  }
+}
+
+// ============ LOAD CONTRACTS FROM FIRESTORE ============
+// Fix #9: Query `projects` collection instead of the orphaned `contracts`
+// collection. The `projects` collection already has all required fields:
+// freelancerSigned, buyerSigned, buyerSignature, freelancerSignature,
+// freelancerUid, buyerUid, title, scope/description, amount/budget,
+// deadline, currency, status, createdAt, etc.
+//
+// Fix 4: converted from one-shot getDocs to onSnapshot so both parties
+// see signature updates live without a manual refresh.
+
+var _contractsUnsubscribe = null; // holds the active listener teardown fn
+
+function _processContractsSnap(snap) {
+  var isF = DEMO_USER.role === 'freelancer';
+
+  CONTRACTS = snap.docs.map(function(d) {
+    var data = d.data();
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      // Firestore Timestamp
+      if (ts && typeof ts.toDate === 'function') return ts.toDate().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      // ISO string or plain date string (deadline is stored as string in projects)
+      var dt = new Date(ts);
+      if (!isNaN(dt.getTime())) return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      return '—';
+    }
+
+    // Map `projects` status → display status.
+    // `pending_payment` means awaiting freelancer signature (and payment),
+    // so we show it in the "Pending Signature" tab.
+    // `in_progress` is the same as `active` for display purposes.
+    var rawStatus = data.status || 'pending_payment';
+    var displayStatus;
+    if (rawStatus === 'pending_payment') {
+      displayStatus = 'awaiting_signatures';
+    } else if (rawStatus === 'in_progress') {
+      displayStatus = 'active';
+    } else {
+      // active, completed, disputed, cancelled — pass through as-is
+      displayStatus = rawStatus;
+    }
+
+    // Budget display: projects store `currency` + `amount` (or `budget`)
+    var amt = data.amount || data.budget || '—';
+    var cur = data.currency || 'USD';
+    var amountDisplay = cur + ' ' + amt;
+
+    return {
+      id:               d.id,
+      title:            data.title            || data.projectTitle || 'Untitled Project',
+      counterparty:     isF
+        ? (data.buyerName  || data.buyerEmail  || 'Client')
+        : (data.freelancerName || data.freelancerUsername || 'Freelancer'),
+      amount:           amountDisplay,
+      currency:         cur,
+      status:           displayStatus,
+      freelancerSigned: data.freelancerSigned || false,
+      buyerSigned:      data.buyerSigned      || false,
+      contractPdfUrl:   data.contractPdfUrl   || null,
+      createdDate:      fmtDate(data.createdAt),
+      deadline:         fmtDate(data.deadline),
+      // projects store scope of work as `scope` (set from `description` in create-project.js)
+      scope:            data.scope || data.description || null,
+      milestones:       data.milestones       || [],
+      paymentTerms:     data.paymentTerms     || null,
+      revisions:        data.revisions        || null,
+      _rawCreatedAt:    data.createdAt        || null,
+    };
+  });
+  // Client-side sort ensures newest-first even when the fallback (no-orderBy) query was used
+  CONTRACTS.sort(function(a, b) {
+    var ta = a._rawCreatedAt ? (typeof a._rawCreatedAt.toMillis === 'function' ? a._rawCreatedAt.toMillis() : new Date(a._rawCreatedAt).getTime()) : 0;
+    var tb = b._rawCreatedAt ? (typeof b._rawCreatedAt.toMillis === 'function' ? b._rawCreatedAt.toMillis() : new Date(b._rawCreatedAt).getTime()) : 0;
+    return tb - ta;
+  });
+
+  renderStats();
+  renderContracts();
+  document.body.style.visibility = 'visible';
+
+  // Fix 1: support deep-linking straight into the sign modal, e.g.
+  // /dashboard-contracts.html?signId=<id>, so other pages (like
+  // dashboard-projects.html) can link directly into the real signing flow
+  // instead of duplicating a separate "accept" action of their own.
+  if (!window._signDeepLinkHandled) {
+    window._signDeepLinkHandled = true;
+    try {
+      var signId = new URLSearchParams(window.location.search).get('signId');
+      if (signId) {
+        var target = CONTRACTS.find(function(x){ return x.id === signId; });
+        if (target && target.status === 'awaiting_signatures') {
+          var alreadySigned = isF ? target.freelancerSigned : target.buyerSigned;
+          if (!alreadySigned) openSignModal(signId);
+        }
+      }
+    } catch (e) { /* non-fatal — deep link is a convenience, never block the page */ }
+  }
+}
+
+function loadContracts(uid) {
+  // Tear down any existing listener before creating a new one
+  if (_contractsUnsubscribe) {
+    _contractsUnsubscribe();
+    _contractsUnsubscribe = null;
+  }
+
+  var q = window._fsQuery;
+  var isF = DEMO_USER.role === 'freelancer';
+
+  // Try the indexed query (with orderBy) first. If the composite index is not
+  // yet deployed this throws FAILED_PRECONDITION — in that case we fall back to
+  // a simple equality query and sort client-side so contracts still appear.
+  var indexedQuery = q.query(
+    q.collection(window.db, 'projects'),
+    q.where(isF ? 'freelancerUid' : 'buyerUid', '==', uid),
+    q.orderBy('createdAt', 'desc')
+  );
+
+  var fallbackQuery = q.query(
+    q.collection(window.db, 'projects'),
+    q.where(isF ? 'freelancerUid' : 'buyerUid', '==', uid)
+  );
+
+  function attachListener(firestoreQuery, isFallback) {
+    _contractsUnsubscribe = q.onSnapshot(
+      firestoreQuery,
+      function(snap) {
+        _processContractsSnap(snap);
+      },
+      function(err) {
+        if (!isFallback && err && (err.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(err.message || ''))) {
+          console.warn('[loadContracts] Composite index not yet ready — falling back to unordered query. Run: firebase deploy --only firestore:indexes');
+          // Tear down the failed listener and attach on the simpler query
+          if (_contractsUnsubscribe) { _contractsUnsubscribe(); _contractsUnsubscribe = null; }
+          attachListener(fallbackQuery, true);
+        } else if (isFallback && err && (err.code === 'failed-precondition' || /FAILED_PRECONDITION/i.test(err.message || ''))) {
+          console.error('[loadContracts] Missing composite index on projects — run: firebase deploy --only firestore:indexes', err);
+          showToast('Setting up — try again in a minute.');
+          document.body.style.visibility = 'visible';
+        } else {
+          console.error('[loadContracts]', err);
+          showToast('Could not load contracts. Pull down to refresh.');
+          document.body.style.visibility = 'visible';
+        }
+      }
+    );
+  }
+
+  attachListener(indexedQuery, false);
+}
+
+// ============ BOOT ============
+window._boot = function(user) {
+  DEMO_USER.uid  = user.uid;
+  DEMO_USER.name = user.displayName || user.email || 'User';
+  DEMO_USER.role = user.role || 'freelancer'; // overridden by Firestore below
+  DEMO_USER.affiliateEnabled = false;
+
+  var parts = DEMO_USER.name.trim().split(' ');
+  document.getElementById('user-avatar').textContent =
+    parts.length >= 2 ? parts[0][0]+parts[parts.length-1][0] : DEMO_USER.name.slice(0,2).toUpperCase();
+
+  document.getElementById('bell-dot').style.display = 'block';
+
+  // Fetch user role from Firestore, build the correct nav, then load contracts
+  (async function() {
+    try {
+      var snap = await window._fsQuery.getDoc(window._fsQuery.doc(window.db, 'users', user.uid));
+      if (snap.exists()) {
+        DEMO_USER.role = snap.data().role || 'freelancer';
+        DEMO_USER.affiliateEnabled = snap.data().affiliateEnabled === true;
+      }
+    } catch(e) { /* non-fatal, default to freelancer */ }
+    NAV = (DEMO_USER.role === 'buyer') ? NAV_BUYER : NAV_FREELANCER;
+    buildNav(user.uid, DEMO_USER.affiliateEnabled);
+    loadContracts(user.uid);
+  })();
+};
+</script>
+
+<!-- PULL-TO-REFRESH -->
+<script>
+(function(){
+  var startY = 0, pulling = false, threshold = 64;
+  var ind = document.getElementById('ptr-indicator');
+  var lbl = document.getElementById('ptr-label');
+
+  document.addEventListener('touchstart', function(e){
+    if (window.scrollY === 0) startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!startY) return;
+    var dy = e.touches[0].clientY - startY;
+    if (dy > 10 && window.scrollY === 0) {
+      pulling = true;
+      ind.classList.add('ptr-pulling');
+      lbl.textContent = dy > threshold ? 'Release to refresh' : 'Pull to refresh';
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(){
+    if (pulling) {
+      pulling = false;
+      ind.classList.remove('ptr-pulling');
+      ind.classList.add('ptr-loading');
+      lbl.textContent = 'Refreshing';
+      startY = 0;
+      // The onSnapshot listener keeps contracts live automatically;
+      // we just dismiss the indicator after a short delay for user reassurance.
+      setTimeout(function(){
+        ind.classList.remove('ptr-loading');
+      }, 1200);
+    }
+    startY = 0;
+  });
+})();
+</script>
+
+<!-- KEYBOARD / SWIPE CLOSE MODAL -->
+<script>
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    closeContractModal();
+    closeSignModal();
+    closeMobileMenu();
+  }
+});
+// Allow keyboard activation of contract cards
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && e.target && e.target.classList.contains('contract-card')) {
+    e.target.click();
+  }
+});
+</script>
+
+<!-- SERVICE WORKER -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+<!-- SAFETY TIMER: force-hide loading overlay after 10s -->
+<script>
+(function() {
+  var _safetyTimer = setTimeout(function() {
+    document.body.style.visibility = 'visible';
+    if (CONTRACTS.length === 0) { renderStats(); renderContracts(); }
+  }, 10000);
+  window._clearSafetyTimer = function() { clearTimeout(_safetyTimer); };
+})();
+</script>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp }                                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut }                 from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, updateDoc, serverTimestamp, collection, query, where, orderBy, getDocs, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+    authDomain:        'kreddlo.firebaseapp.com',
+    projectId:         'kreddlo',
+    storageBucket:     'kreddlo.firebasestorage.app',
+    messagingSenderId: '764500458567',
+    appId:             '1:764500458567:web:2389d5cf8c688caafd0562',
+  };
+
+  const app  = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  window.auth = auth;
+  window.db  = getFirestore(app);
+  window._auth = auth;
+
+  // Expose Firestore helpers
+  window._fsQuery  = { collection, query, where, orderBy, getDocs, getDoc, doc, onSnapshot };
+  window._fsWrite  = { doc, updateDoc, serverTimestamp };
+
+  // Real logout now wired to signOut
+  window.handleLogout = function() {
+    signOut(auth).then(function(){ window.location.href = '/login.html'; });
+  };
+  document.getElementById('mb-signout').onclick = window.handleLogout;
+  document.getElementById('dt-signout').onclick = window.handleLogout;
+  buildNav(null);
+
+  onAuthStateChanged(auth, function(user) {
+    if (!user) { window.location.href = '/login.html'; return; }
+    if (typeof window._boot === 'function') window._boot(user);
+  });
+</script>
+</body>
+</html>

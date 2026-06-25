@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta id="meta-description" name="description" content="Kreddlo connects KYC-verified freelancers with global clients using escrow, digital contracts and automatic payouts. A better alternative to Fiverr, Upwork, Geegpay and Grey for professionals in underserved countries." />
+  <link id="canonical" rel="canonical" href="https://kreddlo.space/how-it-works.html" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>How Kreddlo Works</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: '#0d2145', green: '#2d8a5e', 'green-light': '#3dbd7a',
+            cream: '#f8f9fb', border: '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          borderRadius: { pill: '50px' },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fb; color: #0d2145; -webkit-font-smoothing: antialiased; }
+
+    /* ── Premium Glass ── */
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-bottom-color: rgba(255,255,255,0.25);
+      border-right-color: rgba(255,255,255,0.25);
+      border-radius: 20px;
+      box-shadow:
+        0 2px 0 0 rgba(255,255,255,0.80) inset,
+        0 -1px 0 0 rgba(255,255,255,0.20) inset,
+        0 8px 32px rgba(13,33,69,0.10),
+        0 1px 2px rgba(13,33,69,0.06);
+      position: relative;
+    }
+    .glass::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.00) 50%, rgba(255,255,255,0.08) 100%);
+      pointer-events: none; z-index: 0;
+    }
+    .glass > * { position: relative; z-index: 1; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0d2145; color: #fff; border-radius: 50px; padding: 12px 28px;
+      font-weight: 600; font-size: 15px; border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #162f5e; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; color: #0d2145; border-radius: 50px; padding: 12px 28px;
+      font-weight: 600; font-size: 15px; border: 2px solid #0d2145; cursor: pointer;
+      transition: background .2s, color .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-secondary:hover { background: #0d2145; color: #fff; transform: translateY(-1px); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #2d8a5e; color: #fff; border-radius: 50px; padding: 12px 28px;
+      font-weight: 600; font-size: 15px; border: 2px solid #2d8a5e; cursor: pointer;
+      transition: background .2s, transform .15s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green:hover { background: #236b49; border-color: #236b49; transform: translateY(-1px); }
+
+    /* ── Tab toggle ── */
+    /* Mobile-first: buttons share width equally, text wraps/centers, never overflows viewport */
+    .tab-toggle-wrap { width: 100%; max-width: 420px; box-sizing: border-box; }
+    .tab-btn {
+      padding: 9px 8px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 12px;
+      line-height: 1.25;
+      cursor: pointer;
+      transition: all .2s;
+      border: none;
+      outline: none;
+      flex: 1 1 0;
+      min-width: 0;
+      white-space: normal;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tab-btn.active   { background: #0d2145; color: #fff; }
+    .tab-btn.inactive { background: transparent; color: #0d2145; }
+
+    /* Desktop/tablet: restore original auto-width pill buttons */
+    @media (min-width: 640px) {
+      .tab-toggle-wrap { width: auto; max-width: none; }
+      .tab-btn { flex: 0 0 auto; padding: 10px 28px; font-size: 14px; white-space: nowrap; }
+    }
+
+    /* ── Blob ── */
+    .blob { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+
+    /* ── Mobile menu ── */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+
+    /* ── View sections ── */
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* ══════════════════════════════════════
+       TIMELINE
+    ══════════════════════════════════════ */
+
+    /* Mobile: single column with left spine */
+    .timeline { position: relative; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #3dbd7a 0%, rgba(61,189,122,0.15) 100%);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-left: 56px;
+      padding-bottom: 40px;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+
+    /* Step circle */
+    .step-circle {
+      position: absolute;
+      left: 0; top: 0;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2d8a5e 0%, #3dbd7a 100%);
+      box-shadow: 0 0 0 4px rgba(45,138,94,0.15), 0 4px 12px rgba(45,138,94,0.30);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800; color: #fff;
+      flex-shrink: 0; z-index: 2;
+    }
+
+    /* Desktop: alternating two-column */
+    @media (min-width: 768px) {
+      .timeline::before { left: 50%; transform: translateX(-50%); }
+
+      .timeline-item {
+        width: 50%;
+        padding-left: 0;
+        padding-bottom: 56px;
+        padding-right: 60px;
+        text-align: right;
+      }
+      .timeline-item:nth-child(even) {
+        margin-left: 50%;
+        padding-right: 0;
+        padding-left: 60px;
+        text-align: left;
+      }
+
+      /* Circle positioning desktop */
+      .timeline-item .step-circle {
+        left: auto;
+        right: -20px;
+        top: 0;
+      }
+      .timeline-item:nth-child(even) .step-circle {
+        left: -20px;
+        right: auto;
+      }
+
+      /* Card alignment */
+      .timeline-item .step-card { margin-left: auto; margin-right: 0; }
+      .timeline-item:nth-child(even) .step-card { margin-left: 0; margin-right: auto; }
+    }
+
+    /* Step card */
+    .step-card { max-width: 360px; }
+
+    /* ── Connector dot pulse ── */
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0   rgba(45,138,94,0.40), 0 4px 12px rgba(45,138,94,0.30); }
+      70%  { box-shadow: 0 0 0 10px rgba(45,138,94,0.00), 0 4px 12px rgba(45,138,94,0.30); }
+      100% { box-shadow: 0 0 0 0   rgba(45,138,94,0.00), 0 4px 12px rgba(45,138,94,0.30); }
+    }
+    .step-circle { animation: pulse-ring 2.5s ease-out infinite; }
+
+    /* ── Fade up ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up { animation: fadeUp .65s ease both; }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .2s; }
+    .delay-3 { animation-delay: .3s; }
+  </style>
+
+  <script type="module">
+    import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getStorage }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+    const firebaseConfig = {
+      apiKey:"AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk", authDomain:"kreddlo.firebaseapp.com",
+      projectId:"kreddlo", storageBucket:"kreddlo.firebasestorage.app",
+      messagingSenderId:"764500458567", appId:"1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app); window.auth = getAuth(app); window.storage = getStorage(app);
+    // Load social links from Firestore config
+    (async () => {
+      try {
+        const snap = await getDoc(doc(window.db, 'config', 'platform'));
+        const s = snap.exists() ? snap.data() : {};
+        ['twitter', 'linkedin', 'instagram'].forEach(name => {
+          const el = document.getElementById('social-' + name);
+          if (!el) return;
+          const url = s[name + 'Url'] || '';
+          if (url) { el.href = url; el.style.display = 'flex'; } else { el.style.display = 'none'; }
+        });
+      } catch (e) { /* silent fail */ }
+    })();
+
+    // Swap navbar when user is signed in — without this, logged-in users
+    // were stuck seeing Log In / Get Started instead of their Dashboard.
+    onAuthStateChanged(window.auth, async (user) => {
+      if (!user) return;
+      let dashHref = '/dashboard.html';
+      try {
+        const snap = await getDoc(doc(window.db, 'users', user.uid));
+        if (snap.exists() && snap.data().role === 'buyer') dashHref = '/buyer-dashboard.html';
+      } catch (e) {}
+      const dashD = document.getElementById('nav-howitworks-dash-desktop');
+      const dashM = document.getElementById('nav-howitworks-dash-mobile');
+      if (dashD) dashD.href = dashHref;
+      if (dashM) dashM.href = dashHref;
+      const initial = (user.displayName || user.email || '?')[0].toUpperCase();
+      const avatarEl = document.getElementById('nav-howitworks-avatar');
+      if (avatarEl) avatarEl.textContent = initial;
+      const pubD = document.getElementById('nav-public-desktop');
+      const authD = document.getElementById('nav-auth-desktop');
+      if (pubD)  pubD.style.display  = 'none';
+      if (authD) authD.style.display = 'flex';
+      const pubM  = document.getElementById('nav-public-mobile');
+      const authM = document.getElementById('nav-auth-mobile');
+      if (pubM)  pubM.style.display  = 'none';
+      if (authM) authM.style.display = 'flex';
+    });
+  </script>
+
+  <!-- Structured Data: FAQPage -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Can I sell digital products without doing custom work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Create a product in your dashboard, set a price and share your product link anywhere including social media, newsletters or your own website. Buyers pay and receive instant automatic delivery. No contract or escrow required for product sales."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Kreddlo take a cut of product sales?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes the same platform fee applies to product sales as to service projects. You always see the exact amount you will receive before publishing your product."
+      }
+    }
+  ]
+}
+  </script>
+</head>
+
+<body class="overflow-x-hidden">
+
+  <!-- ══ NAVBAR ══ -->
+  <nav class="glass sticky top-0 z-50 mx-4 mt-3 rounded-2xl px-5 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <a href="index.html" class="flex-shrink-0" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="index.html#features"     class="text-navy/70 hover:text-navy text-sm font-medium transition-colors">Features</a>
+        <a href="how-it-works.html"       class="text-navy font-semibold text-sm">How It Works</a>
+        <a href="browse.html"             class="text-navy/70 hover:text-navy text-sm font-medium transition-colors">Browse</a>
+        <a href="pricing.html"            class="text-navy/70 hover:text-navy text-sm font-medium transition-colors">Pricing</a>
+      </div>
+      <div class="hidden md:flex items-center gap-3">
+        <div id="nav-public-desktop" style="display:flex;gap:8px;align-items:center;">
+          <a href="login.html"  class="btn-secondary" style="padding:10px 22px;font-size:14px;">Log In</a>
+          <a href="signup.html" class="btn-green"     style="padding:10px 22px;font-size:14px;">Get Started</a>
+        </div>
+        <div id="nav-auth-desktop" style="display:none;align-items:center;gap:10px;">
+          <a id="nav-howitworks-dash-desktop" href="/dashboard.html" class="btn-secondary" style="padding:10px 22px;font-size:14px;font-weight:600;">Dashboard</a>
+          <div id="nav-howitworks-avatar" style="width:34px;height:34px;border-radius:50%;background:#2d8a5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;"></div>
+        </div>
+      </div>
+      <button id="hamburger" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="block w-5 h-0.5 bg-navy rounded"></span>
+        <span class="block w-5 h-0.5 bg-navy rounded"></span>
+        <span class="block w-5 h-0.5 bg-navy rounded"></span>
+      </button>
+    </div>
+    <div id="mobile-menu" class="glass mt-3 rounded-xl px-5 py-5 flex flex-col gap-4">
+      <a href="index.html#features"  class="text-navy font-medium text-sm">Features</a>
+      <a href="how-it-works.html"    class="text-navy font-semibold text-sm">How It Works</a>
+      <a href="browse.html"          class="text-navy font-medium text-sm">Browse</a>
+      <a href="pricing.html"         class="text-navy font-medium text-sm">Pricing</a>
+      <div id="nav-public-mobile" class="flex flex-col gap-3 pt-2 border-t border-border">
+        <a href="login.html"  class="btn-secondary text-center">Log In</a>
+        <a href="signup.html" class="btn-green text-center">Get Started</a>
+      </div>
+      <div id="nav-auth-mobile" style="display:none;flex-direction:column;gap:10px;padding-top:8px;border-top:1px solid rgba(13,33,69,0.10);">
+        <a id="nav-howitworks-dash-mobile" href="/dashboard.html" class="btn-green text-center">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══ PAGE HERO ══ -->
+  <section class="relative py-20 px-5 text-center overflow-hidden">
+    <div class="blob" style="width:480px;height:480px;background:radial-gradient(circle,rgba(13,33,69,0.07) 0%,transparent 70%);top:-140px;right:-100px;"></div>
+    <div class="blob" style="width:400px;height:400px;background:radial-gradient(circle,rgba(45,138,94,0.06) 0%,transparent 70%);bottom:-80px;left:-80px;"></div>
+    <div class="relative z-10 max-w-2xl mx-auto">
+      <div class="fade-up inline-flex items-center gap-2 bg-green/10 border border-green/20 text-green rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
+        Simple by Design
+      </div>
+      <h1 class="fade-up delay-1 text-[34px] md:text-[52px] font-extrabold tracking-[-1px] text-navy mb-4 leading-tight">
+        How Kreddlo Works
+      </h1>
+      <p class="fade-up delay-2 text-[16px] md:text-[18px] font-normal text-navy/55 max-w-lg mx-auto leading-relaxed">
+        Whether you are offering a service or hiring one, every step is clear, protected and built to work from anywhere in the world.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══ TOGGLE ══ -->
+  <div class="flex justify-center mb-16 px-5">
+    <div class="glass tab-toggle-wrap flex p-1.5 rounded-full gap-1">
+      <button id="tab-freelancer" class="tab-btn active"   onclick="switchView('freelancer')">For Freelancers</button>
+      <button id="tab-buyer"      class="tab-btn inactive" onclick="switchView('buyer')">For Buyers</button>
+      <button id="tab-affiliate"  class="tab-btn inactive" onclick="switchView('affiliate')">For Affiliates</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       FREELANCER STEPS
+  ══════════════════════════════════════ -->
+  <section id="view-freelancer" class="view-section active px-5 pb-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="timeline">
+
+        <!-- Step 1 -->
+        <div class="timeline-item">
+          <div class="step-circle">1</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 01</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Create Your Account</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Sign up with your email address and choose your role as a freelancer. Your account is created instantly with no credit card required and no upfront payment.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="timeline-item">
+          <div class="step-circle">2</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 02</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Complete KYC Verification</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Submit your government-issued ID through Didit, our secure identity verification partner. Verification typically completes within 15 minutes and is required before your profile goes live.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="timeline-item">
+          <div class="step-circle">3</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 03</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Build Your Profile</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Set your title, skills, hourly rate and a short bio that tells buyers exactly what you offer. A strong profile with a clear starting price attracts higher-quality project inquiries.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="timeline-item">
+          <div class="step-circle">4</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 04</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Get Hired and Sign the Contract</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              When a buyer sends a project offer, review the full scope and price before accepting. Kreddlo generates the contract automatically and both parties sign digitally before any work begins.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="timeline-item">
+          <div class="step-circle">5</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 05</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Deliver Your Work</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Complete the project and submit your deliverables through the platform. The buyer receives a notification to review and approve, and the escrow clock starts once delivery is marked.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="timeline-item">
+          <div class="step-circle">6</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 06</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Withdraw Your Earnings</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Once escrow is released, your balance updates in real time. Withdraw to your crypto wallet at the live exchange rate or cash out directly to your local bank account, with no manual steps and no waiting period beyond standard processing times.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════════════════════
+           SELL PRODUCTS AND DIGITAL DOWNLOADS
+      ══════════════════════════════════════ -->
+      <div class="mt-20">
+        <div class="text-center mb-14">
+          <h2 class="text-[28px] md:text-[40px] font-extrabold tracking-[-0.8px] text-navy mb-3">Sell Products and Digital Downloads</h2>
+          <p class="text-navy/50 font-normal text-[16px] max-w-md mx-auto">
+            Skip the contract entirely. List a product once and sell it again and again.
+          </p>
+        </div>
+        <div class="timeline">
+
+          <!-- Step 1 -->
+          <div class="timeline-item">
+            <div class="step-circle">1</div>
+            <div class="step-card glass p-6">
+              <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 01</p>
+              <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Create a Product</h3>
+              <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+                Set a price, describe your offer and choose how it is delivered.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="timeline-item">
+            <div class="step-circle">2</div>
+            <div class="step-card glass p-6">
+              <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 02</p>
+              <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Share Your Link</h3>
+              <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+                Every product gets a unique shareable link you can post anywhere.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="timeline-item">
+            <div class="step-circle">3</div>
+            <div class="step-card glass p-6">
+              <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 03</p>
+              <h3 id="product-payout-heading" class="text-[17px] font-bold text-navy mb-2 tracking-tight">Get Paid Instantly</h3>
+              <p id="product-payout-copy" class="text-[14px] text-navy/58 font-normal leading-relaxed">
+                Buyers pay and receive delivery automatically. No back and forth required.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       BUYER STEPS
+  ══════════════════════════════════════ -->
+  <section id="view-buyer" class="view-section px-5 pb-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="timeline">
+
+        <!-- Step 1 -->
+        <div class="timeline-item">
+          <div class="step-circle">1</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 01</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Find a Verified Freelancer</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Browse profiles in the marketplace and filter by skill, category or price. Every freelancer listed has passed Didit KYC verification, so you know exactly who you are working with before you reach out.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="timeline-item">
+          <div class="step-circle">2</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 02</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Agree on Scope and Sign the Contract</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Send a project offer with your requirements, deadline and agreed price. Kreddlo generates a binding digital contract and both parties sign before any payment is made or work begins.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="timeline-item">
+          <div class="step-circle">3</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 03</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Pay Securely into Escrow</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Pay the project amount in any of 300-plus supported cryptocurrencies. Funds are held in escrow and are never released to the freelancer until you approve the completed work.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="timeline-item">
+          <div class="step-circle">4</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 04</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Review the Delivered Work</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              When the freelancer submits, you receive a notification to review the deliverables. You have a clear window to approve, request revisions or open a dispute if the work does not match the agreed scope.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="timeline-item">
+          <div class="step-circle">5</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 05</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Approve and the Freelancer Gets Paid</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Click approve and the escrow releases automatically. The freelancer receives their payment instantly and you receive a final contract PDF and receipt for your records.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════════════════════
+           BUY MORE THAN JUST SERVICES
+      ══════════════════════════════════════ -->
+      <div class="mt-20">
+        <div class="glass p-8 md:p-10 text-center max-w-2xl mx-auto">
+          <h2 class="text-[24px] md:text-[32px] font-extrabold tracking-[-0.6px] text-navy mb-3">Buy More Than Just Services</h2>
+          <p class="text-[15px] text-navy/58 font-normal leading-relaxed">
+            Beyond custom projects you can browse and purchase fixed-price products from verified sellers including digital downloads, course access, coaching sessions and more. No account required to purchase a product. Just pay and receive instant delivery.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       AFFILIATE STEPS
+  ══════════════════════════════════════ -->
+  <section id="view-affiliate" class="view-section px-5 pb-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="timeline">
+
+        <!-- Step 1 -->
+        <div class="timeline-item">
+          <div class="step-circle">1</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 01</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Enable Affiliate Mode</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Turn on affiliate mode from your Settings. No separate application or approval wait, your account is ready to start earning commissions right away.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="timeline-item">
+          <div class="step-circle">2</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 02</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Browse Affiliate-Enabled Products</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Explore the marketplace for products that have commissions turned on by their sellers, ready for you to promote.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="timeline-item">
+          <div class="step-circle">3</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 03</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Generate and Share Your Link</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Every affiliate-enabled product gives you a unique referral link tied to your account. Share it anywhere, your audience, socials or a personal site.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="timeline-item">
+          <div class="step-circle">4</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 04</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Earn Commission Automatically</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              When someone buys through your link, the commission is tracked and credited to your balance automatically. No manual reporting or invoicing required.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="timeline-item">
+          <div class="step-circle">5</div>
+          <div class="step-card glass p-6">
+            <p class="text-[11px] font-bold uppercase tracking-widest text-green/70 mb-1.5">Step 05</p>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Withdraw Your Earnings</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Your affiliate earnings withdraw to the same payout wallet used everywhere else on the platform, so there's nothing new to set up.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       WHY KREDDLO IS DIFFERENT
+  ══════════════════════════════════════ -->
+  <section class="py-24 px-5">
+    <div class="max-w-5xl mx-auto">
+
+      <div class="text-center mb-14">
+        <h2 class="text-[28px] md:text-[40px] font-extrabold tracking-[-0.8px] text-navy mb-3">Why Kreddlo is Different</h2>
+        <p class="text-navy/50 font-normal text-[16px] max-w-md mx-auto">
+          Built specifically for the markets that every other platform left behind.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Card 1 -->
+        <div class="glass p-8 flex flex-col gap-4">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+               style="background:linear-gradient(135deg,rgba(45,138,94,0.15) 0%,rgba(61,189,122,0.08) 100%);">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Every Freelancer is Verified</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              No anonymous profiles. Every freelancer on Kreddlo has passed government-issued ID verification through Didit before their profile is published. Buyers always know exactly who they are hiring.
+            </p>
+          </div>
+          <div class="mt-auto pt-4 border-t border-border/50">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-light"></span>
+              <span class="text-[12px] font-semibold text-green">Powered by Didit KYC</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="glass p-8 flex flex-col gap-4">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+               style="background:linear-gradient(135deg,rgba(45,138,94,0.15) 0%,rgba(61,189,122,0.08) 100%);">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Your Money is Always Protected</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              Payment goes into escrow the moment a project starts and stays there until the buyer approves the work. No freelancer can touch the funds and no buyer can pull them back without a dispute process.
+            </p>
+          </div>
+          <div class="mt-auto pt-4 border-t border-border/50">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-light"></span>
+              <span class="text-[12px] font-semibold text-green">Non-custodial escrow</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="glass p-8 flex flex-col gap-4">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+               style="background:linear-gradient(135deg,rgba(45,138,94,0.15) 0%,rgba(61,189,122,0.08) 100%);">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2">
+              <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-bold text-navy mb-2 tracking-tight">Disputes are Resolved Fairly</h3>
+            <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+              When something goes wrong, both sides submit evidence and a trained Kreddlo admin reviews the full case. Rulings are based on the signed contract and the evidence, never on seniority or account age.
+            </p>
+          </div>
+          <div class="mt-auto pt-4 border-t border-border/50">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-light"></span>
+              <span class="text-[12px] font-semibold text-green">Human-reviewed decisions</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FAQ
+  ══════════════════════════════════════ -->
+  <section class="py-16 px-5">
+    <div class="max-w-3xl mx-auto">
+
+      <div class="text-center mb-12">
+        <h2 class="text-[28px] md:text-[40px] font-extrabold tracking-[-0.8px] text-navy mb-3">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="flex flex-col gap-4">
+
+        <div class="glass p-6 md:p-8">
+          <h3 class="text-[16px] md:text-[17px] font-bold text-navy mb-2 tracking-tight">Can I sell digital products without doing custom work?</h3>
+          <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+            Yes. Create a product in your dashboard, set a price and share your product link anywhere including social media, newsletters or your own website. Buyers pay and receive instant automatic delivery. No contract or escrow required for product sales.
+          </p>
+        </div>
+
+        <div class="glass p-6 md:p-8">
+          <h3 class="text-[16px] md:text-[17px] font-bold text-navy mb-2 tracking-tight">Does Kreddlo take a cut of product sales?</h3>
+          <p class="text-[14px] text-navy/58 font-normal leading-relaxed">
+            Yes the same platform fee applies to product sales as to service projects. You always see the exact amount you will receive before publishing your product.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ BOTTOM CTA ══ -->
+  <section class="py-16 px-5">
+    <div class="max-w-3xl mx-auto">
+      <div class="glass relative overflow-hidden px-8 py-16 text-center">
+        <div class="blob" style="width:280px;height:280px;background:radial-gradient(circle,rgba(13,33,69,0.07) 0%,transparent 70%);top:-70px;right:-70px;"></div>
+        <div class="blob" style="width:240px;height:240px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);bottom:-50px;left:-50px;"></div>
+        <div class="relative z-10">
+          <h2 class="text-[26px] md:text-[36px] font-extrabold tracking-[-0.7px] text-navy mb-3 leading-tight">
+            Ready to Get Started?
+          </h2>
+          <p class="text-navy/50 font-normal text-[15px] mb-10 max-w-sm mx-auto">
+            Join as a freelancer and get your first payment, or post a project and hire a verified professional today.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="signup.html?role=freelancer" class="btn-green" style="padding:13px 32px;font-size:15px;">Get Started as a Freelancer</a>
+            <a href="signup.html?role=buyer"      class="btn-primary" style="padding:13px 32px;font-size:15px;">Hire a Freelancer</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="border-t border-border mt-8 py-14 px-5">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+        <div class="flex flex-col gap-4">
+          <a href="index.html" style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;text-decoration:none;display:inline-block;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+          <p class="text-navy/50 text-[14px] leading-relaxed max-w-xs font-normal">The complete freelance operating system for verified professionals in countries locked out of traditional payment networks.</p>
+        </div>
+        <div class="flex flex-col md:items-center gap-3">
+          <p class="text-navy font-bold text-[13px] uppercase tracking-widest mb-1">Platform</p>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+            <a href="index.html#features"     class="text-navy/55 text-[14px] hover:text-navy transition-colors">Features</a>
+            <a href="how-it-works.html"       class="text-navy/55 text-[14px] hover:text-navy transition-colors">How It Works</a>
+            <a href="browse.html"  class="text-navy/55 text-[14px] hover:text-navy transition-colors">Browse</a>
+            <a href="pricing.html" class="text-navy/55 text-[14px] hover:text-navy transition-colors">Pricing</a>
+            <a href="signup.html"  class="text-navy/55 text-[14px] hover:text-navy transition-colors">Sign Up</a>
+            <a href="login.html"   class="text-navy/55 text-[14px] hover:text-navy transition-colors">Log In</a>
+          </div>
+        </div>
+        <div class="flex flex-col md:items-end gap-4">
+          <p class="text-navy font-bold text-[13px] uppercase tracking-widest mb-1">Connect</p>
+          <div class="flex items-center gap-4">
+            <a id="social-twitter" href="#" target="_blank" rel="noopener" aria-label="Twitter" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+              <svg width="16" height="16" fill="#0d2145" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a id="social-linkedin" href="#" target="_blank" rel="noopener" aria-label="LinkedIn" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+              <svg width="16" height="16" fill="#0d2145" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+            </a>
+            <a id="social-instagram" href="#" target="_blank" rel="noopener" aria-label="Instagram" style="display:none;" class="w-9 h-9 rounded-xl bg-navy/5 hover:bg-navy/10 flex items-center justify-center transition-colors">
+              <svg width="16" height="16" fill="none" stroke="#0d2145" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="#0d2145"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-navy/40 text-[13px] font-normal">&copy; <span id="yr"></span> Kreddlo. All rights reserved.</p>
+        <div class="flex items-center gap-5">
+          <a href="privacy.html" class="text-navy/40 text-[13px] hover:text-navy transition-colors">Privacy Policy</a>
+          <a href="terms.html" class="text-navy/40 text-[13px] hover:text-navy transition-colors">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    function switchView(view) {
+      ['freelancer', 'buyer', 'affiliate'].forEach(v => {
+        document.getElementById('tab-' + v).className    = 'tab-btn ' + (v === view ? 'active' : 'inactive');
+        document.getElementById('view-' + v).className   = 'view-section px-5 pb-4 ' + (v === view ? 'active' : '');
+      });
+    }
+  </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+  <script type="module">
+    // Load social links from Firestore config
+    (async () => {
+      try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const snap = await getDoc(doc(window.db, 'config', 'platform'));
+        const s = snap.exists() ? snap.data() : {};
+        const links = { twitter: s.twitterUrl || '', linkedin: s.linkedinUrl || '', instagram: s.instagramUrl || '' };
+        ['twitter', 'linkedin', 'instagram'].forEach(name => {
+          const el = document.getElementById('social-' + name);
+          if (!el) return;
+          if (links[name]) { el.href = links[name]; el.style.display = 'flex'; }
+          else { el.style.display = 'none'; }
+        });
+
+        // Item 9 — reflect the actual configured product-sale holding period
+        // instead of a hardcoded "instant" claim, so this copy can never go stale.
+        const holdingDays = Number(s.productSaleHoldingDays) || 0;
+        const headingEl = document.getElementById('product-payout-heading');
+        const copyEl    = document.getElementById('product-payout-copy');
+        if (holdingDays > 0 && headingEl && copyEl) {
+          headingEl.textContent = 'Get Paid Securely';
+          copyEl.textContent = `Buyers pay and receive delivery automatically. Your earnings clear in ${holdingDays} day${holdingDays === 1 ? '' : 's'} and are then available to withdraw.`;
+        }
+        // If holdingDays is 0, the existing "Get Paid Instantly" copy in the
+        // HTML is already accurate and is left untouched.
+      } catch (e) { /* silent fail */ }
+    })();
+  </script>
+</body>
+</html>

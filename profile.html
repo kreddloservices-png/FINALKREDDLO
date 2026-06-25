@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+  <title>Freelancer Profile — Kreddlo</title>
+  <script src="/assets/shared.js" defer></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
+  <!-- Firebase CDN -->
+  <script type="module">
+    import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, getDoc }
+                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+      authDomain:        "kreddlo.firebaseapp.com",
+      projectId:         "kreddlo",
+      storageBucket:     "kreddlo.firebasestorage.app",
+      messagingSenderId: "764500458567",
+      appId:             "1:764500458567:web:2389d5cf8c688caafd0562",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.app  = app;
+    window.db   = getFirestore(app);
+    window.auth = getAuth(app);
+    window._fsReviews = { collection, query, where, orderBy, limit, getDocs };
+    window._fsProfile  = { doc, getDoc };
+
+    // Auth-aware nav — mirrors browse.html exactly
+    onAuthStateChanged(window.auth, async (user) => {
+      if (!user) return; // keep public nav visible
+
+      // Resolve role → correct dashboard href
+      let dashHref = '/dashboard.html';
+      try {
+        const snap = await getDoc(doc(window.db, 'users', user.uid));
+        if (snap.exists() && snap.data().role === 'buyer') dashHref = '/buyer-dashboard.html';
+      } catch(e) {}
+
+      // Update dashboard links
+      const dashD = document.getElementById('nav-profile-dash-desktop');
+      const dashM = document.getElementById('nav-profile-dash-mobile');
+      if (dashD) dashD.href = dashHref;
+      if (dashM) dashM.href = dashHref;
+
+      // Avatar initial
+      const initial = (user.displayName || user.email || '?')[0].toUpperCase();
+      const avatarEl = document.getElementById('nav-profile-avatar');
+      if (avatarEl) avatarEl.textContent = initial;
+
+      // Swap desktop nav
+      const pubD = document.getElementById('nav-public-desktop');
+      const authD = document.getElementById('nav-auth-desktop');
+      if (pubD)  pubD.style.display  = 'none';
+      if (authD) authD.style.display = 'flex';
+
+      // Swap mobile nav
+      const pubM  = document.getElementById('nav-public-mobile');
+      const authM = document.getElementById('nav-auth-mobile');
+      if (pubM)  pubM.style.display  = 'none';
+      if (authM) authM.style.display = 'flex';
+    });
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: '#0d2145', 'navy-deep': '#091830', 'navy-mid': '#162f5e',
+            green: '#2d8a5e', 'green-light': '#3dbd7a', 'green-pale': '#e8f5ef',
+            cream: '#f8f9fb', border: '#e2e8f0',
+          },
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8f9fb;
+      color: #0d2145;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── GLASS CARD ── */
+    .glass {
+      background: rgba(255,255,255,0.60);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.30);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(13,33,69,0.08);
+    }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: #0d2145; color: #fff; border: 2px solid #0d2145; border-radius: 50px;
+      padding: 13px 24px; font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary:hover  { background: #162f5e; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,33,69,0.20); }
+    .btn-primary:active { transform: translateY(0); box-shadow: none; }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: transparent; color: #0d2145; border: 2px solid #0d2145; border-radius: 50px;
+      padding: 13px 24px; font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+      transition: background .2s, color .2s, transform .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-secondary:hover  { background: #0d2145; color: #fff; transform: translateY(-1px); }
+    .btn-secondary:active { transform: translateY(0); }
+
+    .btn-green {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: #2d8a5e; color: #fff; border: 2px solid #2d8a5e; border-radius: 50px;
+      padding: 13px 24px; font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-green:hover  { background: #236b49; border-color: #236b49; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(45,138,94,0.30); }
+    .btn-green:active { transform: translateY(0); box-shadow: none; }
+
+    /* ── NAVBAR ── */
+    #navbar {
+      position: sticky; top: 0; z-index: 100;
+      padding: 12px 16px;
+      background: rgba(248,249,251,0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(226,232,240,0.60);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    /* Desktop nav links: hidden by default (mobile first), shown at md */
+    .nav-links { display: none; }
+    .nav-cta   { display: none; }
+    @media (min-width: 768px) {
+      .nav-links { display: flex; align-items: center; gap: 28px; }
+      .nav-cta   { display: flex; align-items: center; gap: 10px; }
+      #hamburger { display: none; }
+    }
+
+    /* ── MOBILE MENU OVERLAY ── */
+    #menu-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(9,24,48,0.55);
+      opacity: 0; pointer-events: none;
+      transition: opacity .28s ease;
+    }
+    #menu-overlay.open { opacity: 1; pointer-events: all; }
+
+    /* ── MOBILE SLIDE-IN MENU ── */
+    #mobile-nav-panel {
+      position: fixed; top: 0; right: 0;
+      width: min(280px, 85vw); height: 100vh;
+      background: #091830; z-index: 300;
+      padding: 24px 20px;
+      display: flex; flex-direction: column; gap: 4px;
+      transform: translateX(100%);
+      transition: transform .28s cubic-bezier(0.4,0,0.2,1);
+      overflow-y: auto;
+    }
+    #mobile-nav-panel.open { transform: translateX(0); }
+    .mobile-nav-link {
+      display: block; padding: 13px 16px; border-radius: 12px;
+      font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      transition: background .18s, color .18s;
+    }
+    .mobile-nav-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+    /* ── BLOBS ── */
+    .blob { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+
+    /* ── AVATAR ── */
+    .avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d2145 0%, #2d8a5e 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: 800; color: #fff;
+      border: 3px solid rgba(45,138,94,0.25);
+      flex-shrink: 0;
+    }
+    /* Scale up avatar on larger screens */
+    @media (min-width: 480px) { .avatar { width: 88px; height: 88px; font-size: 30px; } }
+    @media (min-width: 768px) { .avatar { width: 100px; height: 100px; font-size: 34px; } }
+
+    /* ── SKILL TAG ── */
+    .skill-tag {
+      display: inline-flex; align-items: center;
+      border: 1.5px solid rgba(45,138,94,0.35);
+      color: #2d8a5e; border-radius: 50px;
+      padding: 5px 14px; font-size: 12px; font-weight: 600;
+      background: rgba(45,138,94,0.05);
+      white-space: nowrap;
+    }
+
+    /* ── VERIFIED BADGE ── */
+    .badge-verified {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(45,138,94,0.10); color: #2d8a5e;
+      border: 1px solid rgba(45,138,94,0.25);
+      border-radius: 50px; padding: 3px 10px;
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* ── REVIEW CARD ── */
+    .review-card {
+      padding: 18px 20px; border-radius: 16px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(226,232,240,0.80);
+      transition: box-shadow .2s;
+    }
+    .review-card:hover { box-shadow: 0 6px 24px rgba(13,33,69,0.07); }
+
+    /* ── STAT BOX ── */
+    .stat-box {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 14px; border-radius: 14px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(226,232,240,0.80);
+      flex: 1; min-width: 0;
+    }
+
+    /* ── HIRE MODAL ── */
+    #hire-modal {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(9,24,48,0.55);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 0;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    #hire-modal.open { opacity: 1; pointer-events: all; }
+
+    /* Modal sheet: slides up from bottom on mobile, centered on desktop */
+    .modal-sheet {
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px 32px;
+      width: 100%; max-width: 100%;
+      max-height: 92vh; overflow-y: auto;
+      box-shadow: 0 -8px 40px rgba(13,33,69,0.18);
+      transform: translateY(100%);
+      transition: transform .30s cubic-bezier(0.4,0,0.2,1);
+    }
+    #hire-modal.open .modal-sheet { transform: translateY(0); }
+
+    @media (min-width: 640px) {
+      #hire-modal { align-items: center; padding: 20px; }
+      .modal-sheet {
+        border-radius: 24px;
+        max-width: 520px;
+        transform: translateY(20px) scale(0.97);
+        max-height: 90vh;
+      }
+      #hire-modal.open .modal-sheet { transform: translateY(0) scale(1); }
+    }
+
+    /* Contract step: wider */
+    .modal-sheet.wide { max-width: 720px; }
+
+    /* ── STEP DOTS ── */
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-dot.active  { background: #2d8a5e; color: #fff; }
+    .step-dot.done    { background: rgba(45,138,94,0.15); color: #2d8a5e; }
+    .step-dot.pending { background: #e2e8f0; color: rgba(13,33,69,0.40); }
+
+    /* ── FORM INPUTS ── */
+    .form-input, .form-textarea {
+      width: 100%; padding: 13px 16px;
+      border: 1.5px solid #e2e8f0; border-radius: 12px;
+      font-size: 14px; font-weight: 500; color: #0d2145;
+      font-family: inherit; background: #fff; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      -webkit-appearance: none;
+    }
+    .form-input:focus, .form-textarea:focus {
+      border-color: #2d8a5e;
+      box-shadow: 0 0 0 3px rgba(45,138,94,0.10);
+    }
+    .form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+    /* ── SIGNATURE CANVAS ── */
+    #sig-canvas {
+      width: 100%; height: 160px;
+      border: 1.5px solid #e2e8f0; border-radius: 12px;
+      background: #f8f9fb; cursor: crosshair; touch-action: none;
+      display: block;
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed #e2e8f0; border-radius: 12px;
+      padding: 24px 16px; text-align: center;
+      cursor: pointer; position: relative;
+      background: #fafafa;
+      transition: border-color .2s, background .2s;
+    }
+    .upload-zone:hover { border-color: #2d8a5e; background: rgba(45,138,94,0.02); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+    /* ── PAYMENT MODAL ── */
+    #payment-modal {
+      position: fixed; inset: 0; z-index: 1100;
+      background: rgba(9,24,48,0.55);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 0;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    #payment-modal.open { opacity: 1; pointer-events: all; }
+    .pm-sheet {
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px 32px;
+      width: 100%; max-width: 100%;
+      max-height: 92vh; overflow-y: auto;
+      box-shadow: 0 -8px 40px rgba(13,33,69,0.18);
+      transform: translateY(100%);
+      transition: transform .30s cubic-bezier(0.4,0,0.2,1);
+    }
+    #payment-modal.open .pm-sheet { transform: translateY(0); }
+    @media (min-width: 640px) {
+      #payment-modal { align-items: center; padding: 20px; }
+      .pm-sheet {
+        border-radius: 24px; max-width: 480px;
+        transform: translateY(20px) scale(0.97);
+        max-height: 90vh;
+      }
+      #payment-modal.open .pm-sheet { transform: translateY(0) scale(1); }
+    }
+
+    /* ── CONTRACT DOCUMENT ── */
+    #contract-doc {
+      background: #f8f9fb; border: 1.5px solid #e2e8f0;
+      border-radius: 16px; padding: 20px 16px;
+      max-height: 380px; overflow-y: auto;
+      font-size: 12px; line-height: 1.75; color: rgba(13,33,69,0.65);
+    }
+    @media (min-width: 640px) { #contract-doc { padding: 28px 24px; } }
+
+    /* ── PROTECTION TOGGLE ── */
+    .toggle-track {
+      display: block; width: 44px; height: 24px;
+      background: #d1d9e8; border-radius: 50px;
+      cursor: pointer; position: relative;
+      transition: background .2s; flex-shrink: 0;
+    }
+    .toggle-track::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; background: #fff; border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.16);
+      transition: transform .22s cubic-bezier(0.34,1.46,0.64,1);
+    }
+    input[type=checkbox]:checked + .toggle-track { background: #2d8a5e; }
+    input[type=checkbox]:checked + .toggle-track::after { transform: translateX(20px); }
+
+    /* ── SIG OPTION ── */
+    .sig-option {
+      border: 2px solid #e2e8f0; border-radius: 14px;
+      padding: 14px 16px; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .sig-option:hover { border-color: rgba(45,138,94,0.40); }
+    .sig-option.selected { border-color: #2d8a5e; background: rgba(45,138,94,0.03); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 20px;
+      left: 50%; transform: translateX(-50%) translateY(16px);
+      background: #091830; color: #fff;
+      border-radius: 50px; padding: 11px 22px;
+      font-size: 13px; font-weight: 600;
+      z-index: 9999; pointer-events: none;
+      opacity: 0; white-space: nowrap;
+      transition: opacity .25s, transform .25s;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up { animation: fadeUp .45s ease both; }
+    .delay-1 { animation-delay: .08s; }
+    .delay-2 { animation-delay: .16s; }
+    .delay-3 { animation-delay: .24s; }
+
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+    .pulse { animation: pulse 1.8s ease-in-out infinite; }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spin { animation: spin .9s linear infinite; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(13,33,69,0.14); border-radius: 4px; }
+
+    /* ── DRAG HANDLE (mobile modal indicator) ── */
+    .drag-handle {
+      width: 40px; height: 4px; border-radius: 2px;
+      background: rgba(13,33,69,0.12);
+      margin: 0 auto 20px;
+    }
+
+    /* ── UTIL ── */
+    .divider { height: 1px; background: #e2e8f0; margin: 16px 0; }
+    .label-upper { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(13,33,69,0.42); }
+    .text-muted { color: rgba(13,33,69,0.50); }
+  </style>
+</head>
+
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+<!-- ════════════════════════════════════
+     NAVBAR
+════════════════════════════════════ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <!-- Logo -->
+    <a href="index.html" style="text-decoration:none;flex-shrink:0;">
+      <span style="font-size:22px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;font-family:'Plus Jakarta Sans',sans-serif;">
+        Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span>
+      </span>
+    </a>
+
+    <!-- Desktop links -->
+    <div class="nav-links">
+      <a href="how-it-works.html" style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.65);text-decoration:none;transition:color .18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.65)'">How It Works</a>
+      <a href="browse.html"       style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.65);text-decoration:none;transition:color .18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.65)'">Browse</a>
+      <a href="pricing.html"      style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.65);text-decoration:none;transition:color .18s;" onmouseover="this.style.color='#0d2145'" onmouseout="this.style.color='rgba(13,33,69,0.65)'">Pricing</a>
+    </div>
+
+    <!-- Desktop CTA -->
+    <div class="nav-cta">
+      <!-- Public (logged-out) -->
+      <div id="nav-public-desktop" style="display:flex;gap:8px;align-items:center;">
+        <a href="login.html"  class="btn-secondary" style="padding:9px 20px;font-size:13px;">Log In</a>
+        <a href="signup.html" class="btn-green"      style="padding:9px 20px;font-size:13px;">Get Started</a>
+      </div>
+      <!-- Logged-in (hidden until auth resolves) -->
+      <div id="nav-auth-desktop" style="display:none;align-items:center;gap:10px;">
+        <a id="nav-profile-dash-desktop" href="/dashboard.html" class="btn-secondary" style="padding:9px 20px;font-size:13px;font-weight:600;">Dashboard</a>
+        <div id="nav-profile-avatar" style="width:34px;height:34px;border-radius:50%;background:#2d8a5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;"></div>
+      </div>
+    </div>
+
+    <!-- Hamburger (mobile only) -->
+    <button id="hamburger" onclick="openMobileNav()" style="padding:8px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;gap:5px;" aria-label="Open menu">
+      <span style="display:block;width:22px;height:2px;background:#0d2145;border-radius:2px;"></span>
+      <span style="display:block;width:22px;height:2px;background:#0d2145;border-radius:2px;"></span>
+      <span style="display:block;width:22px;height:2px;background:#0d2145;border-radius:2px;"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu overlay -->
+<div id="menu-overlay" onclick="closeMobileNav()"></div>
+
+<!-- Mobile slide-in nav -->
+<div id="mobile-nav-panel">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+    <button onclick="closeMobileNav()" style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.08);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:28px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <a href="how-it-works.html" class="mobile-nav-link">How It Works</a>
+  <a href="browse.html"       class="mobile-nav-link">Browse</a>
+  <a href="pricing.html"      class="mobile-nav-link">Pricing</a>
+  <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0;"></div>
+  <!-- Public mobile auth (logged-out) -->
+  <div id="nav-public-mobile" style="display:flex;flex-direction:column;gap:4px;">
+    <a href="login.html"  class="mobile-nav-link">Log In</a>
+    <a href="signup.html" class="mobile-nav-link" style="color:#3dbd7a;">Get Started</a>
+  </div>
+  <!-- Logged-in mobile auth (hidden until auth resolves) -->
+  <div id="nav-auth-mobile" style="display:none;flex-direction:column;gap:10px;">
+    <a id="nav-profile-dash-mobile" href="/dashboard.html" class="mobile-nav-link" style="color:#3dbd7a;font-weight:700;">Dashboard</a>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     PAGE WRAPPER
+════════════════════════════════════ -->
+<div style="position:relative;overflow:hidden;">
+
+  <!-- Background blobs -->
+  <div class="blob" style="width:480px;height:480px;background:radial-gradient(circle,rgba(45,138,94,0.07) 0%,transparent 70%);top:-100px;right:-140px;"></div>
+  <div class="blob" style="width:380px;height:380px;background:radial-gradient(circle,rgba(13,33,69,0.05) 0%,transparent 70%);top:350px;left:-120px;"></div>
+
+  <div style="max-width:900px;margin:0 auto;padding:20px 16px 80px;position:relative;z-index:1;">
+
+    <!-- ════════════════════════════════
+         PROFILE HEADER CARD
+    ════════════════════════════════ -->
+    <div class="glass fade-up" style="padding:20px;margin-bottom:16px;overflow:hidden;position:relative;">
+      <!-- Green accent blob inside card -->
+      <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(45,138,94,0.08) 0%,transparent 70%);pointer-events:none;"></div>
+
+      <!-- Avatar + Identity -->
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;">
+        <div class="avatar" id="profile-avatar">…</div>
+        <div style="min-width:0;flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+            <h1 style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;line-height:1.2;" id="profile-name">…</h1>
+            <span class="badge-verified" id="profile-verified-badge" style="display:none;">
+              <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+              Verified
+            </span>
+          </div>
+          <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.55);margin-bottom:8px;" id="profile-title"></p>
+          <!-- Stars -->
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span id="profile-stars" style="display:inline-flex;gap:2px;"></span>
+            <span id="profile-rating-text" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.50);">0.0 (0 reviews)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat row: 3 boxes across full width -->
+      <div style="display:flex;gap:8px;margin-bottom:18px;">
+        <div class="stat-box">
+          <span style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;line-height:1.2;" id="profile-starting-price">—</span>
+          <span class="label-upper" style="margin-top:4px;text-align:center;">Starting at</span>
+        </div>
+        <div class="stat-box">
+          <span style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;line-height:1.2;" id="profile-projects-count">0</span>
+          <span class="label-upper" style="margin-top:4px;text-align:center;">Projects</span>
+        </div>
+        <div class="stat-box">
+          <span style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;line-height:1.2;" id="profile-member-since">—</span>
+          <span class="label-upper" style="margin-top:4px;text-align:center;">Member since</span>
+        </div>
+      </div>
+
+      <!-- Availability + Hire Me CTA -->
+      <div id="availability-section" style="padding:14px 16px;background:rgba(45,138,94,0.05);border:1px solid rgba(45,138,94,0.15);border-radius:14px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span class="pulse" style="width:8px;height:8px;border-radius:50%;background:#3dbd7a;display:inline-block;flex-shrink:0;"></span>
+          <span style="font-size:13px;font-weight:600;color:#2d8a5e;">Available for new projects</span>
+        </div>
+        <p style="font-size:12px;font-weight:400;color:rgba(13,33,69,0.50);line-height:1.5;margin-bottom:12px;">Reach out to discuss your project requirements.</p>
+        <button onclick="openHireModal()" class="btn-green" style="width:100%;justify-content:center;padding:13px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Hire <span class="hire-btn-name"></span>
+        </button>
+      </div>
+
+      <!-- Share button -->
+      <button id="share-btn" onclick="copyProfileLink()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;background:none;border:1.5px solid rgba(13,33,69,0.14);font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);cursor:pointer;font-family:inherit;transition:border-color .2s,color .2s;" onmouseover="this.style.borderColor='#0d2145';this.style.color='#0d2145'" onmouseout="this.style.borderColor='rgba(13,33,69,0.14)';this.style.color='rgba(13,33,69,0.55)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share Profile
+      </button>
+
+      <!-- Visit Store button -->
+      <a id="visit-store-btn" href="#" style="display:none;width:100%;box-sizing:border-box;margin-top:10px;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;background:none;border:1.5px solid rgba(13,33,69,0.14);font-size:13px;font-weight:600;color:rgba(13,33,69,0.55);cursor:pointer;font-family:inherit;text-decoration:none;transition:border-color .2s,color .2s;" onmouseover="this.style.borderColor='#0d2145';this.style.color='#0d2145'" onmouseout="this.style.borderColor='rgba(13,33,69,0.14)';this.style.color='rgba(13,33,69,0.55)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Visit Store
+      </a>
+    </div>
+
+
+    <!-- ════════════════════════════════
+         ABOUT
+    ════════════════════════════════ -->
+    <div class="glass fade-up delay-1" style="padding:20px;margin-bottom:16px;">
+      <h2 style="font-size:16px;font-weight:700;color:#0d2145;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        About
+      </h2>
+      <div id="profile-bio-wrap">
+        <p style="font-size:14px;font-weight:400;color:rgba(13,33,69,0.65);line-height:1.8;" id="profile-bio"></p>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════
+         SKILLS
+    ════════════════════════════════ -->
+    <div class="glass fade-up delay-2" style="padding:20px;margin-bottom:16px;">
+      <h2 style="font-size:16px;font-weight:700;color:#0d2145;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+        Skills
+      </h2>
+      <div id="profile-skills-wrap" style="display:flex;flex-wrap:wrap;gap:8px;">
+        <!-- Skills injected by loadProfile() -->
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════
+         REVIEWS
+    ════════════════════════════════ -->
+    <div id="reviews-section" class="glass fade-up delay-3" style="padding:20px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-size:16px;font-weight:700;color:#0d2145;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          Reviews
+        </h2>
+        <span id="reviews-count-label" style="font-size:12px;font-weight:600;color:rgba(13,33,69,0.40);"></span>
+      </div>
+      <div id="reviews-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+  </div><!-- /max-width wrapper -->
+</div><!-- /page wrapper -->
+
+
+<!-- ════════════════════════════════
+     FOOTER
+════════════════════════════════ -->
+<footer style="border-top:1px solid #e2e8f0;padding:40px 16px 32px;background:#f8f9fb;">
+  <div style="max-width:900px;margin:0 auto;">
+    <!-- Stack on mobile, row on md+ -->
+    <div style="display:grid;grid-template-columns:1fr;gap:28px;margin-bottom:28px;">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.5px;margin-bottom:10px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+        <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.50);line-height:1.7;max-width:300px;">The complete freelance operating system for verified professionals worldwide.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(13,33,69,0.40);margin-bottom:12px;">Platform</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="how-it-works.html" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);text-decoration:none;">How It Works</a>
+            <a href="browse.html"       style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);text-decoration:none;">Browse</a>
+            <a href="pricing.html"      style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);text-decoration:none;">Pricing</a>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(13,33,69,0.40);margin-bottom:12px;">Account</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="signup.html" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);text-decoration:none;">Sign Up</a>
+            <a href="login.html"  style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);text-decoration:none;">Log In</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="height:1px;background:#e2e8f0;margin-bottom:16px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <p style="font-size:12px;font-weight:400;color:rgba(13,33,69,0.40);">&copy; <span id="yr"></span> Kreddlo. All rights reserved.</p>
+      <div style="display:flex;gap:16px;">
+        <a href="privacy.html" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.40);text-decoration:none;">Privacy</a>
+        <a href="terms.html" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.40);text-decoration:none;">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ════════════════════════════════════════════════
+     HIRE MODAL (Step 1 - Project Details)
+════════════════════════════════════════════════ -->
+<div id="hire-modal">
+  <!-- STEP 1 -->
+  <div class="modal-sheet" id="step-1">
+    <div class="drag-handle"></div>
+    <!-- Progress -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:22px;">
+      <div class="step-dot active">1</div>
+      <div style="flex:1;height:2px;background:linear-gradient(to right,#2d8a5e,#e2e8f0);border-radius:2px;"></div>
+      <div class="step-dot pending">2</div>
+      <div style="flex:1;height:2px;background:#e2e8f0;border-radius:2px;"></div>
+      <div class="step-dot pending">3</div>
+      <div style="flex:1;height:2px;background:#e2e8f0;border-radius:2px;"></div>
+      <div class="step-dot pending">4</div>
+    </div>
+    <h2 style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;margin-bottom:5px;">Start a Project</h2>
+    <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.50);margin-bottom:20px;line-height:1.6;">with <strong style="color:#2d8a5e;" id="modal-freelancer-name"></strong>. A contract is generated automatically.</p>
+
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:7px;">Project Title</label>
+        <input type="text" id="inp-title" class="form-input" placeholder="e.g. Build a landing page for my SaaS" />
+        <p id="err-title" style="display:none;font-size:12px;color:#c81e1e;margin-top:5px;font-weight:500;"></p>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:7px;">Description</label>
+        <textarea id="inp-desc" class="form-textarea" placeholder="Describe what you need, deliverables and any specific requirements..."></textarea>
+        <p id="err-desc" style="display:none;font-size:12px;color:#c81e1e;margin-top:5px;font-weight:500;"></p>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:7px;">Budget (USD)</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:rgba(13,33,69,0.38);pointer-events:none;">$</span>
+          <input type="number" id="inp-budget" class="form-input" style="padding-left:30px;" placeholder="0" min="0" />
+        </div>
+        <p id="err-budget" style="display:none;font-size:12px;color:#c81e1e;margin-top:5px;font-weight:500;"></p>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#0d2145;margin-bottom:7px;">Deadline</label>
+        <input type="date" id="inp-deadline" class="form-input" />
+        <p id="err-deadline" style="display:none;font-size:12px;color:#c81e1e;margin-top:5px;font-weight:500;"></p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:22px;">
+      <button onclick="closeHireModal()" class="btn-secondary" style="flex:1;justify-content:center;padding:13px;">Cancel</button>
+      <button onclick="submitStep1()"    class="btn-green"     style="flex:2;justify-content:center;padding:13px;">
+        Continue
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Contract preview -->
+  <div class="modal-sheet wide" id="step-2" style="display:none;">
+    <div class="drag-handle"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:22px;">
+      <div class="step-dot done"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="flex:1;height:2px;background:#2d8a5e;border-radius:2px;"></div>
+      <div class="step-dot active">2</div>
+      <div style="flex:1;height:2px;background:#e2e8f0;border-radius:2px;"></div>
+      <div class="step-dot pending">3</div>
+      <div style="flex:1;height:2px;background:#e2e8f0;border-radius:2px;"></div>
+      <div class="step-dot pending">4</div>
+    </div>
+    <h2 style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;margin-bottom:5px;">Review Contract</h2>
+    <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.50);margin-bottom:16px;line-height:1.6;">Read carefully before signing. Both parties must sign before work begins.</p>
+
+    <div id="contract-doc">
+      <!-- Contract header -->
+      <div style="text-align:center;margin-bottom:16px;">
+        <p style="font-size:11px;font-weight:800;color:#0d2145;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Service Agreement</p>
+        <p style="font-size:11px;color:rgba(13,33,69,0.45);font-weight:500;">Date: <span id="c-date" style="font-weight:700;color:#0d2145;"></span></p>
+      </div>
+      <div class="divider"></div>
+      <p class="label-upper" style="margin-bottom:8px;">Parties</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:rgba(45,138,94,0.05);border:1px solid rgba(45,138,94,0.18);border-radius:10px;padding:12px;">
+          <p class="label-upper" style="color:#2d8a5e;margin-bottom:5px;">Provider</p>
+          <p id="c-provider-name" style="font-size:13px;font-weight:700;color:#0d2145;"></p>
+          <p id="c-provider-username" style="font-size:11px;color:rgba(13,33,69,0.45);"></p>
+        </div>
+        <div style="background:rgba(13,33,69,0.03);border:1px solid rgba(13,33,69,0.09);border-radius:10px;padding:12px;">
+          <p class="label-upper" style="margin-bottom:5px;">Client</p>
+          <p id="c-buyer-name"  style="font-size:13px;font-weight:700;color:#0d2145;"></p>
+          <p id="c-buyer-email" style="font-size:11px;color:rgba(13,33,69,0.45);word-break:break-all;"></p>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p class="label-upper" style="margin-bottom:10px;">Project Details</p>
+      <p style="font-size:10px;font-weight:600;color:rgba(13,33,69,0.40);margin-bottom:3px;">Title</p>
+      <p id="c-title" style="font-size:14px;font-weight:700;color:#0d2145;margin-bottom:10px;"></p>
+      <p style="font-size:10px;font-weight:600;color:rgba(13,33,69,0.40);margin-bottom:3px;">Scope of Work</p>
+      <p id="c-desc" style="font-size:12px;color:rgba(13,33,69,0.65);line-height:1.7;margin-bottom:12px;"></p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div><p class="label-upper" style="margin-bottom:4px;">Amount</p><p id="c-budget" style="font-size:18px;font-weight:800;color:#2d8a5e;letter-spacing:-0.4px;"></p></div>
+        <div><p class="label-upper" style="margin-bottom:4px;">Deadline</p><p id="c-deadline" style="font-size:13px;font-weight:700;color:#0d2145;"></p></div>
+      </div>
+      <div class="divider"></div>
+      <p class="label-upper" style="margin-bottom:10px;">Terms</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <div style="display:flex;gap:9px;"><div style="width:18px;height:18px;border-radius:50%;background:#0d2145;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><span style="font-size:8px;font-weight:700;color:#fff;">1</span></div><div><p style="font-size:11px;font-weight:700;color:#0d2145;margin-bottom:2px;">Payment</p><p style="font-size:11px;color:rgba(13,33,69,0.58);line-height:1.7;">The agreed amount is held in escrow by Kreddlo and released only after client approval or formal resolution.</p></div></div>
+        <div style="display:flex;gap:9px;"><div style="width:18px;height:18px;border-radius:50%;background:#0d2145;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><span style="font-size:8px;font-weight:700;color:#fff;">2</span></div><div><p style="font-size:11px;font-weight:700;color:#0d2145;margin-bottom:2px;">Delivery</p><p style="font-size:11px;color:rgba(13,33,69,0.58);line-height:1.7;">The provider agrees to deliver all work by the agreed deadline. Failure may result in escrow being returned to the client.</p></div></div>
+        <div style="display:flex;gap:9px;"><div style="width:18px;height:18px;border-radius:50%;background:#0d2145;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><span style="font-size:8px;font-weight:700;color:#fff;">3</span></div><div><p style="font-size:11px;font-weight:700;color:#0d2145;margin-bottom:2px;">Revisions</p><p style="font-size:11px;color:rgba(13,33,69,0.58);line-height:1.7;">Two rounds of revisions are included within the original scope. Additional revisions may incur extra fees.</p></div></div>
+        <div style="display:flex;gap:9px;"><div style="width:18px;height:18px;border-radius:50%;background:#0d2145;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><span style="font-size:8px;font-weight:700;color:#fff;">4</span></div><div><p style="font-size:11px;font-weight:700;color:#0d2145;margin-bottom:2px;">Disputes</p><p style="font-size:11px;color:rgba(13,33,69,0.58);line-height:1.7;">Disputes are reviewed by the Kreddlo admin team. Both parties must submit evidence within 5 business days. The admin team's decision is final.</p></div></div>
+      </div>
+      <div style="background:rgba(45,138,94,0.05);border:1px solid rgba(45,138,94,0.15);border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="2.2" style="flex-shrink:0;margin-top:1px;"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <p style="font-size:10px;color:rgba(13,33,69,0.50);line-height:1.65;">This agreement is facilitated by <strong style="color:#0d2145;">Kreddlo</strong>. All signatures and activity are logged and tamper-proof.</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;">
+      <button onclick="goStep(1)" class="btn-secondary" style="justify-content:center;padding:12px;font-size:13px;">Back</button>
+      <button onclick="goStep(3)" class="btn-green"     style="justify-content:center;padding:12px;font-size:13px;">
+        Sign Contract
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Your signature -->
+  <div class="modal-sheet" id="step-3" style="display:none;">
+    <div class="drag-handle"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:22px;">
+      <div class="step-dot done"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="flex:1;height:2px;background:#2d8a5e;border-radius:2px;"></div>
+      <div class="step-dot done"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="flex:1;height:2px;background:#2d8a5e;border-radius:2px;"></div>
+      <div class="step-dot active">3</div>
+      <div style="flex:1;height:2px;background:#e2e8f0;border-radius:2px;"></div>
+      <div class="step-dot pending">4</div>
+    </div>
+
+    <div id="step3-form">
+      <h2 style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;margin-bottom:5px;">Sign the Contract</h2>
+      <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.50);margin-bottom:18px;line-height:1.6;">Your signature confirms you agree to the terms above.</p>
+
+      <!-- Summary -->
+      <div style="background:#f8f9fb;border-radius:12px;padding:14px;margin-bottom:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><p class="label-upper" style="margin-bottom:4px;">Project</p><p id="s3-title" style="font-size:13px;font-weight:700;color:#0d2145;"></p></div>
+        <div><p class="label-upper" style="margin-bottom:4px;">Amount</p><p id="s3-amount" style="font-size:13px;font-weight:700;color:#2d8a5e;"></p></div>
+      </div>
+
+      <!-- Signature options -->
+      <p style="font-size:12px;font-weight:600;color:#0d2145;margin-bottom:10px;">Choose how to sign:</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <div class="sig-option selected" id="sig-opt-a" onclick="selectSig('a')">
+          <p style="font-size:13px;font-weight:700;color:#0d2145;margin-bottom:8px;">Draw your signature</p>
+          <canvas id="sig-canvas"></canvas>
+          <button onclick="clearSigPad(event)" style="font-size:11px;font-weight:600;color:rgba(13,33,69,0.40);background:none;border:none;cursor:pointer;padding:4px 0;font-family:inherit;margin-top:6px;">Clear</button>
+        </div>
+        <div class="sig-option" id="sig-opt-b" onclick="selectSig('b')">
+          <p style="font-size:13px;font-weight:700;color:#0d2145;margin-bottom:8px;">Upload a signed photo</p>
+          <div class="upload-zone">
+            <input type="file" id="sig-upload" accept="image/*" onchange="handleSigUpload(event)" />
+            <svg width="22" height="22" fill="none" stroke="#2d8a5e" stroke-width="1.8" viewBox="0 0 24 24" style="margin:0 auto 8px;display:block;opacity:0.55;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.50);">Tap to upload</p>
+            <p style="font-size:11px;color:rgba(13,33,69,0.35);margin-top:3px;">JPG, PNG or WEBP</p>
+          </div>
+          <div id="sig-preview-wrap" style="display:none;margin-top:10px;">
+            <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:center;min-height:70px;">
+              <img id="sig-preview-img" src="" alt="Signature preview" style="max-height:70px;max-width:100%;object-fit:contain;" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p id="err-sign" style="display:none;font-size:12px;color:#c81e1e;margin-bottom:12px;font-weight:500;"></p>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="goStep(2)" class="btn-secondary" style="flex:1;justify-content:center;padding:13px;font-size:13px;">Back</button>
+        <button id="btn-sign" onclick="submitSignature()" class="btn-green" style="flex:2;justify-content:center;padding:13px;font-size:13px;">
+          Accept and Sign
+        </button>
+      </div>
+    </div>
+
+    <!-- Success state -->
+    <div id="step3-success" style="display:none;text-align:center;padding:16px 0;">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(45,138,94,0.10);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="28" height="28" fill="none" stroke="#2d8a5e" stroke-width="2.2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:800;color:#0d2145;margin-bottom:8px;">Contract Signed</h3>
+      <p style="font-size:13px;color:rgba(13,33,69,0.50);line-height:1.7;margin-bottom:20px;">Your contract has been submitted. The freelancer must accept it before you can fund escrow.</p>
+
+      <!-- Waiting for freelancer state — shown until freelancerSigned === true -->
+      <div id="step3-waiting" style="background:rgba(13,33,69,0.04);border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 14px;margin-bottom:16px;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span id="step3-waiting-spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(13,33,69,0.15);border-top-color:#2d8a5e;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;"></span>
+          <span id="step3-waiting-label" style="font-size:13px;font-weight:700;color:#0d2145;">Waiting for freelancer to accept…</span>
+        </div>
+        <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.50);margin:0;line-height:1.5;">The freelancer has been notified. This page will update automatically once they accept the contract.</p>
+      </div>
+
+      <!-- Counter-proposal banner — shown when freelancer proposes changes -->
+      <div id="step3-counter-proposal" style="display:none;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 14px;margin-bottom:16px;text-align:left;">
+        <p style="font-size:13px;font-weight:700;color:#0d2145;margin:0 0 6px;">The freelancer proposed changes</p>
+        <div id="step3-proposal-details" style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.60);line-height:1.6;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;">
+          <button id="btn-reject-proposal" class="btn-secondary" style="flex:1;font-size:13px;" onclick="respondToFreelancerProposal('reject')">Decline</button>
+          <button id="btn-accept-proposal" class="btn-green" style="flex:1;font-size:13px;" onclick="respondToFreelancerProposal('accept')">Accept</button>
+        </div>
+      </div>
+
+      <!-- Proceed button — hidden until freelancerSigned === true -->
+      <button id="btn-proceed-payment" onclick="goStep(4)" class="btn-green" style="width:100%;justify-content:center;display:none;">
+        Proceed to Payment
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Payment -->
+  <div class="modal-sheet" id="step-4" style="display:none;">
+    <div class="drag-handle"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:22px;">
+      <div class="step-dot done"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="flex:1;height:2px;background:#2d8a5e;border-radius:2px;"></div>
+      <div class="step-dot done"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="flex:1;height:2px;background:#2d8a5e;border-radius:2px;"></div>
+      <div class="step-dot done"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#2d8a5e" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="flex:1;height:2px;background:#2d8a5e;border-radius:2px;"></div>
+      <div class="step-dot active">4</div>
+    </div>
+    <h2 style="font-size:20px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;margin-bottom:5px;">Fund Escrow</h2>
+    <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.50);margin-bottom:18px;line-height:1.6;">Your payment is held securely. Released only on approval.</p>
+
+    <!-- Payment summary -->
+    <div style="background:#f8f9fb;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+        <span style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);">Project Value</span>
+        <span id="pay-base" style="font-size:13px;font-weight:700;color:#0d2145;"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+        <span id="pay-fee-label" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);">Platform Fee (9%)</span>
+        <span id="pay-fee" style="font-size:13px;font-weight:700;color:#0d2145;"></span>
+      </div>
+      <div id="pay-protection-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+        <span id="pay-protection-label" style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.60);">Project Protection (2%)</span>
+        <span id="pay-protection" style="font-size:13px;font-weight:700;color:#2d8a5e;"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 2px;">
+        <span style="font-size:15px;font-weight:800;color:#0d2145;">Total</span>
+        <span id="pay-total" style="font-size:17px;font-weight:800;color:#0d2145;letter-spacing:-0.4px;"></span>
+      </div>
+    </div>
+
+    <!-- Protection toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(45,138,94,0.04);border:1.5px solid rgba(45,138,94,0.15);border-radius:12px;padding:13px 14px;margin-bottom:16px;gap:12px;">
+      <div style="flex:1;">
+        <p style="font-size:13px;font-weight:700;color:#0d2145;margin-bottom:2px;">Project Protection</p>
+        <p style="font-size:11px;font-weight:400;color:rgba(13,33,69,0.50);line-height:1.5;">Get a guaranteed partial refund if the freelancer fails to deliver.</p>
+      </div>
+      <label style="display:flex;align-items:center;flex-shrink:0;">
+        <input type="checkbox" id="protection-toggle" style="position:absolute;opacity:0;width:0;height:0;" onchange="updatePaymentTotal()" checked />
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+
+    <!-- Escrow note -->
+    <div style="display:flex;gap:9px;align-items:flex-start;background:rgba(45,138,94,0.05);border-radius:12px;padding:12px 14px;margin-bottom:18px;">
+      <svg width="14" height="14" fill="none" stroke="#2d8a5e" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.60);line-height:1.6;">Funds are held in secure escrow and only released when you approve the delivery. You are fully protected.</p>
+    </div>
+
+    <!-- Payment method selector — rendered by renderPaymentMethods() once freelancer profile loads -->
+    <p class="label-upper" style="margin-bottom:10px;">Choose Payment Method</p>
+    <div id="payment-method-selector" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+      <!-- Populated dynamically by renderPaymentMethods() -->
+      <div style="display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(13,33,69,0.03);border-radius:12px;">
+        <span style="font-size:13px;color:rgba(13,33,69,0.40);font-weight:500;">Loading payment options…</span>
+      </div>
+    </div>
+
+    <button id="btn-pay" onclick="submitPayment()" class="btn-green" style="width:100%;justify-content:center;padding:15px;font-size:15px;font-weight:700;">
+      Pay and Fund Escrow
+    </button>
+    <button onclick="goStep(3)" class="btn-secondary" style="width:100%;justify-content:center;padding:12px;margin-top:10px;font-size:13px;">Back</button>
+  </div>
+</div>
+
+
+<!-- Toast -->
+<div id="toast"></div>
+
+
+<script>
+  // ── Year ──────────────────────────────────────────────────────────────
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // ── Min date ─────────────────────────────────────────────────────────
+  const tomorrow = new Date(Date.now() + 86400000);
+  document.getElementById('inp-deadline').min = tomorrow.toISOString().split('T')[0];
+
+  // ── Mobile nav ────────────────────────────────────────────────────────
+  window.openMobileNav = () => {
+    document.getElementById('mobile-nav-panel').classList.add('open');
+    document.getElementById('menu-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeMobileNav = () => {
+    document.getElementById('mobile-nav-panel').classList.remove('open');
+    document.getElementById('menu-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  // ── Stars renderer helper ─────────────────────────────────────────────
+  function renderProfileStars(rating) {
+    const cont = document.getElementById('profile-stars');
+    const full  = Math.floor(rating);
+    const half  = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    let h = '';
+    for (let i=0;i<full;i++)  h += `<svg width="15" height="15" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    if (half)                  h += `<svg width="15" height="15" viewBox="0 0 24 24"><defs><linearGradient id="hg"><stop offset="50%" stop-color="#f59e0b"/><stop offset="50%" stop-color="#e2e8f0"/></linearGradient></defs><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="url(#hg)"/></svg>`;
+    for (let i=0;i<empty;i++) h += `<svg width="15" height="15" viewBox="0 0 24 24" fill="#e2e8f0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    cont.innerHTML = h;
+  }
+
+  // Initialise with 0.0 until Firestore responds
+  renderProfileStars(0);
+
+  function starsHtml(r) {
+    const f=Math.floor(r), h=r%1>=0.5, e=5-f-(h?1:0);
+    let s='<span style="display:inline-flex;gap:2px;">';
+    for(let i=0;i<f;i++) s+=`<svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    if(h) s+=`<svg width="13" height="13" viewBox="0 0 24 24"><defs><linearGradient id="hg2"><stop offset="50%" stop-color="#f59e0b"/><stop offset="50%" stop-color="#e2e8f0"/></linearGradient></defs><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="url(#hg2)"/></svg>`;
+    for(let i=0;i<e;i++) s+=`<svg width="13" height="13" viewBox="0 0 24 24" fill="#e2e8f0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    return s+'</span>';
+  }
+
+  // ── Load Reviews from Firestore ───────────────────────────────────────
+  async function loadReviews(freelancerUid) {
+    // Wait for Firebase module to be ready
+    let waited = 0;
+    while ((!window.db || !window._fsReviews || !window._fsProfile) && waited < 5000) {
+      await new Promise(r => setTimeout(r, 100));
+      waited += 100;
+    }
+    if (!window.db || !window._fsReviews) return;
+
+    const { collection, query, where, orderBy, limit, getDocs } = window._fsReviews;
+    const { doc, getDoc } = window._fsProfile;
+    const db = window.db;
+
+    const reviewsEl  = document.getElementById('reviews-list');
+    const countLabel = document.getElementById('reviews-count-label');
+    const ratingText = document.getElementById('profile-rating-text');
+
+    // ── 1. Seed stars from publicProfiles doc (fast path: averageRating + totalReviews) ──
+    try {
+      const userSnap = await getDoc(doc(db, 'publicProfiles', freelancerUid));
+      if (userSnap.exists()) {
+        const u = userSnap.data();
+        const avg   = Number(u.averageRating || u.ratingAverage || 0);
+        const count = Number(u.totalReviews  || u.ratingCount   || 0);
+        if (count > 0) {
+          renderProfileStars(avg);
+          const countTxt = count === 1 ? '1 review' : `${count} reviews`;
+          ratingText.textContent = `${avg.toFixed(1)} (${countTxt})`;
+          countLabel.textContent = countTxt;
+        }
+      }
+    } catch(e) { /* non-fatal — full query below will still update */ }
+
+    // ── 2. Fetch review documents ──
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let snap = null;
+
+    try {
+      // Primary: filtered + ordered (requires composite index)
+      const q = query(
+        collection(db, 'reviews'),
+        where('targetUid', '==', freelancerUid),
+        where('visible',   '==', true),
+        orderBy('createdAt', 'desc'),
+        limit(20)
+      );
+      snap = await getDocs(q);
+    } catch(indexErr) {
+      console.warn('[loadReviews] Index missing, falling back to unfiltered query:', indexErr.message);
+      try {
+        // Fallback: no visible filter, no orderBy (works without composite index)
+        const qFallback = query(
+          collection(db, 'reviews'),
+          where('targetUid', '==', freelancerUid),
+          limit(20)
+        );
+        const fbSnap = await getDocs(qFallback);
+        // Filter + sort client-side
+        const visible = fbSnap.docs.filter(d => d.data().visible !== false);
+        visible.sort((a, b) => {
+          const ta = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+          const tb = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+          return tb - ta;
+        });
+        // Wrap as snap-like object
+        snap = { empty: visible.length === 0, size: visible.length, docs: visible };
+      } catch(fallbackErr) {
+        console.error('[loadReviews] Fallback query also failed:', fallbackErr);
+        snap = { empty: true, size: 0, docs: [] };
+      }
+    }
+
+    // ── 3. Empty state ──
+    if (snap.empty) {
+      renderProfileStars(0);
+      ratingText.textContent = '0.0 (0 reviews)';
+      countLabel.textContent = '0 reviews';
+      reviewsEl.innerHTML = `
+        <div style="text-align:center;padding:32px 16px;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.20)" stroke-width="1.5" style="margin:0 auto 12px;display:block;"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          <p style="font-size:14px;font-weight:600;color:rgba(13,33,69,0.40);margin:0 0 4px;">No reviews yet</p>
+          <p style="font-size:13px;font-weight:400;color:rgba(13,33,69,0.30);margin:0;">Reviews appear here after completed projects.</p>
+        </div>`;
+      return;
+    }
+
+    // ── 4. Recompute average from live documents ──
+    let total = 0;
+    snap.docs.forEach(d => { total += (d.data().rating || 0); });
+    const count    = snap.size;
+    const avg      = Math.round((total / count) * 10) / 10;
+    const countTxt = count === 1 ? '1 review' : `${count} reviews`;
+
+    renderProfileStars(avg);
+    ratingText.textContent = `${avg.toFixed(1)} (${countTxt})`;
+    countLabel.textContent = countTxt;
+
+    // ── 5. Render review cards ──
+    reviewsEl.innerHTML = snap.docs.map(d => {
+      const data     = d.data();
+      const name     = data.reviewerName || 'Anonymous';
+      const rating   = data.rating || 0;
+      const comment  = (data.comment || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const safeName = name.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const initials = name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      let dateStr = '';
+      if (data.createdAt && data.createdAt.toDate) {
+        const dt = data.createdAt.toDate();
+        dateStr = `${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`;
+      }
+      return `
+        <div class="review-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0d2145,#2d8a5e);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${initials}</div>
+              <div>
+                <p style="font-size:14px;font-weight:700;color:#0d2145;margin-bottom:2px;">${safeName}</p>
+                <p style="font-size:12px;color:rgba(13,33,69,0.40);font-weight:400;">${dateStr}</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+              ${starsHtml(rating)}
+            </div>
+          </div>
+          ${comment ? `<p style="font-size:14px;font-weight:400;color:rgba(13,33,69,0.60);line-height:1.6;margin:0;">${comment}</p>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  // ── Load Profile from Firestore ───────────────────────────────────────
+  async function loadProfile(uid) {
+    // Wait for Firebase module to be ready
+    let waited = 0;
+    while ((!window.db || !window._fsProfile) && waited < 5000) {
+      await new Promise(r => setTimeout(r, 100));
+      waited += 100;
+    }
+    if (!window.db || !window._fsProfile) return;
+
+    const { doc, getDoc } = window._fsProfile;
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    try {
+      const snap = await getDoc(doc(window.db, 'publicProfiles', uid));
+      // Fallback: if publicProfiles doc missing, try users/{uid} directly.
+      // This handles accounts created before profile-setup mirrored to publicProfiles.
+      let u;
+      if (snap.exists()) {
+        u = snap.data();
+        // If critical fields are missing from publicProfiles, merge from users doc
+        if (!u.description && !u.bio && !u.title && !u.photoURL && !u.photoUrl) {
+          try {
+            const usersSnap = await getDoc(doc(window.db, 'users', uid));
+            if (usersSnap.exists()) {
+              const ud = usersSnap.data();
+              u = Object.assign({}, ud, u); // publicProfiles fields win on conflicts
+            }
+          } catch(e2) { /* non-fatal */ }
+        }
+      } else {
+        // No publicProfiles doc at all — read from users collection
+        try {
+          const usersSnap = await getDoc(doc(window.db, 'users', uid));
+          if (!usersSnap.exists()) return;
+          u = usersSnap.data();
+        } catch(e2) { return; }
+      }
+
+      const displayName = u.displayName || u.name || 'Freelancer';
+      const username    = u.username || uid;
+
+      // Store globally for share link and modal
+      window._profileDisplayName = displayName;
+      window._profileUsername    = username;
+      window._profileUid         = uid;
+
+      // Page title
+      document.title = displayName + ' — Kreddlo';
+
+      // Dynamic SEO — updates OG tags, Twitter card and JSON-LD with real freelancer data
+      if (typeof window.applySEO === 'function') {
+        window.applySEO({
+          title:       displayName + ' — Verified Freelancer | Kreddlo',
+          description: (u.title ? u.title + '. ' : '') + (u.description || u.bio ? (u.description || u.bio).slice(0, 120) + '...' : 'View ' + displayName + '\'s verified freelancer profile on Kreddlo. Hire with secure escrow.'),
+          url:         'https://kreddlo.space/profile.html?uid=' + uid,
+          image:       u.photoURL || u.photoUrl || u.profilePhoto || DEFAULT_OG_IMAGE || 'https://kreddlo.space/assets/og-image.png',
+          type:        'profile',
+          name:        displayName,
+        });
+      }
+
+      // Avatar initials
+      const photoURL = u.photoURL || u.photoUrl || u.profilePhoto || '';
+      const initials = displayName.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const avatarEl = document.getElementById('profile-avatar');
+      if (avatarEl) {
+        if (photoURL) {
+          avatarEl.innerHTML = '<img src="' + photoURL + '" alt="' + displayName + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />';
+          avatarEl.style.background = 'transparent';
+          avatarEl.style.border = '3px solid rgba(45,138,94,0.25)';
+        } else {
+          avatarEl.textContent = initials || '?';
+        }
+      }
+
+      // Name heading
+      const nameEl = document.getElementById('profile-name');
+      if (nameEl) nameEl.textContent = displayName;
+
+      // Professional title
+      const titleEl = document.getElementById('profile-title');
+      if (titleEl) titleEl.textContent = u.title || '';
+
+      // Bio
+      const bioEl = document.getElementById('profile-bio');
+      if (bioEl) bioEl.textContent = u.description || u.bio || 'This freelancer has not added a bio yet.';
+
+      // Starting price
+      const priceEl = document.getElementById('profile-starting-price');
+      if (priceEl) priceEl.textContent = u.startingPrice ? '$' + Number(u.startingPrice).toLocaleString() : '—';
+
+      // Completed projects count
+      const projEl = document.getElementById('profile-projects-count');
+      if (projEl) projEl.textContent = u.completedProjects != null ? u.completedProjects : (u.projectCount || 0);
+
+      // Member since
+      const sinceEl = document.getElementById('profile-member-since');
+      if (sinceEl && u.createdAt && u.createdAt.toDate) {
+        const dt = u.createdAt.toDate();
+        sinceEl.textContent = MONTHS[dt.getMonth()] + ' ' + String(dt.getFullYear()).slice(2);
+      }
+
+      // Skills
+      const skillsWrap = document.getElementById('profile-skills-wrap');
+      if (skillsWrap) {
+        const skills = Array.isArray(u.skills) ? u.skills : [];
+        if (skills.length > 0) {
+          skillsWrap.innerHTML = skills.map(s =>
+            '<span class="skill-tag">' + s.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>'
+          ).join('');
+        } else {
+          skillsWrap.innerHTML = '<p style="font-size:13px;color:rgba(13,33,69,0.45);">No skills listed yet.</p>';
+        }
+      }
+
+      // Verified badge — show only if kycStatus === 'verified'
+      const badgeEl = document.getElementById('profile-verified-badge');
+      if (badgeEl && u.kycStatus === 'verified') badgeEl.style.display = 'inline-flex';
+
+      // Availability section
+      if (u.available === false) {
+        const avail = document.getElementById('availability-section');
+        if (avail) avail.style.display = 'none';
+      }
+
+      // Hire button name spans
+      document.querySelectorAll('.hire-btn-name').forEach(el => {
+        el.textContent = displayName.split(' ')[0];
+      });
+
+      // Visit Store button — set href and show it
+      const storeBtn = document.getElementById('visit-store-btn');
+      if (storeBtn && uid) {
+        storeBtn.href = '/store.html?uid=' + encodeURIComponent(uid);
+        storeBtn.style.display = 'flex';
+      }
+
+      // Store accepted payment methods globally so step 4 can render correctly
+      window._freelancerPaymentMethods = Array.isArray(u.acceptedPaymentMethods) && u.acceptedPaymentMethods.length > 0
+        ? u.acceptedPaymentMethods
+        : ['crypto'];
+
+      // Contract provider fields
+      const provName = document.getElementById('c-provider-name');
+      const provUser = document.getElementById('c-provider-username');
+      if (provName) provName.textContent = displayName;
+      if (provUser) provUser.textContent = '@' + username;
+
+      // Modal "with <name>" text
+      const modalName = document.getElementById('modal-freelancer-name');
+      if (modalName) modalName.textContent = displayName;
+
+    } catch (err) {
+      console.error('loadProfile error:', err);
+    }
+  }
+
+  // Derive freelancer uid from URL param and load profile
+  (async function() {
+    const params = new URLSearchParams(location.search);
+    const uid    = params.get('uid') || params.get('freelancerUid') || params.get('id') || '';
+    if (uid) {
+      // Wait for Firebase module to initialise (module scripts are async)
+      let waited = 0;
+      while ((!window.db || !window._fsProfile || !window._fsReviews) && waited < 8000) {
+        await new Promise(r => setTimeout(r, 80));
+        waited += 80;
+      }
+      loadProfile(uid);
+      loadReviews(uid);
+    } else {
+      // No uid in URL — show a not-found state
+      document.title = 'Profile Not Found — Kreddlo';
+      const avatarEl = document.getElementById('profile-avatar');
+      if (avatarEl) avatarEl.textContent = '?';
+      const nameEl = document.getElementById('profile-name');
+      if (nameEl) nameEl.textContent = 'Profile not found';
+    }
+  })();
+
+  // ── Toast ────────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── Share ────────────────────────────────────────────────────────────
+  window.copyProfileLink = function() {
+    const uid = window._profileUid || new URLSearchParams(location.search).get('uid') || '';
+    const url = location.href.split('?')[0] + (uid ? '?uid=' + encodeURIComponent(uid) : '');
+    navigator.clipboard.writeText(url).catch(() => {
+      const ta = document.createElement('textarea'); ta.value = url;
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    showToast('Profile link copied.');
+  };
+
+  // ── Hire Modal ────────────────────────────────────────────────────────
+  let projectData = {};
+  let sigPad = null;
+  let activeSigOpt = 'a';
+  let uploadedSig = null;
+
+  // Live platform fee config — defaults match the figures previously
+  // hardcoded in the markup, so nothing changes visually until/unless an
+  // admin actually updates config/platform in Firestore.
+  let PLATFORM_FEE_PCT    = 9;
+  let PROTECTION_FEE_PCT  = 2;
+  let _platformFeeLoaded  = false;
+
+  function loadPlatformFeeConfig() {
+    if (_platformFeeLoaded) return Promise.resolve();
+    if (!window.db || !window._fsProfile) return Promise.resolve();
+    const { doc, getDoc } = window._fsProfile;
+    return getDoc(doc(window.db, 'config', 'platform')).then(snap => {
+      if (snap.exists()) {
+        const d = snap.data();
+        if (typeof d.platformFeePercent === 'number')       PLATFORM_FEE_PCT   = d.platformFeePercent;
+        if (typeof d.projectProtectionPercent === 'number') PROTECTION_FEE_PCT = d.projectProtectionPercent;
+      }
+      _platformFeeLoaded = true;
+      // Reflect into the static fee labels next to the checkout breakdown
+      const feeLabel  = document.getElementById('pay-fee-label');
+      const protLabel = document.getElementById('pay-protection-label');
+      if (feeLabel)  feeLabel.textContent  = 'Platform Fee (' + PLATFORM_FEE_PCT + '%)';
+      if (protLabel) protLabel.textContent = 'Project Protection (' + PROTECTION_FEE_PCT + '%)';
+      // Recompute the totals in case the modal is already open with stale defaults
+      if (typeof window.updatePaymentTotal === 'function') window.updatePaymentTotal();
+    }).catch(err => {
+      console.warn('[profile] platform fee config load failed, using defaults:', err.message);
+      _platformFeeLoaded = true;
+    });
+  }
+
+  window.openHireModal = function() {
+    document.getElementById('hire-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    loadPlatformFeeConfig();
+    goStep(1);
+  };
+  window.closeHireModal = function() {
+    document.getElementById('hire-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  document.getElementById('hire-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeHireModal(); });
+
+  window.goStep = function(n) {
+    [1,2,3,4].forEach(i => {
+      const el = document.getElementById('step-'+i);
+      if(el) el.style.display = i===n ? 'block' : 'none';
+    });
+    // Widen sheet for contract step on sm+
+    const sheets = document.querySelectorAll('.modal-sheet');
+    sheets.forEach(s => {
+      if(n===2) s.classList.add('wide');
+      else s.classList.remove('wide');
+    });
+    // Stop polling if buyer navigates away from step 3
+    if (n !== 3 && typeof stopFreelancerSignedPolling === 'function') {
+      stopFreelancerSignedPolling();
+    }
+    // Render payment methods on step 4
+    if (n === 4) {
+      if (typeof window.renderPaymentMethods === 'function') window.renderPaymentMethods();
+    }
+    // Init sig pad on step 3 — always destroy and rebuild so dimensions are fresh
+    if (n === 3) {
+      document.getElementById('step3-form').style.display = 'block';
+      document.getElementById('step3-success').style.display = 'none';
+      // Kill existing instance immediately so old event listeners are gone
+      if (sigPad) { sigPad.off(); sigPad = null; }
+      initSigPad();
+    }
+  };
+
+  // ── Step 1: validate + populate contract ─────────────────────────────
+  window.submitStep1 = async function() {
+    ['err-title','err-desc','err-budget','err-deadline'].forEach(id => document.getElementById(id).style.display='none');
+    const title    = document.getElementById('inp-title').value.trim();
+    const desc     = document.getElementById('inp-desc').value.trim();
+    const budget   = parseFloat(document.getElementById('inp-budget').value);
+    const deadline = document.getElementById('inp-deadline').value;
+    let ok = true;
+    if(!title)            { document.getElementById('err-title').textContent='Please enter a project title.'; document.getElementById('err-title').style.display='block'; ok=false; }
+    if(!desc||desc.length<20) { document.getElementById('err-desc').textContent='Please describe the project in at least 20 characters.'; document.getElementById('err-desc').style.display='block'; ok=false; }
+    if(!budget||budget<=0)    { document.getElementById('err-budget').textContent='Please enter a valid budget.'; document.getElementById('err-budget').style.display='block'; ok=false; }
+    if(!deadline)         { document.getElementById('err-deadline').textContent='Please select a deadline.'; document.getElementById('err-deadline').style.display='block'; ok=false; }
+    if(!ok) return;
+    projectData = { title, desc, budget, deadline };
+    // Populate contract
+    const fmtDate = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    const fmtDL   = new Date(deadline+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    document.getElementById('c-date').textContent     = fmtDate;
+    document.getElementById('c-title').textContent    = title;
+    document.getElementById('c-desc').textContent     = desc;
+    document.getElementById('c-budget').textContent   = '$'+budget.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('c-deadline').textContent = fmtDL;
+    // Fill buyer info from Firebase Auth (real logged-in user)
+    try {
+      const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+      const _user = getAuth(window.app).currentUser;
+      if (_user) {
+        document.getElementById('c-buyer-name').textContent  = _user.displayName || _user.email || 'Client';
+        document.getElementById('c-buyer-email').textContent = _user.email || '';
+      } else {
+        document.getElementById('c-buyer-name').textContent  = 'Your Name';
+        document.getElementById('c-buyer-email').textContent = 'you@example.com';
+      }
+    } catch(_e) {
+      document.getElementById('c-buyer-name').textContent  = 'Your Name';
+      document.getElementById('c-buyer-email').textContent = 'you@example.com';
+    }
+    // Payment summary
+    document.getElementById('s3-title').textContent  = title;
+    document.getElementById('s3-amount').textContent = '$'+budget.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    updatePaymentTotal();
+    goStep(2);
+  };
+
+  // ── Payment total ─────────────────────────────────────────────────────
+  // Mirrors the uplift formula in netlify/functions/create-project.js:
+  // chargeAmount = base / (1 - totalPct/100), and fee/protection are each
+  // a percentage of that charged total — exactly how the webhooks
+  // (stripe/flutterwave/nowpayments) compute them at escrow-funding time.
+  // This keeps the buyer's preview exactly in sync with what they'll
+  // actually be charged, so the freelancer always nets the full base budget.
+  window.updatePaymentTotal = function() {
+    const base       = projectData.budget || 0;
+    const protect    = document.getElementById('protection-toggle').checked;
+    const totalPct   = PLATFORM_FEE_PCT + (protect ? PROTECTION_FEE_PCT : 0);
+    const total      = totalPct < 100 ? base / (1 - totalPct / 100) : base;
+    const fee        = total * (PLATFORM_FEE_PCT / 100);
+    const protection = protect ? total * (PROTECTION_FEE_PCT / 100) : base * (PROTECTION_FEE_PCT / 100);
+    const fmt = v => '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('pay-base').textContent       = fmt(base);
+    document.getElementById('pay-fee').textContent        = fmt(fee);
+    document.getElementById('pay-protection').textContent = fmt(protection);
+    document.getElementById('pay-protection-row').style.opacity = protect ? '1' : '0.35';
+    document.getElementById('pay-total').textContent = fmt(total);
+  };
+
+
+
+  // ── Payment method selector ───────────────────────────────────────────
+  // Called once loadProfile() has stored window._freelancerPaymentMethods.
+  // Also called when step 4 is opened (via goStep) so the UI is always fresh.
+  window.renderPaymentMethods = function() {
+    var methods = Array.isArray(window._freelancerPaymentMethods) && window._freelancerPaymentMethods.length > 0
+      ? window._freelancerPaymentMethods
+      : ['crypto'];
+
+    var container = document.getElementById('payment-method-selector');
+    if (!container) return;
+
+    var defs = {
+      crypto: {
+        label: 'Crypto (NOWPayments)',
+        sub:   'BTC, USDT, ETH, USDC & 300+ coins',
+        icon:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12h6M12 9v6"/></svg>'
+      },
+      stripe: {
+        label: 'Card (Stripe)',
+        sub:   'Visa, Mastercard, Amex & more',
+        icon:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>'
+      },
+      flutterwave: {
+        label: 'Flutterwave',
+        sub:   'Bank transfer, mobile money & local cards',
+        icon:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'
+      }
+    };
+
+    var html = '';
+    methods.forEach(function(method, idx) {
+      var def = defs[method];
+      if (!def) return;
+      var isFirst = idx === 0;
+      html += '<label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:13px 14px;background:' + (isFirst ? 'rgba(45,138,94,0.06)' : 'rgba(13,33,69,0.03)') + ';border:1.5px solid ' + (isFirst ? 'rgba(45,138,94,0.30)' : '#e2e8f0') + ';border-radius:12px;transition:border-color .15s,background .15s;">'
+        + '<input type="radio" name="payment-method" value="' + method + '"'
+        + (isFirst ? ' checked' : '')
+        + ' onchange="onPaymentMethodChange()" style="width:16px;height:16px;accent-color:#2d8a5e;flex-shrink:0;cursor:pointer;"/>'
+        + '<span style="color:rgba(13,33,69,0.65);flex-shrink:0;">' + def.icon + '</span>'
+        + '<div style="min-width:0;">'
+        + '<p style="font-size:13px;font-weight:700;color:#0d2145;margin:0 0 2px;">' + def.label + '</p>'
+        + '<p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.50);margin:0;">' + def.sub + '</p>'
+        + '</div>'
+        + '</label>';
+    });
+
+    if (!html) {
+      // Fallback: no recognised methods — show crypto
+      html = '<label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:13px 14px;background:rgba(45,138,94,0.06);border:1.5px solid rgba(45,138,94,0.30);border-radius:12px;">'
+        + '<input type="radio" name="payment-method" value="crypto" checked onchange="onPaymentMethodChange()" style="width:16px;height:16px;accent-color:#2d8a5e;flex-shrink:0;cursor:pointer;"/>'
+        + '<div><p style="font-size:13px;font-weight:700;color:#0d2145;margin:0 0 2px;">Crypto (NOWPayments)</p>'
+        + '<p style="font-size:11px;font-weight:500;color:rgba(13,33,69,0.50);margin:0;">BTC, USDT, ETH, USDC & 300+ coins</p></div>'
+        + '</label>';
+    }
+
+    container.innerHTML = html;
+  };
+
+  window.onPaymentMethodChange = function() {
+    var radios = document.querySelectorAll('input[name="payment-method"]');
+    radios.forEach(function(radio) {
+      var label = radio.closest('label');
+      if (!label) return;
+      if (radio.checked) {
+        label.style.background = 'rgba(45,138,94,0.06)';
+        label.style.borderColor = 'rgba(45,138,94,0.30)';
+      } else {
+        label.style.background = 'rgba(13,33,69,0.03)';
+        label.style.borderColor = '#e2e8f0';
+      }
+    });
+  };
+
+  // ── Signature ─────────────────────────────────────────────────────────
+  function initSigPad() {
+    const canvas = document.getElementById('sig-canvas');
+
+    // Destroy existing instance so we start clean
+    if (sigPad) {
+      sigPad.off();
+      sigPad = null;
+    }
+
+    // Use a short delay so the modal sheet is fully visible and has real dimensions
+    setTimeout(() => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width || canvas.parentElement.offsetWidth || 280;
+      const h = 160;
+
+      // Set the actual pixel buffer size
+      canvas.width  = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+
+      // Keep the CSS display size constant
+      canvas.style.width  = '100%';
+      canvas.style.height = h + 'px';
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      sigPad = new SignaturePad(canvas, {
+        penColor:         '#0d2145',
+        minWidth:         1.5,
+        maxWidth:         3.5,
+        backgroundColor:  'rgba(248,249,251,1)',
+        velocityFilterWeight: 0.7,
+      });
+
+      // Fill background explicitly so isEmpty() works correctly
+      ctx.fillStyle = 'rgba(248,249,251,1)';
+      ctx.fillRect(0, 0, w, h);
+      sigPad.clear();
+    }, 120);
+  }
+
+  window.clearSigPad = function(e) {
+    e.stopPropagation();
+    if (sigPad) {
+      sigPad.clear();
+      // Re-fill background after clear so isEmpty() stays reliable
+      const canvas = document.getElementById('sig-canvas');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+      ctx.fillStyle = 'rgba(248,249,251,1)';
+      ctx.fillRect(0, 0, w, h);
+      sigPad.clear();
+    }
+  };
+
+  window.selectSig = function(opt) {
+    activeSigOpt = opt;
+    document.getElementById('sig-opt-a').classList.toggle('selected', opt==='a');
+    document.getElementById('sig-opt-b').classList.toggle('selected', opt==='b');
+    if (opt === 'a') {
+      if (sigPad) { sigPad.off(); sigPad = null; }
+      initSigPad();
+    }
+  };
+
+  window.handleSigUpload = async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Show loading state
+    const preview = document.getElementById('sig-preview-wrap');
+    const img     = document.getElementById('sig-preview-img');
+    preview.style.display = 'block';
+    img.style.opacity = '0.4';
+    img.src = '';
+
+    const errEl = document.getElementById('err-sign');
+
+    // Read file to base64
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = ev => resolve(ev.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // Strip the data:image/...;base64, prefix — the API wants raw base64
+    const base64 = dataUrl.split(',')[1];
+
+    if (!base64) {
+      uploadedSig = dataUrl;
+      img.src = dataUrl;
+      img.style.opacity = '1';
+      return;
+    }
+
+    try {
+      const res = await fetch('/.netlify/functions/removebg-process', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ imageBase64: base64, size: 'auto', mode: 'signature' }),
+      });
+
+      if (!res.ok) {
+        // Fall back to original image silently
+        console.warn('[removebg] API error, using original image');
+        uploadedSig = dataUrl;
+        img.src = dataUrl;
+        img.style.opacity = '1';
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.resultBase64) {
+        const cleanDataUrl = 'data:image/png;base64,' + data.resultBase64;
+        uploadedSig = cleanDataUrl;
+        img.src     = cleanDataUrl;
+        img.style.opacity = '1';
+      } else {
+        // Fallback
+        uploadedSig = dataUrl;
+        img.src = dataUrl;
+        img.style.opacity = '1';
+      }
+
+    } catch (err) {
+      console.warn('[removebg] Request failed, using original image:', err);
+      uploadedSig = dataUrl;
+      img.src = dataUrl;
+      img.style.opacity = '1';
+    }
+  };
+
+  // Holds the projectId once create-project succeeds
+  let _createdProjectId = null;
+
+  window.submitSignature = async function() {
+    document.getElementById('err-sign').style.display = 'none';
+
+    // Validate signature
+    let sigBase64 = '';
+    if (activeSigOpt === 'a') {
+      if (!sigPad || sigPad.isEmpty()) {
+        document.getElementById('err-sign').textContent = 'Please draw your signature above.';
+        document.getElementById('err-sign').style.display = 'block';
+        return;
+      }
+      // Strip the data:image/png;base64, prefix — backend wants raw base64
+      const dataUrl = sigPad.toDataURL('image/png');
+      sigBase64 = dataUrl.split(',')[1] || '';
+    } else {
+      if (!uploadedSig) {
+        document.getElementById('err-sign').textContent = 'Please upload a photo of your signature.';
+        document.getElementById('err-sign').style.display = 'block';
+        return;
+      }
+      sigBase64 = uploadedSig.split(',')[1] || uploadedSig;
+    }
+
+    // Disable the sign button and show spinner
+    const signBtn = document.getElementById('btn-sign');
+    const origLabel = signBtn ? signBtn.innerHTML : '';
+    if (signBtn) {
+      signBtn.disabled = true;
+      signBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;"></span> Creating project…';
+    }
+
+    // Require the buyer to be logged in
+    const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    const user = getAuth(window.app).currentUser;
+    if (!user) {
+      document.getElementById('err-sign').textContent = 'You must be logged in to hire a freelancer.';
+      document.getElementById('err-sign').style.display = 'block';
+      if (signBtn) { signBtn.disabled = false; signBtn.innerHTML = origLabel; }
+      return;
+    }
+
+    let idToken;
+    try {
+      idToken = await user.getIdToken();
+    } catch (tokenErr) {
+      document.getElementById('err-sign').textContent = 'Session expired. Please refresh and try again.';
+      document.getElementById('err-sign').style.display = 'block';
+      if (signBtn) { signBtn.disabled = false; signBtn.innerHTML = origLabel; }
+      return;
+    }
+
+    try {
+      const protect = document.getElementById('protection-toggle')
+        ? document.getElementById('protection-toggle').checked
+        : false;
+
+      const res = await fetch('/.netlify/functions/create-project', {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': 'Bearer ' + idToken,
+        },
+        body: JSON.stringify({
+          freelancerUid:  window._profileUid      || '',
+          title:          projectData.title        || '',
+          description:    projectData.desc         || '',
+          budget:         projectData.budget       || 0,
+          deadline:       projectData.deadline     || '',
+          buyerSignature: sigBase64,
+          withProtection: protect,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById('err-sign').textContent = data.error || 'Could not create project. Please try again.';
+        document.getElementById('err-sign').style.display = 'block';
+        if (signBtn) { signBtn.disabled = false; signBtn.innerHTML = origLabel; }
+        return;
+      }
+
+      _createdProjectId = data.projectId;
+
+      // Show success state — waiting for freelancer to countersign
+      document.getElementById('step3-form').style.display = 'none';
+      document.getElementById('step3-success').style.display = 'block';
+      updatePaymentTotal();
+
+      // Poll Firestore until freelancerSigned === true, then reveal the payment button
+      startFreelancerSignedPolling(_createdProjectId);
+
+    } catch (err) {
+      console.error('[profile] create-project error:', err);
+      document.getElementById('err-sign').textContent = 'Network error. Please check your connection and try again.';
+      document.getElementById('err-sign').style.display = 'block';
+      if (signBtn) { signBtn.disabled = false; signBtn.innerHTML = origLabel; }
+    }
+  };
+
+  // ── Poll for freelancerSigned ─────────────────────────────────────────
+  // Checks the project doc every 6 seconds until freelancerSigned === true,
+  // then unhides the "Proceed to Payment" button and clears the spinner.
+  // Self-cancels after 30 minutes to avoid runaway polling.
+  let _freelancerSignedPollTimer  = null;
+  let _freelancerSignedPollCount  = 0;
+  const POLL_INTERVAL_MS          = 6000;
+  const POLL_MAX_ATTEMPTS         = 300; // 30 min
+
+  function stopFreelancerSignedPolling() {
+    if (_freelancerSignedPollTimer) {
+      clearInterval(_freelancerSignedPollTimer);
+      _freelancerSignedPollTimer = null;
+    }
+    _freelancerSignedPollCount = 0;
+  }
+
+  function startFreelancerSignedPolling(projectId) {
+    stopFreelancerSignedPolling(); // clear any previous poll
+    _freelancerSignedPollCount = 0;
+
+    _freelancerSignedPollTimer = setInterval(async function() {
+      _freelancerSignedPollCount++;
+      if (_freelancerSignedPollCount > POLL_MAX_ATTEMPTS) {
+        stopFreelancerSignedPolling();
+        return;
+      }
+
+      try {
+        const { doc, getDoc } = window._fsProfile;
+        if (!doc || !getDoc || !window.db) return;
+        const snap = await getDoc(doc(window.db, 'projects', projectId));
+        if (!snap.exists()) return;
+        const projectData = snap.data();
+
+        // ── Check for a pending counter-proposal from the freelancer ──
+        const pr = projectData.pendingProposal;
+        const counterBanner  = document.getElementById('step3-counter-proposal');
+        const proposalDetails = document.getElementById('step3-proposal-details');
+        if (pr && pr.status === 'pending_acceptance' && pr.proposerRole === 'freelancer') {
+          // Store proposal on the window so respondToFreelancerProposal() can read it
+          window._pendingProposalProjectId = projectId;
+          window._pendingProposal = pr;
+          if (counterBanner && proposalDetails) {
+            var detailHtml = '<strong>Budget:</strong> $' + (pr.budget || 0).toLocaleString('en', { minimumFractionDigits: 2 }) + '<br>'
+              + '<strong>Deadline:</strong> ' + (pr.deadline || '—') + '<br>'
+              + '<strong>Scope:</strong> ' + (pr.scope || '—');
+            if (pr.message) detailHtml += '<br><em>' + pr.message + '</em>';
+            proposalDetails.innerHTML = detailHtml;
+            counterBanner.style.display = 'block';
+          }
+        } else {
+          // Proposal cleared (accepted/rejected) — hide the banner
+          if (counterBanner) counterBanner.style.display = 'none';
+          window._pendingProposal = null;
+        }
+
+        if (projectData.freelancerSigned === true) {
+          stopFreelancerSignedPolling();
+          // Update waiting UI to show accepted
+          var spinner = document.getElementById('step3-waiting-spinner');
+          var label   = document.getElementById('step3-waiting-label');
+          var waitBox = document.getElementById('step3-waiting');
+          if (spinner) spinner.style.display = 'none';
+          if (label)   label.textContent = 'Freelancer accepted the contract ✓';
+          if (waitBox) {
+            waitBox.style.borderColor = 'rgba(45,138,94,0.30)';
+            waitBox.style.background  = 'rgba(45,138,94,0.05)';
+          }
+          // Reveal the payment button
+          var btn = document.getElementById('btn-proceed-payment');
+          if (btn) btn.style.display = 'flex';
+        }
+      } catch (pollErr) {
+        // Non-fatal — just wait for the next interval
+        console.warn('[profile] freelancerSigned poll error:', pollErr);
+      }
+    }, POLL_INTERVAL_MS);
+  }
+
+  // ── Buyer responds to a freelancer counter-proposal ──────────────────────
+  window.respondToFreelancerProposal = async function(decision) {
+    var projectId = window._pendingProposalProjectId;
+    if (!projectId) { return; }
+
+    var acceptBtn = document.getElementById('btn-accept-proposal');
+    var rejectBtn = document.getElementById('btn-reject-proposal');
+    if (acceptBtn) { acceptBtn.disabled = true; acceptBtn.textContent = decision === 'accept' ? 'Accepting…' : 'Accept'; }
+    if (rejectBtn) { rejectBtn.disabled = true; rejectBtn.textContent = decision === 'reject' ? 'Declining…' : 'Decline'; }
+
+    try {
+      const idToken = (auth && auth.currentUser) ? await auth.currentUser.getIdToken() : '';
+      const res = await fetch('/.netlify/functions/propose-changes', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+        body:    JSON.stringify({ action: 'respond', projectId: projectId, decision: decision }),
+      });
+      const json = await res.json().catch(function(){ return {}; });
+      if (!res.ok) {
+        showToast(json.error || 'Could not respond to proposal. Please try again.');
+        return;
+      }
+
+      // Hide the proposal banner
+      var counterBanner = document.getElementById('step3-counter-proposal');
+      if (counterBanner) counterBanner.style.display = 'none';
+      window._pendingProposal = null;
+
+      if (decision === 'accept') {
+        showToast('Proposal accepted. Contract terms updated.');
+      } else {
+        showToast('Proposal declined. Original terms remain.');
+      }
+    } catch(err) {
+      showToast('Network error. Please try again.');
+    } finally {
+      if (acceptBtn) { acceptBtn.disabled = false; acceptBtn.textContent = 'Accept'; }
+      if (rejectBtn) { rejectBtn.disabled = false; rejectBtn.textContent = 'Decline'; }
+    }
+  };
+
+  // ── Payment submit — calls the endpoint matching the buyer's chosen method ──
+  window.submitPayment = async function() {
+    if (!_createdProjectId) {
+      showToast('Project ID missing. Please go back and sign again.');
+      return;
+    }
+
+    // Read which payment method the buyer chose
+    const selectedRadio = document.querySelector('input[name="payment-method"]:checked');
+    const chosenMethod  = selectedRadio ? selectedRadio.value : 'crypto';
+
+    const btn = document.getElementById('btn-pay');
+    const origLabel = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;"></span> Processing…';
+    }
+
+    // Require the buyer to be logged in
+    const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    const user = getAuth(window.app).currentUser;
+    if (!user) {
+      showToast('Please log in to complete payment.');
+      if (btn) { btn.disabled = false; btn.innerHTML = origLabel; }
+      return;
+    }
+
+    let idToken;
+    try {
+      idToken = await user.getIdToken();
+    } catch (_e) {
+      showToast('Session expired. Please refresh and try again.');
+      if (btn) { btn.disabled = false; btn.innerHTML = origLabel; }
+      return;
+    }
+
+    const buyerEmail = user.email || '';
+    const buyerName  = user.displayName || 'Client';
+    const title      = projectData.title || 'Project';
+    const desc       = projectData.desc  || title;
+
+    // Map chosen method → endpoint + body builder
+    const endpointMap = {
+      crypto: {
+        url:  '/.netlify/functions/create-crypto-payment',
+        body: () => ({ orderId: _createdProjectId, description: desc, buyerEmail, projectTitle: title })
+      },
+      stripe: {
+        url:  '/.netlify/functions/create-stripe-payment',
+        body: () => ({ orderId: _createdProjectId, description: desc, buyerEmail, projectTitle: title })
+      },
+      flutterwave: {
+        url:  '/.netlify/functions/create-flutterwave-payment',
+        body: () => ({
+          orderId:      _createdProjectId,
+          description:  desc,
+          buyerEmail,
+          buyerName,
+          projectTitle: title,
+          buyerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+        })
+      }
+    };
+
+    const endpoint = endpointMap[chosenMethod] || endpointMap['crypto'];
+
+    try {
+      const res  = await fetch(endpoint.url, {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': 'Bearer ' + idToken,
+        },
+        body: JSON.stringify(endpoint.body()),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
+      // Gateway returned an error
+      const errMsg = (data && data.error) || 'Payment could not be initiated. Please try again.';
+      showToast(errMsg);
+      if (btn) { btn.disabled = false; btn.innerHTML = origLabel; }
+
+    } catch (err) {
+      console.error('[profile] submitPayment error:', err);
+      showToast('Network error. Please check your connection and try again.');
+      if (btn) { btn.disabled = false; btn.innerHTML = origLabel; }
+    }
+  };
+
+  // ── Footer responsive grid ─────────────────────────────────────────────
+  function footerLayout() {
+    const grid = document.querySelector('footer .max-w-900 > div:first-child');
+    // handled by CSS grid; no extra JS needed
+  }
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

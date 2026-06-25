@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0d2145" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kreddlo" />
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png" />
+<title>Kreddlo Store</title>
+<meta name="description" content=""/>
+<meta property="og:title" content=""/>
+<meta property="og:description" content=""/>
+<meta property="og:image" content=""/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, query, where, getDocs, orderBy, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk",
+    authDomain: "kreddlo.firebaseapp.com",
+    projectId: "kreddlo",
+    storageBucket: "kreddlo.firebasestorage.app",
+    messagingSenderId: "764500458567",
+    appId: "1:764500458567:web:2389d5cf8c688caafd0562"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  window._db = db;
+  window._fs = { collection, query, where, getDocs, orderBy, doc, getDoc };
+
+  // Expose auth state — used by nav + no-param redirect + owner detection
+  onAuthStateChanged(auth, (user) => {
+    window._storeAuthUser = user;
+    document.dispatchEvent(new CustomEvent('store-auth-ready', { detail: { user } }));
+  });
+
+  document.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;width:100%;max-width:100%;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fb;color:#0d2145;margin:0;padding:0;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;width:100%;overflow-x:hidden}
+
+/* ── Tokens ── */
+:root{
+  --navy:#0d2145;
+  --navy-deep:#091830;
+  --navy-mid:#162f5e;
+  --green:#2d8a5e;
+  --green-light:#3dbd7a;
+  --green-pale:#e8f5ef;
+  --border:#e2e8f0;
+  --muted:rgba(13,33,69,0.48);
+}
+
+/* ─────────────────────────────────────────
+   NAVBAR
+───────────────────────────────────────── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(248,249,251,0.88);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 16px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;
+}
+@media(min-width:640px){.nav{padding:0 20px}}
+.nav-logo{
+  display:flex;align-items:center;gap:0;
+  text-decoration:none;font-size:20px;font-weight:800;
+  color:var(--navy);letter-spacing:-0.5px;
+}
+.nav-logo-dot{
+  width:8px;height:8px;background:var(--green);
+  border-radius:50%;display:inline-block;margin-left:3px;
+}
+.nav-right{display:flex;align-items:center;gap:10px}
+.btn-nav-login{
+  background:transparent;border:1.5px solid var(--border);
+  color:var(--navy);border-radius:50px;padding:8px 18px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;text-decoration:none;
+  transition:border-color .15s,background .15s;
+}
+.btn-nav-login:hover{border-color:var(--navy);background:rgba(13,33,69,0.04)}
+.btn-nav-signup{
+  background:var(--navy);color:#fff;border:none;border-radius:50px;
+  padding:8px 18px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;
+  transition:background .15s,transform .15s;
+}
+.btn-nav-signup:hover{background:var(--navy-mid);transform:translateY(-1px)}
+.btn-nav-get-started{
+  background:var(--green);color:#fff;border:none;border-radius:50px;
+  padding:9px 20px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;
+  transition:background .15s,transform .15s;display:none;
+}
+.btn-nav-get-started:hover{background:#236b49;transform:translateY(-1px)}
+
+/* mobile: hide login/signup, show get-started */
+@media(max-width:640px){
+  .nav-desktop{display:none}
+  .btn-nav-get-started{display:inline-flex;align-items:center;justify-content:center}
+}
+
+/* ─────────────────────────────────────────
+   OWNER BANNER
+───────────────────────────────────────── */
+.owner-banner{
+  background:#0d2145;
+  padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;
+}
+@media(min-width:640px){.owner-banner{padding:10px 24px}}
+.owner-banner-label{
+  font-size:12px;font-weight:600;color:rgba(255,255,255,0.65);
+  display:flex;align-items:center;gap:7px;
+}
+.owner-banner-label svg{flex-shrink:0}
+.owner-banner-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn-owner{
+  display:inline-flex;align-items:center;gap:6px;
+  border-radius:50px;padding:7px 14px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;text-decoration:none;border:none;
+  transition:background .15s,transform .15s;white-space:nowrap;
+}
+.btn-owner-ghost{
+  background:rgba(255,255,255,0.10);color:#fff;
+  border:1.5px solid rgba(255,255,255,0.25);
+}
+.btn-owner-ghost:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.5)}
+.btn-owner-green{
+  background:#2d8a5e;color:#fff;
+  border:1.5px solid transparent;
+  box-shadow:0 3px 12px rgba(45,138,94,0.30);
+}
+.btn-owner-green:hover{background:#236b49;transform:translateY(-1px)}
+
+/* ─────────────────────────────────────────
+   STORE HEADER
+───────────────────────────────────────── */
+.store-header{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg, #0d2145 0%, #162f5e 50%, #1a4a32 100%);
+  padding:32px 16px 36px;
+  text-align:center;
+}
+@media(min-width:640px){.store-header{padding:60px 40px 64px}}
+
+.store-header::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;opacity:.4;
+}
+
+/* Share store button — top right */
+.btn-share-store{
+  position:absolute;top:14px;right:14px;
+  display:inline-flex;align-items:center;gap:6px;
+  background:transparent;border:1.5px solid rgba(255,255,255,0.45);
+  color:#fff;border-radius:50px;padding:6px 12px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:background .15s,border-color .15s;
+  z-index:2;
+}
+.btn-share-store:hover{background:rgba(255,255,255,0.10);border-color:rgba(255,255,255,0.7)}
+
+.store-header-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px}
+
+/* Avatar */
+.store-avatar{
+  width:80px;height:80px;border-radius:50%;
+  border:3px solid #fff;
+  object-fit:cover;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+  background:#1a4a32;
+  flex-shrink:0;
+}
+@media(min-width:640px){.store-avatar{width:96px;height:96px}}
+.store-avatar-init{
+  width:80px;height:80px;border-radius:50%;
+  border:3px solid #fff;
+  background:rgba(61,189,122,0.25);
+  color:#fff;font-size:26px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+  flex-shrink:0;
+}
+@media(min-width:640px){.store-avatar-init{width:96px;height:96px;font-size:32px}}
+
+/* Name */
+.store-name{
+  font-size:20px;font-weight:800;color:#fff;
+  letter-spacing:-0.5px;margin:0;line-height:1.15;
+}
+@media(min-width:640px){.store-name{font-size:28px}}
+
+/* Verified badge */
+.badge-verified-white{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(61,189,122,0.22);
+  border:1px solid rgba(61,189,122,0.45);
+  color:#3dbd7a;border-radius:50px;
+  padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:.3px;
+}
+
+/* Bio */
+.store-bio{
+  font-size:13px;font-weight:400;
+  color:rgba(255,255,255,0.70);
+  line-height:1.6;max-width:480px;margin:0;
+}
+@media(min-width:640px){.store-bio{font-size:14px}}
+
+/* Rating row */
+.store-rating{
+  display:flex;align-items:center;gap:8px;
+  color:rgba(255,255,255,0.85);font-size:13px;font-weight:600;
+}
+.stars-row{display:flex;gap:2px}
+
+/* ─────────────────────────────────────────
+   PRODUCTS SECTION
+───────────────────────────────────────── */
+.products-section{
+  width:100%;max-width:1100px;margin:0 auto;
+  padding:20px 16px 60px;
+}
+@media(min-width:640px){.products-section{padding:40px 24px 72px}}
+
+.products-heading{
+  font-size:17px;font-weight:700;color:var(--navy);
+  margin:0 0 16px;letter-spacing:-0.2px;
+}
+@media(min-width:640px){.products-heading{font-size:18px;margin:0 0 20px}}
+
+/* Grid: 1 col → 2 col → 3 col */
+.products-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+  width:100%;
+}
+@media(min-width:540px){
+  .products-grid{grid-template-columns:repeat(2,1fr);gap:16px}
+}
+@media(min-width:960px){
+  .products-grid{grid-template-columns:repeat(3,1fr);gap:24px}
+}
+
+/* ── Product card ── */
+.prod-card{
+  background:#fff;border-radius:16px;
+  border:1px solid #e8eaf0;
+  box-shadow:0 2px 12px rgba(13,33,69,0.06);
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:box-shadow .2s,transform .2s;
+  text-decoration:none;min-width:0;width:100%;
+}
+.prod-card:hover{
+  box-shadow:0 8px 32px rgba(13,33,69,0.11);
+  transform:translateY(-2px);
+}
+.prod-cover{
+  width:100%;aspect-ratio:16/9;
+  object-fit:cover;display:block;background:#f0f2f6;
+}
+.prod-cover-placeholder{
+  width:100%;aspect-ratio:16/9;
+  background:linear-gradient(135deg,rgba(13,33,69,0.05) 0%,rgba(45,138,94,0.08) 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.prod-body{
+  padding:14px;display:flex;flex-direction:column;flex:1;
+}
+@media(min-width:640px){.prod-body{padding:16px}}
+.prod-title{
+  font-size:14px;font-weight:700;color:#0d2145;
+  margin:0 0 6px;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.prod-price{
+  font-size:17px;font-weight:800;color:#0d2145;
+  letter-spacing:-0.4px;margin:0 0 14px;
+}
+@media(min-width:640px){.prod-price{font-size:18px}}
+.prod-actions{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+
+/* Primary green CTA */
+.btn-green{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;background:#2d8a5e;color:#fff;border:none;border-radius:50px;
+  padding:11px 20px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;
+  box-shadow:0 4px 16px rgba(45,138,94,0.28);
+  transition:transform .15s,box-shadow .15s,background .15s;
+}
+.btn-green:hover{
+  background:#236b49;transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(45,138,94,0.36);
+}
+.btn-green:active{transform:translateY(0)}
+
+/* Owner action row inside card */
+.prod-owner-actions{
+  display:flex;gap:8px;
+  width:100%;
+}
+.btn-owner-card{
+  flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  border-radius:50px;padding:9px 12px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;text-decoration:none;border:none;
+  transition:background .15s,transform .15s;
+  white-space:nowrap;
+}
+.btn-owner-card-edit{
+  background:rgba(13,33,69,0.07);color:#0d2145;
+  border:1.5px solid #e2e8f0;
+}
+.btn-owner-card-edit:hover{background:rgba(13,33,69,0.13);border-color:#0d2145}
+.btn-owner-card-copy{
+  background:var(--green-pale);color:#2d8a5e;
+  border:1.5px solid rgba(45,138,94,0.25);
+}
+.btn-owner-card-copy:hover{background:#d4eddf;border-color:#2d8a5e}
+
+/* ── Empty state ── */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;
+  padding:48px 20px;gap:12px;
+  grid-column:1/-1;
+}
+@media(min-width:640px){.empty-state{padding:64px 20px;gap:14px}}
+.empty-icon{opacity:.3;margin-bottom:4px}
+.empty-title{font-size:15px;font-weight:700;color:var(--navy);margin:0}
+.empty-sub{font-size:13px;font-weight:500;color:var(--muted);margin:0;max-width:260px;line-height:1.6}
+
+/* ── 404 ── */
+.not-found{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;
+  padding:80px 20px;min-height:55vh;
+}
+.not-found h2{font-size:22px;font-weight:800;color:var(--navy);margin:0 0 8px}
+.not-found p{font-size:14px;font-weight:500;color:var(--muted);margin:0}
+
+/* ── Skeleton ── */
+.sk{
+  background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);
+  background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px;
+}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.sk-header{
+  background:linear-gradient(135deg,#1a2d52 0%,#1a3d2b 100%);
+  padding:32px 16px 36px;display:flex;flex-direction:column;
+  align-items:center;gap:14px;
+}
+@media(min-width:640px){.sk-header{padding:60px 40px 64px}}
+.sk-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.15);flex-shrink:0}
+@media(min-width:640px){.sk-avatar{width:96px;height:96px}}
+.sk-name{height:26px;width:180px;background:rgba(255,255,255,0.18);border-radius:8px}
+.sk-bio{height:14px;border-radius:6px;background:rgba(255,255,255,0.12)}
+
+/* ── Fade-up ── */
+.fu{opacity:0;transform:translateY(14px);animation:fu .4s ease forwards}
+.fu-1{animation-delay:.05s}.fu-2{animation-delay:.11s}.fu-3{animation-delay:.17s}.fu-4{animation-delay:.23s}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:#091830;color:#fff;border-radius:50px;
+  padding:11px 22px;font-size:13px;font-weight:600;
+  z-index:3000;opacity:0;pointer-events:none;
+  transition:transform .25s,opacity .25s;
+  white-space:nowrap;max-width:calc(100vw - 40px);text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body class="overflow-x-hidden">
+<!-- ═══════════════════════════════════════════════════
+     SITE BANNER — reads config/banner from Firestore
+     Do not remove. Managed via admin > Site Banner.
+═══════════════════════════════════════════════════ -->
+<div id="site-banner" style="display:none;width:100%;box-sizing:border-box;"></div>
+<div id="site-banner-backdrop" style="display:none;position:fixed;inset:0;background:rgba(13,33,69,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;" onclick="window._dismissSiteBanner&&window._dismissSiteBanner()"></div>
+<script>
+(function(){
+  var MAX_WAIT=8000,POLL_INT=80,elapsed=0;
+  function renderBanner(data){
+    var ms=data.publishedAt&&data.publishedAt.toMillis?data.publishedAt.toMillis():(data.publishedAt||0);
+    var dismissKey='dismissed_banner_'+ms;
+    if(data.dismissible&&localStorage.getItem(dismissKey)==='1')return;
+    var style=data.style||'info';
+    var mode=data.displayMode||'strip';
+    var themes={
+      info:   {bg:'#dbeafe',border:'rgba(59,130,246,0.35)',text:'#1e3a5f',btn:'#3b82f6',btnText:'#fff'},
+      warning:{bg:'#fef9c3',border:'rgba(202,138,4,0.35)', text:'#713f12',btn:'#ca8a04',btnText:'#fff'},
+      success:{bg:'#dcfce7',border:'rgba(22,163,74,0.35)', text:'#14532d',btn:'#16a34a',btnText:'#fff'}
+    };
+    var t=themes[style]||themes.info;
+    function dismiss(){
+      if(data.dismissible)localStorage.setItem(dismissKey,'1');
+      document.getElementById('site-banner').style.display='none';
+      document.getElementById('site-banner-backdrop').style.display='none';
+    }
+    window._dismissSiteBanner=dismiss;
+    var closeBtn=data.dismissible
+      ?'<button onclick="window._dismissSiteBanner()" aria-label="Dismiss" style="flex-shrink:0;min-width:44px;min-height:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;color:'+t.text+';padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      :'';
+    var ctaBtn=(data.ctaLabel&&data.ctaUrl)
+      ?'<a href="'+data.ctaUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;white-space:nowrap;padding:8px 18px;background:'+t.btn+';color:'+t.btnText+';border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">'+data.ctaLabel+'</a>'
+      :'';
+    var banner=document.getElementById('site-banner');
+    var backdrop=document.getElementById('site-banner-backdrop');
+    if(mode==='modal'){
+      banner.style.cssText=['display:none','position:fixed','top:50%','left:50%','transform:translate(-50%,-50%)','z-index:9999','width:calc(100% - 32px)','max-width:480px','box-sizing:border-box','flex-direction:column','gap:12px','background:'+t.bg,'border:1.5px solid '+t.border,'border-radius:20px','padding:24px 20px 20px','box-shadow:0 20px 60px rgba(13,33,69,0.22)'].join(';');
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><span style="font-size:17px;font-weight:800;color:'+t.text+';line-height:1.3;flex:1;">'+(data.title||'')+'</span>'+closeBtn+'</div>'+(data.body?'<p style="font-size:14px;font-weight:500;color:'+t.text+';margin:0;line-height:1.6;opacity:0.85;">'+data.body+'</p>':'')+(ctaBtn?'<div>'+ctaBtn+'</div>':'');
+      setTimeout(function(){
+        if(localStorage.getItem(dismissKey)!=='1'){
+          banner.style.display='flex';
+          backdrop.style.display='block';
+        }
+      },1500);
+    } else {
+      banner.style.cssText=['display:flex','width:100%','box-sizing:border-box','align-items:center','justify-content:space-between','gap:10px','background:'+t.bg,'border-bottom:1.5px solid '+t.border,'padding:10px 16px','flex-wrap:wrap'].join(';');
+      banner.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:1;min-width:0;"><span style="font-size:14px;font-weight:700;color:'+t.text+';white-space:nowrap;">'+(data.title||'')+'</span>'+(data.body?'<span style="font-size:13px;font-weight:500;color:'+t.text+';opacity:0.80;line-height:1.5;">'+data.body+'</span>':'')+ctaBtn+'</div>'+closeBtn;
+    }
+  }
+  function tryLoad(){
+    if(window.db){
+      var _imp=window.firestore||null;
+      if(_imp&&_imp.getDoc&&_imp.doc){
+        _imp.getDoc(_imp.doc(window.db,'config','banner')).then(function(snap){
+          if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+        }).catch(function(){});
+      } else {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(function(m){
+          m.getDoc(m.doc(window.db,'config','banner')).then(function(snap){
+            if(snap.exists()){var d=snap.data();if(d.active===true)renderBanner(d);}
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return;
+    }
+    elapsed+=POLL_INT;
+    if(elapsed<MAX_WAIT)setTimeout(tryLoad,POLL_INT);
+  }
+  setTimeout(tryLoad,120);
+})();
+</script>
+
+
+
+<!-- ── Navbar ── -->
+<nav class="nav">
+  <a class="nav-logo" href="/">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></a>
+  <div class="nav-right">
+    <!-- Public nav (hidden when logged in) -->
+    <div id="nav-public" style="display:none;align-items:center;gap:10px;">
+      <div class="nav-desktop" style="display:flex;align-items:center;gap:10px;">
+        <a class="btn-nav-login" href="/login.html">Log In</a>
+        <a class="btn-nav-signup" href="/signup.html">Sign Up</a>
+      </div>
+      <a class="btn-nav-get-started" href="/signup.html">Get Started</a>
+    </div>
+    <!-- Auth nav (shown when logged in) -->
+    <div id="nav-auth" style="display:none;align-items:center;gap:10px;">
+      <a id="nav-dashboard-link" href="/dashboard.html" class="btn-nav-login" style="font-weight:600;">Dashboard</a>
+      <div id="nav-avatar" style="width:34px;height:34px;border-radius:50%;background:#2d8a5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Owner banner (injected by JS when isOwner) ── -->
+<div id="owner-banner-wrap" style="display:none;"></div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════
+     LOADING SKELETON
+═══════════════════════════════════════ -->
+<div id="skeleton">
+  <div class="sk-header">
+    <div class="sk-avatar"></div>
+    <div class="sk-name"></div>
+    <div class="sk-bio" style="width:240px;"></div>
+    <div class="sk-bio" style="width:180px;"></div>
+  </div>
+  <div class="products-section">
+    <div class="sk" style="height:20px;width:100px;margin-bottom:16px;"></div>
+    <div class="products-grid">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8eaf0;overflow:hidden;">
+        <div class="sk" style="width:100%;aspect-ratio:16/9;border-radius:0;"></div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <div class="sk" style="height:14px;width:80%;"></div>
+          <div class="sk" style="height:14px;width:55%;"></div>
+          <div class="sk" style="height:22px;width:45%;margin-top:4px;"></div>
+          <div class="sk" style="height:40px;border-radius:50px;margin-top:8px;"></div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8eaf0;overflow:hidden;">
+        <div class="sk" style="width:100%;aspect-ratio:16/9;border-radius:0;"></div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <div class="sk" style="height:14px;width:75%;"></div>
+          <div class="sk" style="height:14px;width:60%;"></div>
+          <div class="sk" style="height:22px;width:40%;margin-top:4px;"></div>
+          <div class="sk" style="height:40px;border-radius:50px;margin-top:8px;"></div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8eaf0;overflow:hidden;">
+        <div class="sk" style="width:100%;aspect-ratio:16/9;border-radius:0;"></div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <div class="sk" style="height:14px;width:85%;"></div>
+          <div class="sk" style="height:14px;width:50%;"></div>
+          <div class="sk" style="height:22px;width:48%;margin-top:4px;"></div>
+          <div class="sk" style="height:40px;border-radius:50px;margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     404
+═══════════════════════════════════════ -->
+<div id="not-found" style="display:none;">
+  <div class="not-found">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round" style="opacity:.25;margin-bottom:16px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+    <h2>Store not found</h2>
+    <p>This store link may be incorrect or the seller has removed their store.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     STORE HEADER (injected by JS)
+═══════════════════════════════════════ -->
+<div id="store-header-wrap" style="display:none;"></div>
+
+<!-- ═══════════════════════════════════════
+     PRODUCTS SECTION
+═══════════════════════════════════════ -->
+<div id="products-section-wrap" style="display:none;">
+  <div class="products-section">
+    <h2 class="products-heading fu fu-2" id="products-heading">Products</h2>
+    <div class="products-grid fu fu-3" id="products-grid"></div>
+  </div>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────────
+let _seller  = null;
+let _isOwner = false;
+
+// ── Toast ───────────────────────────────────────────
+function showToast(msg, dur) {
+  dur = dur || 2600;
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(function() { t.classList.remove('show'); }, dur);
+}
+
+// ── Stars ───────────────────────────────────────────
+function renderStars(rating, sz) {
+  sz = sz || 14;
+  var h = '';
+  for (var i = 1; i <= 5; i++) {
+    var pct = Math.round(Math.max(0, Math.min(1, rating - (i - 1))) * 100);
+    h += '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24">' +
+      '<defs><linearGradient id="s' + i + 'r"><stop offset="' + pct + '%" stop-color="#f5a623"/><stop offset="' + pct + '%" stop-color="rgba(255,255,255,0.30)"/></linearGradient></defs>' +
+      '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="url(#s' + i + 'r)" stroke="none"/>' +
+      '</svg>';
+  }
+  return h;
+}
+
+// ── Escape ──────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Copy product link ────────────────────────────────
+function copyProductLink(slug, id) {
+  var url = window.location.origin + '/p.html?slug=' + encodeURIComponent(slug || id);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(function() { showToast('Product link copied!'); })
+      .catch(function() { fallbackCopyText(url); });
+  } else {
+    fallbackCopyText(url);
+  }
+}
+function fallbackCopyText(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast('Product link copied!'); }
+  catch(e) { showToast('Could not copy link.'); }
+  document.body.removeChild(ta);
+}
+
+// ── Init ────────────────────────────────────────────
+document.addEventListener('firebase-ready', async function() {
+  var params    = new URLSearchParams(window.location.search);
+  var storeSlug = params.get('storeSlug') || params.get('slug');
+  var uidParam  = params.get('uid');
+
+  // No params: wait briefly for auth then redirect logged-in user to their own store
+  if (!storeSlug && !uidParam) {
+    await new Promise(function(resolve) {
+      if (window._storeAuthUser !== undefined) { resolve(); return; }
+      var handler = function() { document.removeEventListener('store-auth-ready', handler); resolve(); };
+      document.addEventListener('store-auth-ready', handler);
+      setTimeout(resolve, 3000);
+    });
+    var user = window._storeAuthUser;
+    if (user) {
+      window.location.replace('/store.html?uid=' + user.uid);
+    } else {
+      show404();
+    }
+    return;
+  }
+
+  try {
+    var db  = window._db;
+    var fs  = window._fs;
+    var col = fs.collection, qry = fs.query, whr = fs.where,
+        gds = fs.getDocs,   dc  = fs.doc,   gd  = fs.getDoc;
+
+    var sellerDoc = null;
+
+    // Reads publicProfiles, not users — public storefront page, no auth
+    // required. Note: bare 'storeSlug' (line below) is a legacy field that
+    // was never actually written anywhere in the codebase (only nested
+    // storeSettings.storeSlug is); kept as a fallback query for parity
+    // with the old users-collection behavior, but will simply never match.
+
+    // Option A: direct uid param
+    if (uidParam) {
+      var snap = await gd(dc(db, 'publicProfiles', uidParam));
+      if (snap.exists()) sellerDoc = snap;
+    }
+
+    // Option B: storeSlug
+    if (!sellerDoc && storeSlug) {
+      var uSnap = await gds(qry(col(db, 'publicProfiles'), whr('storeSettings.storeSlug', '==', storeSlug)));
+      if (uSnap.empty) {
+        uSnap = await gds(qry(col(db, 'publicProfiles'), whr('storeSlug', '==', storeSlug)));
+      }
+      if (!uSnap.empty) sellerDoc = uSnap.docs[0];
+    }
+
+    if (!sellerDoc) { show404(); return; }
+
+    _seller = Object.assign({ id: sellerDoc.id }, sellerDoc.data());
+
+    // Normalize photo field — publicProfiles may use photoUrl, photoURL, or profilePhoto
+    // (all three are written by different parts of the codebase). Resolve to one
+    // canonical .photoURL so the rest of renderStore() only needs to check one field.
+    _seller.photoURL = _seller.photoURL || _seller.photoUrl || _seller.profilePhoto || '';
+
+    // Normalize display name — publicProfiles uses both 'name' and 'displayName'
+    _seller.displayName = _seller.displayName || _seller.name || '';
+
+    // Merge storeSettings
+    if (!_seller.storeSlug && _seller.storeSettings && _seller.storeSettings.storeSlug) {
+      _seller.storeSlug = _seller.storeSettings.storeSlug;
+    }
+    if (_seller.storeSettings) {
+      _seller.bio       = _seller.bio       || _seller.storeSettings.storeBio   || '';
+      _seller.coverColor= _seller.coverColor|| _seller.storeSettings.bannerColor|| null;
+    }
+
+    // Determine owner mode — wait up to 2s for auth to resolve
+    await new Promise(function(resolve) {
+      if (window._storeAuthUser !== undefined) { resolve(); return; }
+      var h = function() { document.removeEventListener('store-auth-ready', h); resolve(); };
+      document.addEventListener('store-auth-ready', h);
+      setTimeout(resolve, 2000);
+    });
+    _isOwner = !!(window._storeAuthUser && window._storeAuthUser.uid === _seller.id);
+
+    // Load products
+    // NOTE: products store the owner uid in field 'uid' (not 'sellerId') and
+    // their visibility flag in field 'status' ('active' | 'inactive'), not a
+    // boolean 'active' field. Query against the real schema so a seller's
+    // own published products actually show up on their store page.
+    var pq = qry(col(db, 'products'), whr('uid', '==', _seller.id), whr('status', '==', 'active'));
+    var pSnap;
+    try {
+      pSnap = await gds(pq);
+    } catch (pErr) {
+      console.error('[store] products query failed, retrying without status filter:', pErr);
+      // Fallback: fetch all of this seller's products and filter client-side.
+      // This keeps the store working even if an index/rule issue blocks the
+      // compound query, instead of silently showing "no products".
+      var pq2 = qry(col(db, 'products'), whr('uid', '==', _seller.id));
+      pSnap = await gds(pq2);
+    }
+    var products = pSnap.docs
+      .map(function(d) {
+        var data = d.data();
+        // Normalize cover image — products may store it as coverUrl or coverPhoto
+        var coverUrl = data.coverUrl || data.coverPhoto || data.coverImage || '';
+        return Object.assign({ id: d.id }, data, { coverUrl: coverUrl });
+      })
+      .filter(function(p) { return p.status !== 'inactive' && p.status !== 'draft' && p.status !== 'removed_by_admin'; });
+
+    renderStore(_seller, products);
+  } catch(e) {
+    console.error(e);
+    show404();
+  }
+});
+
+// ── Auth-aware nav ───────────────────────────────────
+document.addEventListener('store-auth-ready', async function(ev) {
+  var user      = ev.detail.user;
+  var navPublic = document.getElementById('nav-public');
+  var navAuth   = document.getElementById('nav-auth');
+  var dashLink  = document.getElementById('nav-dashboard-link');
+  var avatar    = document.getElementById('nav-avatar');
+
+  if (!user) {
+    if (navPublic) navPublic.style.display = 'flex';
+    if (navAuth)   navAuth.style.display   = 'none';
+    return;
+  }
+
+  try {
+    var db  = window._db;
+    var fs  = window._fs;
+    var snap = await fs.getDoc(fs.doc(db, 'users', user.uid));
+    var role = snap.exists() ? (snap.data().role || 'freelancer') : 'freelancer';
+    if (dashLink) dashLink.href = role === 'buyer' ? '/buyer-dashboard.html' : '/dashboard.html';
+  } catch(e) {
+    if (dashLink) dashLink.href = '/dashboard.html';
+  }
+
+  var initial = (user.displayName || user.email || '?')[0].toUpperCase();
+  if (avatar) avatar.textContent = initial;
+
+  if (navPublic) navPublic.style.display = 'none';
+  if (navAuth)   navAuth.style.display   = 'flex';
+});
+
+// ── 404 ─────────────────────────────────────────────
+function show404() {
+  document.getElementById('skeleton').style.display = 'none';
+  document.getElementById('not-found').style.display = 'block';
+}
+
+// ── Render store ─────────────────────────────────────
+async function renderStore(seller, products) {
+  document.getElementById('skeleton').style.display = 'none';
+
+  // SEO
+  var displayName = seller.displayName || seller.name || 'Kreddlo Store';
+  var bio = seller.bio || '';
+  document.title = displayName + ' \u2014 Kreddlo Store';
+  document.querySelector('meta[name="description"]').setAttribute('content', bio.slice(0, 155));
+  document.querySelector('meta[property="og:title"]').setAttribute('content', displayName + ' \u2014 Kreddlo Store');
+  document.querySelector('meta[property="og:description"]').setAttribute('content', bio.slice(0, 155));
+  if (seller.photoURL) document.querySelector('meta[property="og:image"]').setAttribute('content', seller.photoURL);
+
+  // Header gradient
+  var gradient = seller.coverColor
+    ? 'linear-gradient(135deg, #0d2145 0%, ' + esc(seller.coverColor) + ' 100%)'
+    : 'linear-gradient(135deg, #0d2145 0%, #162f5e 50%, #1a4a32 100%)';
+
+  // Rating
+  var avgRating = 0, reviewCount = 0;
+  try {
+    var rq = window._fs.query(
+      window._fs.collection(window._db, 'reviews'),
+      window._fs.where('targetUid', '==', seller.id)
+    );
+    var rSnap = await window._fs.getDocs(rq);
+    reviewCount = rSnap.size;
+    if (reviewCount > 0) {
+      avgRating = rSnap.docs.reduce(function(s, d) { return s + (d.data().rating || 0); }, 0) / reviewCount;
+    }
+  } catch(e) { /* non-critical */ }
+
+  // Avatar
+  var initials = displayName.split(' ').map(function(w) { return w[0]; }).join('').slice(0,2).toUpperCase();
+  var avatarHtml = seller.photoURL
+    ? '<img class="store-avatar fu fu-1" src="' + esc(seller.photoURL) + '" alt="' + esc(displayName) + '" loading="eager" decoding="async"/>'
+    : '<div class="store-avatar-init fu fu-1">' + initials + '</div>';
+
+  // Verified badge
+  var verifiedHtml = seller.kycStatus === 'verified'
+    ? '<span class="badge-verified-white fu fu-2"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3dbd7a" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>'
+    : '';
+
+  // Rating row
+  var ratingHtml = reviewCount > 0
+    ? '<div class="store-rating fu fu-3"><div class="stars-row">' + renderStars(avgRating, 14) + '</div><span>' + avgRating.toFixed(1) + ' &nbsp;&middot;&nbsp; ' + reviewCount + ' review' + (reviewCount !== 1 ? 's' : '') + '</span></div>'
+    : '';
+
+  // Bio
+  var bioHtml = bio ? '<p class="store-bio fu fu-3">' + esc(bio) + '</p>' : '';
+
+  // Render header
+  var headerWrap = document.getElementById('store-header-wrap');
+  headerWrap.innerHTML =
+    '<div class="store-header" style="background:' + gradient + ';">' +
+      '<button class="btn-share-store" onclick="shareStore()" aria-label="Share store">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
+        'Share Store' +
+      '</button>' +
+      '<div class="store-header-inner">' +
+        avatarHtml +
+        '<h1 class="store-name fu fu-2">' + esc(displayName) + '</h1>' +
+        verifiedHtml +
+        bioHtml +
+        ratingHtml +
+      '</div>' +
+    '</div>';
+  headerWrap.style.display = 'block';
+
+  // Owner banner
+  if (_isOwner) {
+    var storeUrl = window.location.origin + '/store.html?uid=' + seller.id;
+    var bannerWrap = document.getElementById('owner-banner-wrap');
+    bannerWrap.innerHTML =
+      '<div class="owner-banner">' +
+        '<div class="owner-banner-label">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
+          'You are viewing your own store' +
+        '</div>' +
+        '<div class="owner-banner-actions">' +
+          '<button class="btn-owner btn-owner-ghost" onclick="copyStoreLink()">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+            'Copy Store Link' +
+          '</button>' +
+          '<a class="btn-owner btn-owner-green" href="/dashboard-products.html">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+            'Manage Products' +
+          '</a>' +
+        '</div>' +
+      '</div>';
+    bannerWrap.style.display = 'block';
+
+    // Update heading
+    var heading = document.getElementById('products-heading');
+    if (heading) heading.textContent = 'Your Products';
+  }
+
+  // Render products
+  renderProducts(products);
+  document.getElementById('products-section-wrap').style.display = 'block';
+}
+
+// ── Render product grid ──────────────────────────────
+function renderProducts(products) {
+  var grid = document.getElementById('products-grid');
+
+  if (!products.length) {
+    if (_isOwner) {
+      grid.innerHTML =
+        '<div class="empty-state">' +
+          '<div class="empty-icon">' +
+            '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' +
+          '</div>' +
+          '<p class="empty-title">You have no products yet</p>' +
+          '<p class="empty-sub">Create your first product to start selling through your store.</p>' +
+          '<a href="/dashboard-products.html" class="btn-green" style="margin-top:8px;width:auto;padding:11px 24px;">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+            'Create Product' +
+          '</a>' +
+        '</div>';
+    } else {
+      grid.innerHTML =
+        '<div class="empty-state">' +
+          '<div class="empty-icon">' +
+            '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#0d2145" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><path d="M8 7V5a2 2 0 0 0-4 0v2"/></svg>' +
+          '</div>' +
+          '<p class="empty-title">This store has no products yet</p>' +
+          '<p class="empty-sub">Check back later for new listings.</p>' +
+        '</div>';
+    }
+    return;
+  }
+
+  grid.innerHTML = products.map(function(p, i) {
+    var price    = Number(p.price) || 0;
+    var currency = (p.currency || 'USD').toUpperCase();
+    var priceStr = '$' + price.toLocaleString('en-US', { minimumFractionDigits: price % 1 !== 0 ? 2 : 0 });
+    var delay    = Math.min(i * 0.07, 0.5);
+    var slug     = p.slug || p.id;
+
+    var coverHtml = p.coverUrl
+      ? '<img class="prod-cover" src="' + esc(p.coverUrl) + '" alt="' + esc(p.title) + '" loading="lazy" decoding="async"/>'
+      : '<div class="prod-cover-placeholder"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(13,33,69,0.18)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+
+    var actionsHtml;
+    if (_isOwner) {
+      actionsHtml =
+        '<div class="prod-owner-actions">' +
+          '<a class="btn-owner-card btn-owner-card-edit" href="/dashboard-products.html?edit=' + encodeURIComponent(p.id) + '">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+            'Edit' +
+          '</a>' +
+          '<button class="btn-owner-card btn-owner-card-copy" onclick="copyProductLink(\'' + esc(slug) + '\',\'' + esc(p.id) + '\')">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+            'Copy Link' +
+          '</button>' +
+        '</div>';
+    } else {
+      actionsHtml =
+        '<a class="btn-green" href="/p.html?slug=' + encodeURIComponent(slug) + '">' +
+          'Buy Now' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>' +
+        '</a>';
+    }
+
+    return '<div class="prod-card" style="animation:fu .4s ease ' + delay + 's both;">' +
+      coverHtml +
+      '<div class="prod-body">' +
+        '<p class="prod-title">' + esc(p.title) + '</p>' +
+        '<p class="prod-price">' + priceStr + ' <span style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.4);">' + esc(currency) + '</span></p>' +
+        '<div class="prod-actions">' + actionsHtml + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Share store ──────────────────────────────────────
+function shareStore() {
+  var url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: document.title, url: url }).catch(function() { fallbackCopyText(url); });
+  } else {
+    fallbackCopyText(url);
+    showToast('Store link copied!');
+  }
+}
+
+function copyStoreLink() {
+  var url = window.location.origin + '/store.html?uid=' + _seller.id;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(function() { showToast('Store link copied!'); })
+      .catch(function() { fallbackCopyText(url); showToast('Store link copied!'); });
+  } else {
+    fallbackCopyText(url);
+    showToast('Store link copied!');
+  }
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

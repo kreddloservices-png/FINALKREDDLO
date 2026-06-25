@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#0d2145"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Kreddlo"/>
+<link rel="apple-touch-icon" href="/assets/kreddlo-192.png"/>
+<title>Course Viewer — Kreddlo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" /></noscript>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy:'#0d2145','navy-deep':'#091830','navy-mid':'#162f5e',
+        green:'#2d8a5e','green-light':'#3dbd7a','green-pale':'#e8f5ef',
+        cream:'#f8f9fb',border:'#e2e8f0'
+      },
+      fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'] }
+    }
+  }
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif;background:#f0f2f6;color:#0d2145;-webkit-font-smoothing:antialiased}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#091830;color:#fff;border-radius:50px;padding:11px 22px;font-size:13px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap;max-width:calc(100vw - 32px);text-align:center;bottom:max(24px,env(safe-area-inset-bottom,24px))}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── Skeleton ── */
+.sk{background:linear-gradient(90deg,#f0f2f6 25%,#e8eaf0 50%,#f0f2f6 75%);background-size:200% 100%;animation:sk 1.5s infinite linear;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════
+   LAYOUT — mobile first (375px base)
+══════════════════════════════════════ */
+
+/* Top bar */
+.cv-topbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:54px;
+  background:#091830;
+  display:flex;align-items:center;gap:10px;
+  padding:0 14px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.cv-logo{font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.4px;text-decoration:none;flex-shrink:0}
+.cv-logo span{color:#3dbd7a}
+.cv-course-title{flex:1;min-width:0;font-size:13px;font-weight:600;color:rgba(255,255,255,0.70);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv-progress-pill{display:flex;align-items:center;gap:6px;background:rgba(45,138,94,0.20);border-radius:50px;padding:5px 10px;flex-shrink:0}
+.cv-progress-pct{font-size:11px;font-weight:700;color:#3dbd7a;white-space:nowrap}
+.cv-sidebar-btn{width:36px;height:36px;background:rgba(255,255,255,0.07);border:none;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s}
+.cv-sidebar-btn:hover{background:rgba(255,255,255,0.14)}
+
+/* Sidebar dim overlay (mobile) */
+.cv-dim{position:fixed;inset:0;z-index:290;background:rgba(9,24,48,0.58);opacity:0;pointer-events:none;transition:opacity .25s}
+.cv-dim.open{opacity:1;pointer-events:all}
+
+/* Sidebar */
+.cv-sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:300px;
+  background:#091830;
+  z-index:300;
+  transform:translateX(-100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  padding-top:54px; /* below topbar */
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.cv-sidebar.open{transform:translateX(0)}
+
+/* Sidebar header */
+.cv-sidebar-head{
+  padding:18px 18px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;
+}
+.cv-sidebar-head h2{font-size:13px;font-weight:700;color:#fff;margin:0 0 6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cv-sidebar-head p{font-size:11px;font-weight:500;color:rgba(255,255,255,0.45);margin:0}
+
+/* Progress bar in sidebar */
+.cv-prog-bar{height:3px;background:rgba(255,255,255,0.10);border-radius:2px;margin:10px 0 0;overflow:hidden}
+.cv-prog-fill{height:100%;background:linear-gradient(to right,#2d8a5e,#3dbd7a);border-radius:2px;transition:width .4s ease}
+
+/* Chapter group */
+.cv-chapter-group{border-bottom:1px solid rgba(255,255,255,0.06)}
+.cv-chapter-label{
+  display:flex;align-items:center;gap:9px;
+  padding:11px 18px;
+  cursor:pointer;
+  user-select:none;-webkit-user-select:none;
+  transition:background .15s;
+}
+.cv-chapter-label:hover{background:rgba(255,255,255,0.04)}
+.cv-chapter-num{width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,0.55);flex-shrink:0}
+.cv-chapter-name{flex:1;min-width:0;font-size:12px;font-weight:600;color:rgba(255,255,255,0.65);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cv-chapter-chevron{flex-shrink:0;transition:transform .2s;color:rgba(255,255,255,0.30)}
+.cv-chapter-chevron.open{transform:rotate(180deg)}
+.cv-chapter-lessons{display:none}
+.cv-chapter-lessons.open{display:block}
+
+/* Lesson item */
+.cv-lesson-item{
+  display:flex;align-items:flex-start;gap:9px;
+  padding:9px 18px 9px 28px;
+  cursor:pointer;
+  transition:background .15s;
+  border-left:2px solid transparent;
+}
+.cv-lesson-item:hover{background:rgba(255,255,255,0.04)}
+.cv-lesson-item.active{background:rgba(45,138,94,0.14);border-left-color:#3dbd7a}
+.cv-lesson-check{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.20);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:border-color .2s,background .2s}
+.cv-lesson-check.done{border-color:#2d8a5e;background:#2d8a5e}
+.cv-lesson-check.done svg{display:block}
+.cv-lesson-check svg{display:none}
+.cv-lesson-info{flex:1;min-width:0}
+.cv-lesson-name{font-size:12px;font-weight:600;color:rgba(255,255,255,0.65);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cv-lesson-item.active .cv-lesson-name{color:#fff}
+.cv-lesson-preview-tag{display:inline-flex;align-items:center;font-size:9px;font-weight:700;color:#3dbd7a;background:rgba(45,138,94,0.20);border-radius:4px;padding:1px 5px;margin-top:3px}
+
+/* Main content area */
+.cv-main{
+  padding-top:54px; /* below topbar */
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+/* Video player wrapper — 16:9 responsive */
+.cv-player-wrap{
+  width:100%;
+  background:#000;
+  position:relative;
+  aspect-ratio:16/9;
+}
+.cv-player-wrap iframe{
+  position:absolute;inset:0;width:100%;height:100%;border:none;
+}
+.cv-player-placeholder{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:linear-gradient(135deg,#0d2145,#091830);
+  color:rgba(255,255,255,0.45);
+  text-align:center;padding:20px;
+}
+
+/* Lesson content panel (below video) */
+.cv-lesson-panel{
+  flex:1;
+  padding:20px 18px;
+  background:#f8f9fb;
+}
+.cv-lesson-header{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  margin-bottom:14px;
+}
+.cv-lesson-title{font-size:18px;font-weight:800;color:#0d2145;margin:0;line-height:1.3;letter-spacing:-0.3px}
+.cv-complete-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#2d8a5e;color:#fff;
+  border:none;border-radius:50px;
+  padding:9px 16px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(45,138,94,0.28);
+  transition:background .15s,transform .1s,box-shadow .15s;
+}
+.cv-complete-btn:hover{background:#236b49;transform:translateY(-1px)}
+.cv-complete-btn:active{transform:scale(0.97)}
+.cv-complete-btn.done{background:#e8f5ef;color:#2d8a5e;box-shadow:none;pointer-events:none}
+.cv-complete-btn.loading{opacity:.6;pointer-events:none}
+
+/* Chapter breadcrumb */
+.cv-breadcrumb{font-size:11px;font-weight:600;color:rgba(13,33,69,0.42);margin:0 0 6px;text-transform:uppercase;letter-spacing:1px}
+
+/* Navigation: prev/next lesson */
+.cv-lesson-nav{
+  display:flex;align-items:center;gap:10px;
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid #e8eaf0;
+}
+.cv-nav-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;
+  padding:12px 14px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:#0d2145;
+  cursor:pointer;transition:border-color .15s,background .15s;text-decoration:none;
+}
+.cv-nav-btn:hover{border-color:#0d2145;background:rgba(13,33,69,0.03)}
+.cv-nav-btn:disabled,.cv-nav-btn[disabled]{opacity:0.35;pointer-events:none}
+.cv-nav-btn.next{background:#0d2145;color:#fff;border-color:#0d2145}
+.cv-nav-btn.next:hover{background:#162f5e}
+
+/* Completion banner */
+.cv-completion-banner{
+  margin-top:20px;
+  background:linear-gradient(135deg,rgba(45,138,94,0.10),rgba(61,189,122,0.07));
+  border:1.5px solid rgba(45,138,94,0.22);
+  border-radius:16px;
+  padding:18px 16px;
+  display:flex;align-items:center;gap:14px;
+}
+.cv-completion-icon{width:44px;height:44px;border-radius:50%;background:rgba(45,138,94,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Error state */
+.cv-error{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:60px 24px;gap:14px;min-height:60vh;
+}
+
+/* ════════════════════════════════════════
+   DESKTOP (min-width: 900px) — sidebar always visible
+════════════════════════════════════════ */
+@media(min-width:900px){
+  /* Sidebar always open — no transform needed */
+  .cv-sidebar{
+    position:fixed;top:54px;left:0;bottom:0;
+    transform:none!important;
+    width:300px;
+    padding-top:0;
+    z-index:100;
+  }
+  /* Main shifts right */
+  .cv-main{
+    margin-left:300px;
+  }
+  /* Hide sidebar toggle button on desktop */
+  .cv-sidebar-btn{display:none!important}
+  /* Dim never shows on desktop */
+  .cv-dim{display:none!important}
+  /* Larger lesson panel */
+  .cv-lesson-panel{padding:28px 32px;max-width:800px}
+  .cv-lesson-title{font-size:22px}
+  .cv-topbar{padding:0 22px}
+}
+@media(min-width:1200px){
+  .cv-sidebar{width:320px}
+  .cv-main{margin-left:320px}
+}
+</style>
+</head>
+<body class="overflow-x-hidden">
+
+<!-- ══ LOADING OVERLAY ══ -->
+<div id="loading-overlay" style="position:fixed;inset:0;z-index:9999;background:#f8f9fb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:100dvh;padding:0 20px;overflow:hidden;">
+  <div style="font-size:28px;font-weight:800;color:#0d2145;letter-spacing:-0.8px;">Kreddl<span style="color:#3dbd7a;letter-spacing:0;">o</span></div>
+  <div style="width:44px;height:3px;border-radius:2px;overflow:hidden;background:#e8eaf0;position:relative;">
+    <div id="loader-bar" style="position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(to right,#2d8a5e,#3dbd7a);"></div>
+  </div>
+</div>
+<style>
+@keyframes loaderSlide{0%{left:-100%}100%{left:100%}}
+#loader-bar{animation:loaderSlide 1.1s ease-in-out infinite}
+</style>
+
+<!-- ══ TOAST ══ -->
+<div id="toast" class="toast"></div>
+
+<!-- ══ SIDEBAR DIM (mobile) ══ -->
+<div id="cv-dim" class="cv-dim" onclick="closeSidebar()"></div>
+
+<!-- ══════════════════════════
+     TOP BAR
+══════════════════════════ -->
+<header class="cv-topbar">
+  <button class="cv-sidebar-btn" onclick="toggleSidebar()" aria-label="Open chapter list">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <a href="/buyer-purchases.html" class="cv-logo" title="Back to Purchases">Kreddl<span style="letter-spacing:0;">o</span></a>
+  <span id="cv-course-title" class="cv-course-title">Loading…</span>
+  <div class="cv-progress-pill">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3dbd7a" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span id="cv-pct-label" class="cv-progress-pct">0%</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════
+     SIDEBAR
+══════════════════════════ -->
+<aside id="cv-sidebar" class="cv-sidebar" aria-label="Course chapters">
+
+  <div class="cv-sidebar-head">
+    <h2 id="cv-sidebar-title">Loading…</h2>
+    <p id="cv-sidebar-meta">0 chapters</p>
+    <div class="cv-prog-bar"><div class="cv-prog-fill" id="cv-prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div id="cv-chapter-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,16px);">
+    <!-- Populated by JS -->
+    <div style="padding:20px 18px;display:flex;flex-direction:column;gap:10px;">
+      <div class="sk" style="height:14px;width:80%;border-radius:6px;"></div>
+      <div class="sk" style="height:12px;width:65%;border-radius:6px;"></div>
+      <div class="sk" style="height:12px;width:72%;border-radius:6px;"></div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ══════════════════════════
+     MAIN CONTENT
+══════════════════════════ -->
+<main class="cv-main" id="cv-main">
+
+  <!-- Video Player -->
+  <div class="cv-player-wrap" id="cv-player-wrap">
+    <div class="cv-player-placeholder" id="cv-player-placeholder">
+      <div style="width:56px;height:56px;background:rgba(255,255,255,0.07);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <p style="font-size:13px;font-weight:600;margin:0;">Select a lesson to begin</p>
+    </div>
+    <iframe id="cv-iframe" style="display:none;" allowfullscreen allow="autoplay; fullscreen; picture-in-picture" title="Course video"></iframe>
+  </div>
+
+  <!-- Lesson panel -->
+  <div class="cv-lesson-panel" id="cv-lesson-panel">
+
+    <!-- Error state (hidden by default) -->
+    <div id="cv-error-state" style="display:none;" class="cv-error">
+      <div style="width:60px;height:60px;background:rgba(220,38,38,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div>
+        <p id="cv-error-title" style="font-size:17px;font-weight:700;color:#0d2145;margin:0 0 6px;">Something went wrong</p>
+        <p id="cv-error-body" style="font-size:14px;font-weight:500;color:rgba(13,33,69,0.50);margin:0;line-height:1.5;max-width:300px;">We couldn't load this course. Please check the link or try again.</p>
+      </div>
+      <a href="/buyer-purchases.html" style="display:inline-flex;align-items:center;gap:7px;background:#0d2145;color:#fff;border-radius:50px;padding:11px 22px;font-size:14px;font-weight:600;text-decoration:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Purchases
+      </a>
+    </div>
+
+    <!-- Normal lesson content (shown when lesson selected) -->
+    <div id="cv-lesson-content" style="display:none;">
+      <p id="cv-breadcrumb" class="cv-breadcrumb">Chapter 1</p>
+      <div class="cv-lesson-header">
+        <h1 id="cv-lesson-title" class="cv-lesson-title">Lesson title</h1>
+        <button id="cv-complete-btn" class="cv-complete-btn" onclick="markComplete()">
+          <svg id="cv-complete-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="cv-complete-label">Mark complete</span>
+        </button>
+      </div>
+
+      <!-- Lesson nav -->
+      <div class="cv-lesson-nav">
+        <button id="cv-prev-btn" class="cv-nav-btn" onclick="navigateLesson(-1)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Previous
+        </button>
+        <button id="cv-next-btn" class="cv-nav-btn next" onclick="navigateLesson(1)">
+          Next
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Course completion banner (shown when all done) -->
+      <div id="cv-completion-banner" class="cv-completion-banner" style="display:none;">
+        <div class="cv-completion-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div>
+          <p style="font-size:15px;font-weight:700;color:#0d2145;margin:0 0 3px;">Course complete!</p>
+          <p style="font-size:12px;font-weight:500;color:rgba(13,33,69,0.55);margin:0;line-height:1.4;">You've finished all lessons. Great work!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state (no lesson selected yet, desktop) -->
+    <div id="cv-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;gap:12px;min-height:200px;">
+      <div style="width:52px;height:52px;background:rgba(45,138,94,0.09);border-radius:16px;display:flex;align-items:center;justify-content:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2d8a5e" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <p style="font-size:15px;font-weight:700;color:#0d2145;margin:0;">Pick a lesson to start</p>
+      <p style="font-size:13px;font-weight:500;color:rgba(13,33,69,0.48);margin:0;max-width:260px;line-height:1.5;">Select any lesson from the chapter list to begin watching.</p>
+    </div>
+
+  </div><!-- /cv-lesson-panel -->
+</main><!-- /cv-main -->
+
+<!-- ══════════════════════════════════════
+     FIREBASE + LOGIC
+══════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged }                      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc }                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ── Firebase config ──
+const FIREBASE_CONFIG = {
+  apiKey:            'AIzaSyADHwnG1Im3IF5VetCilku1WeefjUR8Zkk',
+  authDomain:        'kreddlo.firebaseapp.com',
+  projectId:         'kreddlo',
+  storageBucket:     'kreddlo.firebasestorage.app',
+  messagingSenderId: '764500458567',
+  appId:             '1:764500458567:web:2389d5cf8c688caafd0562'
+};
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── State ──
+let _currentUser  = null;
+let _orderId      = null;
+let _productId    = null;
+let _courseData   = null;   // { title, courseChapters: [{title, durationMin, lessons:[{title,videoUrl,isPreview}]}] }
+let _progress     = {};     // { "chIdx-lsIdx": true }
+let _flatLessons  = [];     // [{ chIdx, lsIdx, chTitle, lessonTitle, videoUrl, isPreview, key }]
+let _currentIdx   = -1;     // index in _flatLessons
+let _sidebarOpen  = false;
+let _saving       = false;
+
+// ── Toast ──
+function showToast(msg, dur) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur || 3000);
+}
+window.showToast = showToast;
+
+// ── Loading overlay ──
+function hideOverlay() {
+  const ov = document.getElementById('loading-overlay');
+  if (!ov) return;
+  ov.style.transition = 'opacity .35s';
+  ov.style.opacity = '0';
+  setTimeout(() => ov.remove(), 380);
+}
+
+// ── Show error state ──
+function showError(title, body) {
+  hideOverlay();
+  document.getElementById('cv-error-title').textContent = title;
+  document.getElementById('cv-error-body').textContent  = body;
+  document.getElementById('cv-error-state').style.display  = '';
+  document.getElementById('cv-empty-state').style.display  = 'none';
+  document.getElementById('cv-lesson-content').style.display = 'none';
+}
+
+// ── Sidebar toggle ──
+window.toggleSidebar = function() {
+  _sidebarOpen = !_sidebarOpen;
+  const sb  = document.getElementById('cv-sidebar');
+  const dim = document.getElementById('cv-dim');
+  sb.classList.toggle('open', _sidebarOpen);
+  dim.classList.toggle('open', _sidebarOpen);
+};
+window.closeSidebar = function() {
+  _sidebarOpen = false;
+  document.getElementById('cv-sidebar').classList.remove('open');
+  document.getElementById('cv-dim').classList.remove('open');
+};
+
+// ── Build flat lesson list ──
+function buildFlatLessons(chapters) {
+  _flatLessons = [];
+  (chapters || []).forEach((ch, ci) => {
+    (ch.lessons || []).forEach((ls, li) => {
+      _flatLessons.push({
+        chIdx: ci, lsIdx: li,
+        chTitle: ch.title || ('Chapter ' + (ci + 1)),
+        lessonTitle: ls.title || ('Lesson ' + (li + 1)),
+        videoUrl: ls.videoUrl || '',
+        isPreview: !!ls.isPreview,
+        key: ci + '-' + li,
+      });
+    });
+  });
+}
+
+// ── Convert YouTube/Vimeo to embed URL ──
+function toEmbedUrl(url) {
+  if (!url) return '';
+  // YouTube
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (ytMatch) return 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0&modestbranding=1';
+  // Vimeo
+  const vmMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vmMatch) return 'https://player.vimeo.com/video/' + vmMatch[1];
+  // Already an embed URL or direct — return as-is
+  return url;
+}
+
+// ── Completion % ──
+function getCompletion() {
+  if (!_flatLessons.length) return 0;
+  const done = _flatLessons.filter(l => _progress[l.key]).length;
+  return Math.round((done / _flatLessons.length) * 100);
+}
+
+// ── Update progress UI everywhere ──
+function updateProgressUI() {
+  const pct = getCompletion();
+  const pctLabel = pct + '%';
+  document.getElementById('cv-pct-label').textContent   = pctLabel;
+  document.getElementById('cv-prog-fill').style.width   = pct + '%';
+
+  // Lesson check marks in sidebar
+  _flatLessons.forEach(l => {
+    const check = document.getElementById('lscheck-' + l.key);
+    if (check) {
+      check.classList.toggle('done', !!_progress[l.key]);
+    }
+  });
+
+  // Completion banner
+  const banner = document.getElementById('cv-completion-banner');
+  if (banner) banner.style.display = (pct === 100 && _flatLessons.length > 0) ? '' : 'none';
+}
+
+// ── Render sidebar ──
+function renderSidebar() {
+  const chapters = _courseData.courseChapters || [];
+  const list = document.getElementById('cv-chapter-list');
+
+  // Sidebar head
+  document.getElementById('cv-sidebar-title').textContent = _courseData.title || 'Course';
+  const totalLessons = _flatLessons.length;
+  document.getElementById('cv-sidebar-meta').textContent =
+    chapters.length + ' chapter' + (chapters.length !== 1 ? 's' : '') +
+    ' · ' + totalLessons + ' lesson' + (totalLessons !== 1 ? 's' : '');
+
+  // Build chapter/lesson HTML
+  list.innerHTML = chapters.map((ch, ci) => {
+    const lessonsHtml = (ch.lessons || []).map((ls, li) => {
+      const key = ci + '-' + li;
+      const isDone = !!_progress[key];
+      return `
+        <div class="cv-lesson-item" id="lsitem-${key}" onclick="selectLesson('${key}')" role="button" tabindex="0"
+          onkeydown="if(event.key==='Enter'||event.key===' ')selectLesson('${key}')">
+          <div class="cv-lesson-check${isDone ? ' done' : ''}" id="lscheck-${key}">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="cv-lesson-info">
+            <div class="cv-lesson-name">${escHtml(ls.title || ('Lesson ' + (li + 1)))}</div>
+            ${ls.isPreview ? '<span class="cv-lesson-preview-tag">FREE PREVIEW</span>' : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="cv-chapter-group">
+        <div class="cv-chapter-label" onclick="toggleChapter(${ci})" id="ch-label-${ci}">
+          <div class="cv-chapter-num">${ci + 1}</div>
+          <div class="cv-chapter-name">${escHtml(ch.title || ('Chapter ' + (ci + 1)))}</div>
+          <svg class="cv-chapter-chevron open" id="ch-chev-${ci}" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="cv-chapter-lessons open" id="ch-lessons-${ci}">
+          ${lessonsHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  updateProgressUI();
+}
+
+// ── Toggle chapter open/closed ──
+window.toggleChapter = function(ci) {
+  const body = document.getElementById('ch-lessons-' + ci);
+  const chev = document.getElementById('ch-chev-' + ci);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (chev) chev.classList.toggle('open', isOpen);
+};
+
+// ── Select and load a lesson ──
+window.selectLesson = function(key) {
+  const idx = _flatLessons.findIndex(l => l.key === key);
+  if (idx === -1) return;
+  _currentIdx = idx;
+  loadLesson(idx);
+  // On mobile: close sidebar after selecting
+  if (window.innerWidth < 900) closeSidebar();
+};
+
+function loadLesson(idx) {
+  if (idx < 0 || idx >= _flatLessons.length) return;
+  const l = _flatLessons[idx];
+  _currentIdx = idx;
+
+  // Update active state in sidebar
+  document.querySelectorAll('.cv-lesson-item').forEach(el => el.classList.remove('active'));
+  const activeEl = document.getElementById('lsitem-' + l.key);
+  if (activeEl) {
+    activeEl.classList.add('active');
+    // Scroll lesson into view in sidebar
+    activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Open the chapter if it's collapsed
+  const chBody = document.getElementById('ch-lessons-' + l.chIdx);
+  const chChev = document.getElementById('ch-chev-' + l.chIdx);
+  if (chBody && !chBody.classList.contains('open')) {
+    chBody.classList.add('open');
+    if (chChev) chChev.classList.add('open');
+  }
+
+  // Load video
+  const iframe    = document.getElementById('cv-iframe');
+  const pholder   = document.getElementById('cv-player-placeholder');
+  const embedUrl  = toEmbedUrl(l.videoUrl);
+
+  if (embedUrl) {
+    iframe.src = embedUrl;
+    iframe.style.display = '';
+    pholder.style.display = 'none';
+  } else {
+    iframe.src = '';
+    iframe.style.display = 'none';
+    pholder.style.display = '';
+    pholder.innerHTML = `
+      <div style="width:56px;height:56px;background:rgba(255,255,255,0.07);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <p style="font-size:13px;font-weight:600;margin:0;">No video for this lesson yet</p>`;
+  }
+
+  // Update lesson panel content
+  document.getElementById('cv-breadcrumb').textContent  = l.chTitle;
+  document.getElementById('cv-lesson-title').textContent = l.lessonTitle;
+
+  // Complete button state
+  const isDone   = !!_progress[l.key];
+  const btn      = document.getElementById('cv-complete-btn');
+  const iconEl   = document.getElementById('cv-complete-icon');
+  const labelEl  = document.getElementById('cv-complete-label');
+  btn.classList.toggle('done', isDone);
+  btn.classList.remove('loading');
+  labelEl.textContent = isDone ? 'Completed' : 'Mark complete';
+
+  // Prev/Next buttons
+  document.getElementById('cv-prev-btn').disabled = (idx === 0);
+  document.getElementById('cv-next-btn').disabled = (idx === _flatLessons.length - 1);
+
+  // Show lesson content, hide empty/error states
+  document.getElementById('cv-empty-state').style.display   = 'none';
+  document.getElementById('cv-error-state').style.display   = 'none';
+  document.getElementById('cv-lesson-content').style.display = '';
+
+  // Update course title bar
+  document.getElementById('cv-course-title').textContent = _courseData.title || 'Course';
+}
+
+// ── Navigate prev/next lesson ──
+window.navigateLesson = function(dir) {
+  const newIdx = _currentIdx + dir;
+  if (newIdx < 0 || newIdx >= _flatLessons.length) return;
+  loadLesson(newIdx);
+};
+
+// ── Mark lesson complete ──
+window.markComplete = async function() {
+  if (_currentIdx === -1 || _saving) return;
+  const l = _flatLessons[_currentIdx];
+  if (_progress[l.key]) return; // already done
+
+  _saving = true;
+  const btn = document.getElementById('cv-complete-btn');
+  btn.classList.add('loading');
+
+  _progress[l.key] = true;
+  updateProgressUI();
+
+  // Persist to Firestore: users/{uid}/courseProgress/{productId}
+  try {
+    const progressRef = doc(db, 'users', _currentUser.uid, 'courseProgress', _productId);
+    await setDoc(progressRef, { completedLessons: _progress }, { merge: true });
+  } catch (err) {
+    console.error('[course-viewer] progress save error:', err);
+    showToast('Progress not saved — please check your connection.');
+    // Revert on failure
+    delete _progress[l.key];
+    updateProgressUI();
+    btn.classList.remove('loading');
+    _saving = false;
+    return;
+  }
+
+  // Update button to done state
+  btn.classList.remove('loading');
+  btn.classList.add('done');
+  document.getElementById('cv-complete-label').textContent = 'Completed';
+  _saving = false;
+
+  // Auto-advance to next lesson after short delay
+  const nextIdx = _currentIdx + 1;
+  if (nextIdx < _flatLessons.length) {
+    setTimeout(() => loadLesson(nextIdx), 600);
+  } else {
+    // All done — show completion banner
+    document.getElementById('cv-completion-banner').style.display = '';
+    showToast('🎉 Course complete! Great work.', 4000);
+  }
+};
+
+// ── HTML escape ──
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+// ══════════════════════════════
+//  BOOTSTRAP
+// ══════════════════════════════
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    window.location.replace('/login.html');
+    return;
+  }
+  _currentUser = user;
+
+  // Read orderId from query string
+  const params  = new URLSearchParams(window.location.search);
+  _orderId      = params.get('orderId') || '';
+
+  if (!_orderId) {
+    showError('Missing order', 'No order ID was provided in the URL. Please go back to your purchases.');
+    return;
+  }
+
+  try {
+    // 1. Load order document
+    // FIX BUG 1: product orders are stored in 'product-orders', not 'orders'.
+    const orderSnap = await getDoc(doc(db, 'product-orders', _orderId));
+    if (!orderSnap.exists()) {
+      showError('Order not found', 'This order doesn\'t exist or may have been removed.');
+      return;
+    }
+    const order = orderSnap.data();
+
+    // 2. Verify this order belongs to the current user
+    // FIX BUG 1b: product-orders stores the buyer as 'buyerUid', not 'buyerId'/'userId'.
+    if (order.buyerUid !== user.uid) {
+      showError('Access denied', 'This course does not belong to your account.');
+      return;
+    }
+
+    // 3. Verify product is a video-course
+    _productId = order.productId;
+    if (!_productId) {
+      showError('Invalid order', 'This order is not linked to a product.');
+      return;
+    }
+
+    const productSnap = await getDoc(doc(db, 'products', _productId));
+    if (!productSnap.exists()) {
+      showError('Product not found', 'The course product could not be loaded.');
+      return;
+    }
+    const product = productSnap.data();
+
+    if (product.deliveryType !== 'video-course') {
+      showError('Not a video course', 'This product is not a video course.');
+      return;
+    }
+
+    if (!product.courseChapters || !product.courseChapters.length) {
+      showError('No content yet', 'This course has no chapters yet. Check back soon!');
+      return;
+    }
+
+    _courseData = product;
+
+    // 4. Load saved progress
+    try {
+      const progressSnap = await getDoc(doc(db, 'users', user.uid, 'courseProgress', _productId));
+      if (progressSnap.exists()) {
+        _progress = progressSnap.data().completedLessons || {};
+      }
+    } catch (_) {
+      _progress = {};
+    }
+
+    // 5. Build flat lesson list
+    buildFlatLessons(product.courseChapters);
+
+    // 6. Render sidebar
+    renderSidebar();
+
+    // 7. Update top bar
+    document.getElementById('cv-course-title').textContent = product.title || 'Course';
+
+    // 8. Auto-load first incomplete lesson (or first lesson)
+    let startIdx = _flatLessons.findIndex(l => !_progress[l.key]);
+    if (startIdx === -1) startIdx = 0; // all done — go to first
+    if (startIdx >= 0 && _flatLessons.length > 0) loadLesson(startIdx);
+
+    // 9. Hide loading overlay
+    hideOverlay();
+
+  } catch (err) {
+    console.error('[course-viewer] bootstrap error:', err);
+    showError('Something went wrong', 'We couldn\'t load this course. Please try again.');
+  }
+});
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

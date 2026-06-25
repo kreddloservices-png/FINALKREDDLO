@@ -1,0 +1,13 @@
+{
+  "appId": "com.kreddlo.app",
+  "appName": "Kreddlo",
+  "webDir": ".",
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
